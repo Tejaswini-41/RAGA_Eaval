@@ -45,3 +45,8 @@ class ModelFactory:
             print(f"Generating response from {model_name}...")
             responses[model_name] = model.generate_response(question)
         return responses
+
+    # Add a getter for the system prompt
+    def get_system_prompt(self):
+        """Return the current system prompt"""
+        return SYSTEM_PROMPT
