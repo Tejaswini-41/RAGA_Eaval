@@ -1,0 +1,63 @@
+# LLM Response Evaluation Tool (Work in Progress)
+
+## Overview
+This project provides a tool to evaluate the responses of Large Language Models (LLMs) based on RAG (Retrieval-Augmented Generation) assessment parameters. The evaluation is conducted by comparing the responses of different LLMs including Groq and Gemini to given set of questions.
+
+NICE_Internship/
+├── GroundTruth/
+│   ├── ground_truth.py      # GPT-3.5 response generation
+│   ├── questions.json       # Input questions
+│   └── ground_truth.json       # Ground truth responses
+├── response_huggingface.py  # GPT-2 and DistilGPT-2 handler
+├── response_groq.py         # DeepSeek and Llama3 handler
+└── README.md
+
+
+
+## Features
+- Loads questions from a JSON file.
+- Queries different LLMs (Gemini, GPT-3.5, GPT-2, DistilGPT-2, DeepSeek, etc.).
+- Evaluates responses based on RAG assessment.
+- Saves results in a structured JSON format.
+
+## Technology Stack
+- Python
+- Groq API
+- Gemini API (to be tested soon)
+- JSON for structured data storage
+
+## Installation
+1. Clone the repository:
+   ```bash
+   git clone git clone https://github.com/Tejaswini-41/Nice_Project.git
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Set up environment variables:
+   - Create a `.env` file and add your API keys:
+     ```
+     GROQ_API_KEY=your_groq_api_key
+     GEMINI_API_KEY=your_gemini_api_key
+     ```
+
+## Usage
+1. Prepare your input questions in `questions.json`.
+2. Run the evaluation script:
+   ```bash
+   python main.py
+   ```
+3. Check the generated responses in `responses_deepseek.json`.
+
+## Future Enhancements
+- Integrate additional LLMs like Gemini.
+- Implement automated RAG-based evaluation scoring.
+
+## Contributors
+- Tejaswini Durge
+- Dipali Gangarde
+
+## License
+This project is licensed under the MIT License.
+

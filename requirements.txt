@@ -1,0 +1,6 @@
+google-generativeai 
+sentence-transformers 
+groq 
+ragas 
+sacrebleu 
+rouge_score
