@@ -4,11 +4,11 @@
 RAGA_EVAL is a tool designed to evaluate responses from Large Language Models (LLMs) based on **RAG (Retrieval-Augmented Generation) assessment**. It generates **ground truth responses using Gemini** and compares them with responses from **Groq-based models** such as **Mixtral, Llama, Qwen, and DeepSeek**. The evaluation is conducted using **RAGAS scores**, and **recommendations are provided by Gemini** to improve these scores, including an updated **system prompt**.
 
 ## Features
-- **Ground Truth Generation**: Uses **Gemini** to generate reference responses.
-- **LLM Response Evaluation**: Generates responses from **Mixtral, Llama, Qwen, and DeepSeek**.
-- **RAGAS Scoring**: Evaluates model responses based on **retrieval accuracy, faithfulness, and relevance**.
-- **Recommendation System**: Uses **Gemini** to provide suggestions on how to improve **RAGAS scores**.
-- **Updated System Prompt**: Generates an improved **system prompt** for better response quality.
+**Ground Truth Generation**: Uses **Gemini** to generate reference responses.
+**LLM Response Evaluation**: Generates responses from **Mixtral, Llama, Qwen, and DeepSeek**.
+**RAGAS Scoring**: Evaluates model responses based on **retrieval accuracy, faithfulness, and relevance**.
+**Recommendation System**: Uses **Gemini** to provide suggestions on how to improve **RAGAS scores**.
+**Updated System Prompt**: Generates an improved **system prompt** for better response quality.
 
 ## Folder Structure
 
@@ -66,9 +66,8 @@ RAGA_EVAL/
 1. Prepare your input questions in `questions.json`.
 2. Run the evaluation script:
    ```bash
-   python main.py
+   python interactive_eval.py
    ```
-3. Check the generated responses in `responses_deepseek.json`.
 
 ## Future Enhancements
 - Integrate additional LLMs like Gemini.
