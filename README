@@ -21,20 +21,30 @@ RAGA_EVAL/
 ├── questions.json # Input questions for evaluation 
 ├── evaluation/ │ 
       ├── dynamic_recom.py # Dynamic recommendations based on RAGAS scores │ 
-      ├── evaluator.py # Evaluation logic using RAGAS │ ├── metrics.py # Metrics computation │ ├── prompt_improver.py # Improves prompts based on evaluation feedback │ ├── recommendation.py # Generates recommendations using Gemini ├── models/ │ ├── gemini_model.py # Gemini model for generating ground truth and recommendations │ ├── groq_models.py # Groq models (Mixtral, Llama, Qwen, DeepSeek) │ ├── model_factory.py # Model initialization and selection │ ├── responses/ # Stores model-generated responses ├── utils/ ├── venv/ ├── Version1/
+      ├── evaluator.py # Evaluation logic using RAGAS │ 
+      ├── metrics.py # Metrics computation │       
+      ├── prompt_improver.py # Improves prompts based on evaluation feedback │       
+      ├── recommendation.py # Generates recommendations using Gemini 
+├── models/ │ 
+      ├── gemini_model.py # Gemini model for generating ground truth and recommendations │ 
+      ├── groq_models.py # Groq models (Mixtral, Llama, Qwen, DeepSeek) │       
+      ├── model_factory.py # Model initialization and selection │ 
+├── responses/ # Stores model-generated responses 
+├── utils/ 
+├── venv/ 
+├── Version1/
 
 
-## Features
-- Loads questions from a JSON file.
-- Queries different LLMs (Gemini, GPT-3.5, GPT-2, DistilGPT-2, DeepSeek, etc.).
-- Evaluates responses based on RAG assessment.
-- Saves results in a structured JSON format.
 
 ## Technology Stack
-- Python
-- Groq API
-- Gemini API (to be tested soon)
-- JSON for structured data storage
+- **Programming Language**: Python
+- **LLMs Used**:
+  - **Ground Truth**: Gemini
+  - **Response Generation**: Mixtral, Llama, Qwen, DeepSeek (via Groq API)
+- **Evaluation Metrics**:
+  - **RAGAS**: Measures faithfulness, context relevance, and answer correctness.
+- **Data Storage**: JSON for structured output.
+
 
 ## Installation
 1. Clone the repository:
