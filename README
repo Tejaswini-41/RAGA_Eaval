@@ -1,17 +1,27 @@
-# LLM Response Evaluation Tool (Work in Progress)
+# RAGA_EVAL: LLM Response Evaluation Tool (WORK IN PROGRESS)
 
 ## Overview
-This project provides a tool to evaluate the responses of Large Language Models (LLMs) based on RAG (Retrieval-Augmented Generation) assessment parameters. The evaluation is conducted by comparing the responses of different LLMs including Groq and Gemini to given set of questions.
+RAGA_EVAL is a tool designed to evaluate responses from Large Language Models (LLMs) based on **RAG (Retrieval-Augmented Generation) assessment**. It generates **ground truth responses using Gemini** and compares them with responses from **Groq-based models** such as **Mixtral, Llama, Qwen, and DeepSeek**. The evaluation is conducted using **RAGAS scores**, and **recommendations are provided by Gemini** to improve these scores, including an updated **system prompt**.
 
-NICE_Internship/
-├── GroundTruth/
-│   ├── ground_truth.py      # GPT-3.5 response generation
-│   ├── questions.json       # Input questions
-│   └── ground_truth.json       # Ground truth responses
-├── response_huggingface.py  # GPT-2 and DistilGPT-2 handler
-├── response_groq.py         # DeepSeek and Llama3 handler
-└── README.md
+## Features
+- **Ground Truth Generation**: Uses **Gemini** to generate reference responses.
+- **LLM Response Evaluation**: Generates responses from **Mixtral, Llama, Qwen, and DeepSeek**.
+- **RAGAS Scoring**: Evaluates model responses based on **retrieval accuracy, faithfulness, and relevance**.
+- **Recommendation System**: Uses **Gemini** to provide suggestions on how to improve **RAGAS scores**.
+- **Updated System Prompt**: Generates an improved **system prompt** for better response quality.
 
+## Folder Structure
+
+RAGA_EVAL/ 
+├── .gitignore 
+├── .env
+├── README.md 
+├── requirements.txt 
+├── interactive_eval.py 
+├── questions.json # Input questions for evaluation 
+├── evaluation/ │ 
+      ├── dynamic_recom.py # Dynamic recommendations based on RAGAS scores │ 
+      ├── evaluator.py # Evaluation logic using RAGAS │ ├── metrics.py # Metrics computation │ ├── prompt_improver.py # Improves prompts based on evaluation feedback │ ├── recommendation.py # Generates recommendations using Gemini ├── models/ │ ├── gemini_model.py # Gemini model for generating ground truth and recommendations │ ├── groq_models.py # Groq models (Mixtral, Llama, Qwen, DeepSeek) │ ├── model_factory.py # Model initialization and selection │ ├── responses/ # Stores model-generated responses ├── utils/ ├── venv/ ├── Version1/
 
 
 ## Features
