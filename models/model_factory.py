@@ -45,6 +45,35 @@ class ModelFactory:
             print(f"Generating response from {model_name}...")
             responses[model_name] = model.generate_response(question)
         return responses
+    
+    def get_model(self, model_name):
+        """Get a specific model by name"""
+        if model_name not in self.all_models:
+            raise ValueError(f"Unknown model: {model_name}")
+        return self.all_models[model_name]
+
+    def generate_response_with_prompt(self, model_name, question, system_prompt):
+        """Generate response from a specific model using a custom system prompt"""
+        try:
+            model = self.get_model(model_name)
+            
+            # Store the original system prompt
+            original_prompt = model.system_prompt
+            
+            # Set the new system prompt
+            model.system_prompt = system_prompt
+            
+            # Generate response
+            response = model.generate_response(question)
+            
+            # Restore the original system prompt
+            model.system_prompt = original_prompt
+            
+            return response
+            
+        except Exception as e:
+            print(f"Error generating response from {model_name}: {e}")
+            return f"Error: {str(e)}"
 
     # Add a getter for the system prompt
     def get_system_prompt(self):
