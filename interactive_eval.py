@@ -375,12 +375,12 @@ class InteractiveEvaluator:
                 )
             
                 # Save the new prompts for next iteration
-                for model_name, prompt_data in current_prompts.items():
-                    self._save_improved_prompts_collection(
-                        model_name, 
-                        prompt_data["improved_prompt"],
-                        question
-                    )
+                # for model_name, prompt_data in current_prompts.items():
+                #     self._save_improved_prompts_collection(
+                #         model_name, 
+                #         prompt_data["improved_prompt"],
+                #         question
+                #     )
 
             current_responses = improved_responses
 
