@@ -15,6 +15,11 @@ class ResponseEvaluator:
             "ROUGE": 0.10
         }
     
+    # def update_api_key(self, new_key: str):
+    #     """Update the Gemini API key"""
+    #     import google.generativeai as genai
+    #     genai.configure(api_key=new_key)
+    
     async def evaluate_responses(self, reference_model, responses, question, system_prompt):
         """
         Evaluate responses and generate system prompt improvements
