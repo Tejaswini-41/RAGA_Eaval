@@ -313,6 +313,14 @@ class InteractiveEvaluator:
             print(f"\n{'═' * 50}")
             print(f"ITERATION {iteration}")
             print(f"{'═' * 50}")
+            
+            # Add progressive delay before iterations 2 and 3
+            if iteration > 1:
+                # Progressive delay: 10 seconds for iteration 2, 20 seconds for iteration 3
+                delay_seconds = (iteration - 1) * 10
+                print(f"\n⏱️ Adding {delay_seconds} second delay before iteration {iteration} to avoid API rate limits...")
+                await asyncio.sleep(delay_seconds)
+                print("Continuing with evaluation...")
 
             improved_responses = {}
         

@@ -25,9 +25,9 @@ Choose a question:
 9. Is free will an illusion?
 10. What if humans could communicate with animals and how would society adapt?
 
-Enter your choice (number): 2
+Enter your choice (number): 8
 
-📝 Evaluating question: How can someone find their true passion in life?
+📝 Evaluating question: Should artificial intelligence have rights?
 Generating response from gemini...
 Generating response from deepseek...
 Generating response from llama...
@@ -41,38 +41,38 @@ Evaluating alibaba...
 Generating prompt improvements for alibaba...
 Evaluating mixtral...
 Generating prompt improvements for mixtral...
-Responses saved to responses/question_5196.json
+Responses saved to responses/question_3286.json
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════
-📊  EVALUATION RESULTS: "How can someone find their true passion in life?"
+📊  EVALUATION RESULTS: "Should artificial intelligence have rights?"
 ════════════════════════════════════════════════════════════════════════════════════════════════════
 
 🏆  RANKINGS (Reference: GEMINI)
 ──────────────────────────────────────────────────
 
-  1. LLAMA - Overall Score: 0.734
-     Relevance: 0.857         BLEU: 0.124
-     Accuracy: 0.950          ROUGE: 0.178
-     Groundedness: 0.800
-     Completeness: 0.900
-
-  2. DEEPSEEK - Overall Score: 0.725
-     Relevance: 0.632         BLEU: 0.043
-     Accuracy: 0.950          ROUGE: 0.064
-     Groundedness: 1.000
-     Completeness: 1.000      
-
-  3. MIXTRAL - Overall Score: 0.714
-     Relevance: 0.836         BLEU: 0.120
-     Accuracy: 0.950          ROUGE: 0.172
+  1. MIXTRAL - Overall Score: 0.738
+     Relevance: 0.909         BLEU: 0.134
+     Accuracy: 0.950          ROUGE: 0.250
      Groundedness: 0.800
      Completeness: 0.800
 
-  4. ALIBABA - Overall Score: 0.711
-     Relevance: 0.877         BLEU: 0.145
-     Accuracy: 0.900          ROUGE: 0.163
-     Groundedness: 0.800
+  2. LLAMA - Overall Score: 0.685
+     Relevance: 0.819         BLEU: 0.203
+     Accuracy: 0.950          ROUGE: 0.232
+     Groundedness: 0.600
      Completeness: 0.800
+
+  3. ALIBABA - Overall Score: 0.531
+     Relevance: 0.828         BLEU: 0.043
+     Accuracy: 0.900          ROUGE: 0.214
+     Groundedness: 0.200
+     Completeness: 0.500
+
+  4. DEEPSEEK - Overall Score: 0.524
+     Relevance: 0.785         BLEU: 0.293
+     Accuracy: 0.800          ROUGE: 0.080
+     Groundedness: 0.200
+     Completeness: 0.600
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════
 💡  PROMPT IMPROVEMENT RECOMMENDATIONS
@@ -82,161 +82,169 @@ Responses saved to responses/question_5196.json
 ──────────────────────────────────────────────────
 
   🔍 KEY ISSUES SUMMARY:
-  • Overemphasis on factual information and detailed explanation leads to irrelevance and verbosity.
-  • The prompt discourages speculation, hindering the ability to offer insightful advice on a subjective topic.   
-  • Lack of a specific output format or response style.
+  • Instruction to avoid speculation is ignored.  The model provides a personal opinion instead of a neutral summary of the debate.
+  • The prompt lacks instruction on handling complex, multifaceted questions with no single definitive answer.
+  • The prompt encourages brevity which inhibits the model's ability to fully address the complexities of the question.
 
-  📌 TARGET METRICS: BLEU, Completeness, ROUGE, Relevance
-  📈 POTENTIAL GAINS: BLEU: +20%, Completeness: +5%, ROUGE: +25%, Relevance: +15%
+  📌 TARGET METRICS: Accuracy, Completeness, Groundness, Relevance
+  📈 POTENTIAL GAINS: Accuracy: +15%, Completeness: +15%, Groundness: +20%, Relevance: +5%        
 
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
   🔄 PROMPT COMPARISON
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
 
   📝 CURRENT PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
   │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │
-  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │
-  │ acknowledge limitations - Maintain professional tone                                     │
-  └──────────────────────────────────────────────────────────────────────────────────────────┘
+  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
+  │ acknowledge limitations - Maintain professional tone                                     │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
   ✨ IMPROVED PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant.  Respond to the following question concisely and         │
-  │ insightfully, providing actionable advice.  Your response should be similar in style and │
-  │ length to the example provided.  Avoid overly detailed explanations or internal          │
-  │ monologues.  Focus on synthesizing key points into a brief, relevant answer.  Example:   │
-  │ There's no single method to find one's true passion.  It often involves self-reflection, │
-  │ exploration of interests, and trying new things.  Consider exploring different           │
-  │ activities, reflecting on what brings you joy and fulfillment, and identifying your      │
-  │ skills and values.                                                                       │
-  │                                                                                          │
-  │ QUESTION: How can someone find their true passion in life?                               │
-  └──────────────────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
+  │ accurate answers - Focus on factual information - Use clear and simple language -        │    
+  │ Summarize the main arguments and perspectives on the topic, acknowledging that there is  │    
+  │ no single consensus. - If unsure about specific details, acknowledge limitations -       │    
+  │ Maintain a professional and neutral tone. - Provide a concise yet comprehensive summary  │    
+  │ of the ongoing debate surrounding the question.  Do not offer your own opinion or        │    
+  │ conclusion.                                                                              │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
-Improved prompt saved to: prompts/improved_prompts_20250316_153348_5196.json
+Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
 
-  🚀 I estimate an overall RAGAS score improvement of approximately 15-20%, primarily driven by increased relevance and improved BLEU/ROUGE scores.
+  🚀 Estimated overall improvement: +15-20%
 
 📈  LLAMA
 ──────────────────────────────────────────────────
 
   🔍 KEY ISSUES SUMMARY:
-  • Overly detailed and structured response; lacks the brevity of the reference response.
-  • Lack of explicit guidance on response style mirroring the reference.
-  • Emphasis on factual information might hinder the nuanced answer needed.
+  • Lack of explicit instruction to prioritize brevity and style matching the reference response. 
+  • Absence of guidance on focusing on the core philosophical and legal debate aspects.
+  • Overemphasis on factual information without considering stylistic alignment.
 
-  📌 TARGET METRICS: Accuracy, BLEU, Completeness, ROUGE, Relevance
-  📈 POTENTIAL GAINS: Accuracy: +1%, BLEU: +10%, Completeness: +5%, ROUGE: +15%, Relevance: +3%
+  📌 TARGET METRICS: BLEU, Completeness, Groundedness, ROUGE, Relevance
+  📈 POTENTIAL GAINS: BLEU: +10%, Completeness: +3%, Groundedness: +15%, ROUGE: +10%, Relevance: +5%
 
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
   🔄 PROMPT COMPARISON
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
 
   📝 CURRENT PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │
-  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │
-  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │
-  │ acknowledge limitations - Maintain professional tone                                     │
-  └──────────────────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
+  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │    
+  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
+  │ acknowledge limitations - Maintain professional tone                                     │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
   ✨ IMPROVED PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant.  Respond concisely and accurately to the following       │
-  │ question, aiming for a response similar in style and length to the provided example.     │
-  │ Prioritize brevity and impactful phrasing.  While accuracy is important, acknowledge     │
-  │ that this question involves subjective experiences and doesn't have one definitive       │
-  │ answer.                                                                                  │
-  │                                                                                          │
-  │ Example Response: There's no single method to find one's true passion.  It often         │
-  │ involves self-reflection, exploration of interests, and trying new things.  Consider     │
-  │ exploring different activities, reflecting on what brings you joy and fulfillment, and   │
-  │ identifying your skills and values.                                                      │
-  │                                                                                          │
-  │ QUESTION: How can someone find their true passion in life?                               │
-  └──────────────────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant.  Your task is to answer the following question concisely │    
+  │ and accurately, mirroring the style and structure of the provided reference response.    │
+  │ Focus on the philosophical and legal debate surrounding the question, emphasizing the    │    
+  │ lack of consensus and the complexities involved in defining "intelligence," "rights,"    │    
+  │ and the capabilities of future AI systems. Avoid unnecessary details or tangential       │    
+  │ information. Prioritize brevity and clarity.  The reference response is provided below   │    
+  │ for stylistic guidance.                                                                  │    
+  │                                                                                          │    
+  │ QUESTION: Should artificial intelligence have rights?                                    │    
+  │                                                                                          │    
+  │ REFERENCE RESPONSE: There is no consensus on whether artificial intelligence should have │    
+  │ rights.  The question is complex and depends on definitions of "intelligence," "rights," │    
+  │ and the capabilities of future AI systems.  It is currently a topic of philosophical and │    
+  │ legal debate, not a settled matter.                                                      │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
-Improved prompt saved to: prompts/improved_prompts_20250316_153348_5196.json
+Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
 
-  🚀 Overall, I estimate a 10-15% improvement in the overall RAGAS score, primarily driven by gains in BLEU, ROUGE, and Relevance.  The more nuanced response will likely minimally affect the Accuracy score but positively impact Relevance.
+  🚀 An overall improvement of approximately 10-15% in the RAGAS score is expected.
 
 📈  ALIBABA
 ──────────────────────────────────────────────────
 
   🔍 KEY ISSUES SUMMARY:
-  • Overemphasis on conciseness and factual information, neglecting the subjective and exploratory aspects of finding one's passion.
-  • Lack of guidance on incorporating personal experiences and values into the response.
-  • The prompt doesn't specify the desired response style; it's too rigid.
+  • Overemphasis on factual certainty and avoidance of speculation.
+  • Lack of instruction to consider multiple perspectives.
+  • Instruction to keep responses brief might hinder completeness.
 
-  📌 TARGET METRICS: BLEU, Completeness, ROUGE, Relevance
-  📈 POTENTIAL GAINS: BLEU: +10%, Completeness: +10%, ROUGE: +15%, Relevance: +5%
+  📌 TARGET METRICS: Completeness, Groundedness, Relevance
+  📈 POTENTIAL GAINS: Completeness: +20%, Groundedness: +30%, Relevance: +10%
 
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
   🔄 PROMPT COMPARISON
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
 
   📝 CURRENT PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │
-  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │
-  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │
-  │ acknowledge limitations - Maintain professional tone                                     │
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
+  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │    
+  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
+  │ acknowledge limitations - Maintain professional tone                                     │    
   └──────────────────────────────────────────────────────────────────────────────────────────┘
 
   ✨ IMPROVED PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant providing insightful guidance on self-discovery.  Answer  │
-  │ the following question in a reflective and exploratory manner, considering the           │
-  │ subjective nature of finding one's true passion.  Prioritize providing a thoughtful      │
-  │ response that encourages self-reflection and exploration of personal interests, skills,  │
-  │ and values.  While factual accuracy is important, the emphasis should be on providing a  │
-  │ nuanced and insightful response that acknowledges the journey of self-discovery.  Do not │
-  │ simply provide a numbered list of steps.  Your response should be complete, but avoid    │
-  │ unnecessary detail.  If unsure about a specific point, acknowledge your limitations.     │
-  └──────────────────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant providing nuanced responses to complex questions.  For    │    
+  │ the following question, consider the lack of a definitive answer and the ongoing debate  │    
+  │ surrounding the topic.  Explore the different perspectives and arguments for and against │    
+  │ the proposition, addressing the ethical, legal, and philosophical dimensions involved.   │    
+  │ Provide a comprehensive yet concise answer, acknowledging the uncertainties and ongoing  │    
+  │ discussions.  Prioritize accuracy and completeness while maintaining a professional      │    
+  │ tone.  Do not simply state your own opinion, instead summarize the different views and   │    
+  │ their supporting rationales.  Focus on presenting a balanced and informed overview of    │    
+  │ the current state of the debate.  Question: Should artificial intelligence have rights?  │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
-Improved prompt saved to: prompts/improved_prompts_20250316_153348_5196.json
+Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
 
-  🚀 Estimated overall improvement: +15-20%
+  🚀 Estimated overall improvement: +20%
 
 📈  MIXTRAL
 ──────────────────────────────────────────────────
 
   🔍 KEY ISSUES SUMMARY:
-  • Overly verbose and structured response; lacks conciseness mirroring the reference.
-  • Lack of instruction to prioritize keywords and concepts from the reference response.
-  • The prompt doesn't directly address the subjective nature of the question.
+  • Overly comprehensive response generation; lacks focus on mirroring the reference response's brevity and style.
+  • Lack of emphasis on addressing the definitional complexities inherent in the question.        
+  • Focus on factual information overshadows stylistic and structural mirroring.
 
-  📌 TARGET METRICS: Accuracy, BLEU, Completeness, ROUGE, Relevance
-  📈 POTENTIAL GAINS: Accuracy: +1%, BLEU: +10%, Completeness: +5%, ROUGE: +15%, Relevance: +3%
+  📌 TARGET METRICS: Accuracy, BLEU, Completeness, Groundedness, Overall, ROUGE, Relevance        
+  📈 POTENTIAL GAINS: Accuracy: +2%, BLEU: +10%, Completeness: +5%, Groundedness: +5%, Overall: +3%, ROUGE: +15%, Relevance: +3%
 
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
   🔄 PROMPT COMPARISON
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
 
   📝 CURRENT PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │
-  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │
-  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │
-  │ acknowledge limitations - Maintain professional tone                                     │
-  └──────────────────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
+  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │    
+  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
+  │ acknowledge limitations - Maintain professional tone                                     │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
   ✨ IMPROVED PROMPT:
   ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
-  │ You are a helpful AI assistant.  Respond to the following question concisely and         │    
-  │ accurately, mirroring the style and brevity of the provided reference response.          │    
-  │ Prioritize keywords and thematic elements from the reference.  Avoid numbered lists      │    
-  │ unless crucial.  Acknowledge that finding one's true passion is a subjective journey,    │    
-  │ focusing on general approaches rather than prescribed steps. The question is: [Insert    │    
-  │ Question Here]  Reference Response: [Insert Reference Response Here]                     │    
+  │ You are a helpful AI assistant. Your task is to answer the following question concisely  │    
+  │ and accurately, mirroring the style and structure of the provided reference response.    │    
+  │ Prioritize brevity and directness.  Explicitly acknowledge the dependence of the answer  │    
+  │ on the definitions of 'intelligence,' 'rights,' and the capabilities of future AI        │    
+  │ systems.                                                                                 │    
+  │                                                                                          │    
+  │ QUESTION: Should artificial intelligence have rights?                                    │    
+  │                                                                                          │    
+  │ REFERENCE RESPONSE: There is no consensus on whether artificial intelligence should have │    
+  │ rights.  The question is complex and depends on definitions of "intelligence," "rights," │    
+  │ and the capabilities of future AI systems.  It is currently a topic of philosophical and │    
+  │ legal debate, not a settled matter.                                                      │    
+  │                                                                                          │    
+  │ Provide your answer below:                                                               │    
   └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
-Improved prompt saved to: prompts/improved_prompts_20250316_153348_5196.json
+Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
 
-  🚀 I estimate an overall RAGAS score improvement of approximately 10-15%, primarily driven by improvements in BLEU, ROUGE, and Completeness scores.
+  🚀 Estimated overall improvement: +10%
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════
 
@@ -250,14 +258,14 @@ What would you like to do?
 1. Enter your own question
 2. Choose from sample questions
 3. Set reference model
-4. Evaluate previous question with improved prompts: 'How can someone find their true passion in life?'
+4. Evaluate previous question with improved prompts: 'Should artificial intelligence have rights?'
 5. Exit
 
 Enter your choice (number): 4
 
-📝 Re-evaluating: How can someone find their true passion in life?
+📝 Re-evaluating: Should artificial intelligence have rights?
 
-📝 Evaluating question with iterative prompt improvements: How can someone find their true passion in life?
+📝 Evaluating question with iterative prompt improvements: Should artificial intelligence have rights?
 
 ══════════════════════════════════════════════════
 ITERATION 1
@@ -279,12 +287,15 @@ Generating prompt improvements for alibaba...
 Evaluating mixtral...
 Generating prompt improvements for mixtral...
 
-Iteration 1 data saved to improved_responses/comparison_20250316_153754_5196_iteration_1.json     
+Iteration 1 data saved to improved_responses/comparison_20250316_155109_6714_iteration_1.json     
 
 ══════════════════════════════════════════════════
 ITERATION 2
 ══════════════════════════════════════════════════
 
+⏱️ Adding 10 second delay before iteration 2 to avoid API rate limits...
+Continuing with evaluation...
+
 ⚡ Generating improved response for DEEPSEEK
 
 ⚡ Generating improved response for LLAMA
@@ -293,10 +304,19 @@ ITERATION 2
 
 ⚡ Generating improved response for MIXTRAL
 Evaluating deepseek...
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for deepseek...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating llama...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for llama...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating alibaba...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for alibaba...
 Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating mixtral...
@@ -306,12 +326,15 @@ Error computing completeness: 429 Resource has been exhausted (e.g. check quota)
 Generating prompt improvements for mixtral...
 Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 
-Iteration 2 data saved to improved_responses/comparison_20250316_153818_5196_iteration_2.json     
+Iteration 2 data saved to improved_responses/comparison_20250316_155133_6714_iteration_2.json     
 
 ══════════════════════════════════════════════════
 ITERATION 3
 ══════════════════════════════════════════════════
 
+⏱️ Adding 20 second delay before iteration 3 to avoid API rate limits...
+Continuing with evaluation...
+
 ⚡ Generating improved response for DEEPSEEK
 
 ⚡ Generating improved response for LLAMA
@@ -320,30 +343,15 @@ ITERATION 3
 
 ⚡ Generating improved response for MIXTRAL
 Evaluating deepseek...
-Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
-Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for deepseek...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating llama...
-Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
-Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for llama...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating alibaba...
-Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for alibaba...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating mixtral...
-Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
-Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for mixtral...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 
-Iteration 3 data saved to improved_responses/comparison_20250316_153831_5196_iteration_3.json     
+Iteration 3 data saved to improved_responses/comparison_20250316_155228_6714_iteration_3.json     
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 📊 MULTI-ITERATION METRICS COMPARISON TABLE
@@ -352,38 +360,43 @@ Iteration 3 data saved to improved_responses/comparison_20250316_153831_5196_ite
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 Model           Metric          Original    Iter 1     Gain 1%   Iter 2     Gain 2%   Iter 3     Gain 3%   Total Gain
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-alibaba         Accuracy        0.900       0.950     ✅+5.6%    0.950     ✅+5.6%    0.950     ✅+5.6%    ✅ +5.6%
-                BLEU            0.145       0.085     🚩-41.4%   0.096     🚩-33.8%   0.073     🚩-49.7%   🚩 -49.7%
-                Completeness    0.800       1.000     ✅+25.0%   1.000     ✅+25.0%   0.500     🚩-37.5%   🚩 -37.5%
-                Groundedness    0.800       0.800     +0.0%     0.800     +0.0%     0.500     🚩-37.5%   🚩 -37.5%
-                Overall         0.711       0.716     ✅+0.7%    0.728     ✅+2.4%    0.575     🚩-19.1%   🚩 -19.1%
-                ROUGE           0.163       0.090     🚩-44.8%   0.101     🚩-38.0%   0.105     🚩-35.6%   🚩 -35.6%
-                Relevance       0.877       0.753     🚩-14.1%   0.803     🚩-8.4%    0.721     🚩-17.8%   🚩 -17.8%
+alibaba         Accuracy        0.900       0.950     ✅+5.6%    0.500     🚩-44.4%   0.950     ✅+5.6%    ✅ +5.6%
+                BLEU            0.043       0.126     ✅+193.0%  0.128     ✅+197.7%  0.137     ✅+218.6%  ✅ +218.6%
+                Completeness    0.500       0.800     ✅+60.0%   0.500     +0.0%     0.800     ✅+60.0%   ✅ +60.0%
+                Groundedness    0.200       0.200     +0.0%     0.500     ✅+150.0%  0.200     +0.0%     +0.0%
+                Overall         0.531       0.575     ✅+8.3%    0.470     🚩-11.5%   0.573     ✅+7.9%    ✅ +7.9%
+                ROUGE           0.214       0.107     🚩-50.0%   0.102     🚩-52.3%   0.106     🚩-50.5%   🚩 -50.5%
+                Relevance       0.828       0.771     🚩-6.9%    0.734     🚩-11.4%   0.758     🚩-8.5%    🚩 -8.5%
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-deepseek        Accuracy        0.950       0.900     🚩-5.3%    0.950     +0.0%     0.500     🚩-47.4%   🚩 -47.4%
-                BLEU            0.043       0.046     ✅+7.0%    0.054     ✅+25.6%   0.068     ✅+58.1%   ✅ +58.1%
-                Completeness    1.000       0.800     🚩-20.0%   0.800     🚩-20.0%   0.500     🚩-50.0%   🚩 -50.0%
-                Groundedness    1.000       0.800     🚩-20.0%   1.000     +0.0%     0.500     🚩-50.0%   🚩 -50.0%
-                Overall         0.725       0.643     🚩-11.3%   0.704     🚩-2.9%    0.469     🚩-35.3%   🚩 -35.3%
-                ROUGE           0.064       0.075     ✅+17.2%   0.117     ✅+82.8%   0.155     ✅+142.2%  ✅ +142.2%
-                Relevance       0.632       0.627     🚩-0.8%    0.647     ✅+2.4%    0.733     ✅+16.0%   ✅ +16.0%
+deepseek        Accuracy        0.800       0.950     ✅+18.7%   0.850     ✅+6.2%    0.950     ✅+18.7%   ✅ +18.7%
+                BLEU            0.293       0.313     ✅+6.8%    0.293     +0.0%     0.129     🚩-56.0%   🚩 -56.0%
+                Completeness    0.600       0.600     +0.0%     0.500     🚩-16.7%   0.800     ✅+33.3%   ✅ +33.3%
+                Groundedness    0.200       0.200     +0.0%     0.200     +0.0%     0.200     +0.0%     +0.0%
+                Overall         0.524       0.566     ✅+8.0%    0.523     🚩-0.2%    0.575     ✅+9.7%    ✅ +9.7%
+                ROUGE           0.080       0.089     ✅+11.2%   0.085     ✅+6.3%    0.084     ✅+5.0%    ✅ +5.0%
+                Relevance       0.785       0.792     ✅+0.9%    0.791     ✅+0.8%    0.780     🚩-0.6%    🚩 -0.6%
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-llama           Accuracy        0.950       0.950     +0.0%     0.800     🚩-15.8%   0.500     🚩-47.4%   🚩 -47.4%
-                BLEU            0.124       0.101     🚩-18.5%   0.108     🚩-12.9%   0.100     🚩-19.4%   🚩 -19.4%
-                Completeness    0.900       0.900     +0.0%     0.800     🚩-11.1%   0.500     🚩-44.4%   🚩 -44.4%
-                Groundedness    0.800       0.900     ✅+12.5%   0.800     +0.0%     0.500     🚩-37.5%   🚩 -37.5%
-                Overall         0.734       0.773     ✅+5.3%    0.698     🚩-4.9%    0.516     🚩-29.7%   🚩 -29.7%
-                ROUGE           0.178       0.391     ✅+119.7%  0.270     ✅+51.7%   0.295     ✅+65.7%   ✅ +65.7%
-                Overall         0.714       0.748     ✅+4.8%    0.508     🚩-28.9%   0.526     🚩-26.3%   🚩 -26.3%
-                ROUGE           0.172       0.317     ✅+84.3%   0.179     ✅+4.1%    0.339     ✅+97.1%   ✅ +97.1%
-                Relevance       0.836       0.852     ✅+1.9%    0.899     ✅+7.5%    0.907     ✅+8.5%    ✅ +8.5%
+llama           Accuracy        0.950       0.900     🚩-5.3%    0.500     🚩-47.4%   0.950     +0.0%     +0.0%
+                BLEU            0.203       0.735     ✅+262.1%  1.000     ✅+392.6%  1.000     ✅+392.6%  ✅ +392.6%
+                Completeness    0.800       1.000     ✅+25.0%   0.500     🚩-37.5%   1.000     ✅+25.0%   ✅ +25.0%
+                Groundedness    0.600       1.000     ✅+66.7%   0.500     🚩-16.7%   1.000     ✅+66.7%   ✅ +66.7%
+                Overall         0.685       0.911     ✅+33.0%   0.683     🚩-0.3%    0.973     ✅+42.0%   ✅ +42.0%
+                ROUGE           0.232       0.682     ✅+194.0%  0.846     ✅+264.7%  0.860     ✅+270.7%  ✅ +270.7%
+                Relevance       0.819       0.974     ✅+18.9%   0.993     ✅+21.2%   0.998     ✅+21.9%   ✅ +21.9%
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+mixtral         Accuracy        0.950       0.950     +0.0%     0.500     🚩-47.4%   0.950     +0.0%     +0.0%
+                BLEU            0.134       0.807     ✅+502.2%  0.807     ✅+502.2%  0.515     ✅+284.3%  ✅ +284.3%
+                Completeness    0.800       0.900     ✅+12.5%   0.500     🚩-37.5%   0.900     ✅+12.5%   ✅ +12.5%
+                Groundedness    0.800       1.000     ✅+25.0%   0.500     🚩-37.5%   0.800     +0.0%     +0.0%
+                Overall         0.738       0.934     ✅+26.6%   0.661     🚩-10.4%   0.815     ✅+10.4%   ✅ +10.4%
+                ROUGE           0.250       0.825     ✅+230.0%  0.825     ✅+230.0%  0.443     ✅+77.2%   ✅ +77.2%
+                Relevance       0.909       0.991     ✅+9.0%    0.991     ✅+9.0%    0.932     ✅+2.5%    ✅ +2.5%
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-🏆 BEST ITERATION: Iteration 1 with average gain of 5.2%
-    Success rate: 46.4% of metrics improved
+🏆 BEST ITERATION: Iteration 1 with average gain of 59.1%
+    Success rate: 75.0% of metrics improved
     Recommended prompt set: prompts/improved_prompts_*_iteration_1.json
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 Press Enter to continue...
-
