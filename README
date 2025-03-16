@@ -1,4 +1,4 @@
-# RAGA_EVAL: LLM Response Evaluation Tool (WORK IN PROGRESS)
+# RAGA_EVAL: LLM Response Evaluation Tool (IN PROGRESS)
 
 ## Overview
 RAGA_EVAL is a tool designed to evaluate responses from Large Language Models (LLMs) based on **RAG (Retrieval-Augmented Generation) assessment**. It generates **ground truth responses using Gemini** and compares them with responses from **Groq-based models** such as **Mixtral, Llama, Qwen, and DeepSeek**. The evaluation is conducted using **RAGAS scores**, and **recommendations are provided by Gemini** to improve these scores, including an updated **system prompt**.
