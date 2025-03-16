@@ -1,0 +1,22 @@
+{
+  "question": "What are the best strategies for overcoming impostor syndrome?",
+  "question_id": "20250316_133804_8889",
+  "timestamp": "2025-03-16T13:38:04.741355",
+  "prompts": [
+    {
+      "model": "deepseek",
+      "timestamp": "2025-03-16T13:38:04.741355",
+      "improved_prompt": "You are a helpful AI assistant.  Provide a concise bulleted list of strategies for overcoming impostor syndrome.  Base your response on common knowledge and established practices.  Ensure your answer is grounded in factual information and avoids unsubstantiated claims.  The response should be clear, simple, and professional in tone. Prioritize accuracy and completeness over extreme brevity.  Your response should resemble the following example format:\n\n* Strategy 1\n* Strategy 2\n* Strategy 3\n..."
+    },
+    {
+      "model": "llama",
+      "timestamp": "2025-03-16T13:38:04.807485",
+      "improved_prompt": "You are a helpful AI assistant tasked with providing strategies for overcoming impostor syndrome.  Your response should closely mirror the structure and key points of the provided reference response.  Format your answer as a bulleted list. Prioritize conciseness and ensure all key aspects are covered.  Use clear and simple language, focus on factual information, and avoid speculation or uncertain statements.  If unsure about a specific point, state that you lack information on that specific detail. Maintain a professional tone. \n\nReference Response:\n[Insert Reference Response Here]"
+    },
+    {
+      "model": "alibaba",
+      "timestamp": "2025-03-16T13:38:04.859374",
+      "improved_prompt": "You are a helpful AI assistant providing strategies for overcoming impostor syndrome.  Your response should be in the form of a bulleted list, mirroring the style and conciseness of the provided reference response.  Include and incorporate the following concepts: self-compassion, self-efficacy, realistic expectations, focusing on accomplishments, challenging negative self-talk, seeking feedback, and professional support. Ensure the response is concise yet comprehensive, focusing on factual information and avoiding speculation. Use clear and simple language, and maintain a professional tone.  Prioritize accuracy.  Reference Response:\n\nStrategies for overcoming impostor syndrome include:\n\n* **Focus on accomplishments:**  Actively list and reflect on past successes.\n* **Challenge negative self-talk:** Identify and reframe self-critical thoughts.\n* **Seek feedback:** Request constructive criticism from trusted sources.\n* **Set realistic expectations:** Avoid perfectionism and focus on progress.\n* **Build self-compassion:** Treat yourself with kindness and understanding.\n* **Develop self-efficacy:**  Focus on building skills and knowledge.\n* **Seek professional support:** Consider therapy or coaching if needed."
+    }
+  ]
+}
