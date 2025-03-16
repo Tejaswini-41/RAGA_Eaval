@@ -483,9 +483,10 @@ class InteractiveEvaluator:
 
         # Header
         print("\n" + "─" * 120)
-        header = f"{'Model':<15} {'Metric':<15} {'Original':<12}"
+        # Calculate and display both per-iteration and total gains
+        header = f"{'Model':<12} {'Metric':<12} {'Original':<10}"
         for i in range(1, 4):
-            header += f"{'Iter '+str(i):<12}"
+            header += f"{'Iter '+str(i):<10} {'Gain '+str(i)+'%':<10}"
         header += f"{'Total Gain':<12}"
         print(header)
         print("─" * 120)
@@ -517,11 +518,25 @@ class InteractiveEvaluator:
                 model_col = f"{model_name:<15}" if first_line else " " * 15
                 line = f"{model_col} {metric:<15} {orig_val:<12.3f}"
             
-                # Add iteration values
-                for val in iter_vals:
-                    line += f"{val:<12.3f}"
-            
-                # Add total change with indicator
+                # Add iteration values and their respective gains
+                for i, val in enumerate(iter_vals):
+                    # Add the iteration value
+                    line += f"{val:<10.3f}"
+                    
+                    # Calculate gain for this iteration compared to original
+                    iter_gain_pct = ((val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+                    
+                    # Format gain with indicator
+                    iter_gain_str = f"{iter_gain_pct:+.1f}%"
+                    if iter_gain_pct > 0:
+                        iter_gain_str = f"✅{iter_gain_str}"
+                    elif iter_gain_pct < 0:
+                        iter_gain_str = f"🚩{iter_gain_str}"
+                    
+                    # Add the gain percentage
+                    line += f"{iter_gain_str:<10}"
+
+                # Add total change with indicator (keep existing code)
                 change_str = f"{total_change_pct:+.1f}%"
                 if total_change_pct > 0:
                     change_str = f"✅ {change_str}"

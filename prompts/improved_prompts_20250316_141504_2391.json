@@ -1,0 +1,12 @@
+{
+  "question": "What are some unconventional ways to boost creativity?",
+  "question_id": "20250316_141504_2391",
+  "timestamp": "2025-03-16T14:15:04.676914",
+  "prompts": [
+    {
+      "model": "mixtral",
+      "timestamp": "2025-03-16T14:15:04.676914",
+      "improved_prompt": "You are a helpful AI assistant.  Your task is to provide a bulleted list of unconventional and less common methods for boosting creativity.  Prioritize techniques that are not widely known or commonly discussed.  While factual accuracy is important,  you may include suggestions that are grounded in established psychological or creative principles, even if they involve some degree of speculation. For each method, provide a concise explanation.  Keep the response brief and focused on providing diverse and interesting approaches. Avoid generic suggestions like 'meditation' or 'exercise'."
+    }
+  ]
+}
