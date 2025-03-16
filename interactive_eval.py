@@ -484,7 +484,7 @@ class InteractiveEvaluator:
         # Header
         print("\n" + "─" * 120)
         # Calculate and display both per-iteration and total gains
-        header = f"{'Model':<12} {'Metric':<12} {'Original':<10}"
+        header = f"{'Model':<15} {'Metric':<15} {'Original':<12}"  # Changed from 12 to 15 for Model/Metric
         for i in range(1, 4):
             header += f"{'Iter '+str(i):<10} {'Gain '+str(i)+'%':<10}"
         header += f"{'Total Gain':<12}"
@@ -550,6 +550,50 @@ class InteractiveEvaluator:
             print("─" * 120)
 
         print("\n" + "═" * 120)
+        
+        # NEW CODE: Add conclusion about best iteration
+        
+        # Calculate average performance gains for each iteration
+        iteration_avg_gains = {}
+        iteration_success_rate = {}
+        
+        # Track metrics for all iterations
+        for i in range(1, 4):
+            total_gain = 0
+            total_metrics = 0
+            improvements = 0
+            
+            # Calculate across all models and metrics
+            for model_name in all_models:
+                for metric in all_metrics:
+                    orig_val = iteration_metrics["original"].get(model_name, {}).get(metric, 0.0)
+                    if orig_val == 0:
+                        continue
+                        
+                    iter_val = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get(metric, 0.0)
+                    gain_pct = ((iter_val - orig_val) / orig_val * 100)
+                    
+                    total_gain += gain_pct
+                    total_metrics += 1
+                    
+                    if gain_pct > 0:
+                        improvements += 1
+            
+            if total_metrics > 0:
+                iteration_avg_gains[i] = total_gain / total_metrics
+                iteration_success_rate[i] = (improvements / total_metrics) * 100
+        
+        # Find best iteration
+        best_iteration = max(iteration_avg_gains, key=iteration_avg_gains.get, default=None)
+        
+        if best_iteration:
+            print(f"🏆 BEST ITERATION: Iteration {best_iteration} with average gain of {iteration_avg_gains[best_iteration]:.1f}%")
+            print(f"    Success rate: {iteration_success_rate[best_iteration]:.1f}% of metrics improved")
+            print(f"    Recommended prompt set: prompts/improved_prompts_*_iteration_{best_iteration}.json")
+        else:
+            print("⚠️ No clear best iteration identified. All iterations showed similar or negative performance.")
+        
+        print("═" * 120)
 
 
 

@@ -1,4 +1,3 @@
-
 🤖 Welcome to the Interactive Model Evaluator
 
 ==================================================
@@ -23,7 +22,7 @@ Choose a question:
 7. What does it mean to live a meaningful life?
 8. Should artificial intelligence have rights?
 9. Is free will an illusion?
-10. What if humans could communicate with animalsâ€”how would society adapt?
+10. What if humans could communicate with animals and how would society adapt?
 
 Enter your choice (number): 1
 
@@ -42,7 +41,7 @@ Generating prompt improvements for alibaba...
 Evaluating mixtral...
 Generating prompt improvements for mixtral...
 Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
-Responses saved to responses/question_8889.json
+Responses saved to responses/question_5117.json
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════
 📊  EVALUATION RESULTS: "What are the best strategies for overcoming impostor syndrome?"
@@ -51,27 +50,27 @@ Responses saved to responses/question_8889.json
 🏆  RANKINGS (Reference: GEMINI)
 ──────────────────────────────────────────────────
 
-  1. LLAMA - Overall Score: 0.715
-     Relevance: 0.902         BLEU: 0.000
-     Accuracy: 0.950          ROUGE: 0.170
-     Groundedness: 0.800
-     Completeness: 0.800
-
-  2. ALIBABA - Overall Score: 0.7
-     Relevance: 0.855         BLEU: 0.000
-     Accuracy: 0.900          ROUGE: 0.152
+  1. ALIBABA - Overall Score: 0.723
+     Relevance: 0.881         BLEU: 0.000
+     Accuracy: 0.950          ROUGE: 0.199
      Groundedness: 0.800
      Completeness: 0.860
 
-  3. MIXTRAL - Overall Score: 0.684
-     Relevance: 0.854         BLEU: 0.000
-     Accuracy: 0.950          ROUGE: 0.161
+  2. LLAMA - Overall Score: 0.691
+     Relevance: 0.887         BLEU: 0.000
+     Accuracy: 0.950          ROUGE: 0.164
      Groundedness: 0.700
      Completeness: 0.800
 
-  4. DEEPSEEK - Overall Score: 0.66
-     Relevance: 0.804         BLEU: 0.001
-     Accuracy: 0.900          ROUGE: 0.090
+  3. MIXTRAL - Overall Score: 0.679
+     Relevance: 0.831         BLEU: 0.000
+     Accuracy: 0.950          ROUGE: 0.157
+     Groundedness: 0.700
+     Completeness: 0.800
+
+  4. DEEPSEEK - Overall Score: 0.656
+     Relevance: 0.777         BLEU: 0.001
+     Accuracy: 0.900          ROUGE: 0.108
      Groundedness: 0.800
      Completeness: 0.700
 
@@ -83,12 +82,13 @@ Responses saved to responses/question_8889.json
 ──────────────────────────────────────────────────
 
   🔍 KEY ISSUES SUMMARY:
-  • Lack of specific output format instruction
+  • Lack of response structure guidance
   • Overemphasis on avoiding speculation
-  • Instruction to keep responses brief
+  • Excessive self-doubt in the model's response
+  • Lack of specific instructions on content
 
-  📌 TARGET METRICS: Accuracy, BLEU, Completeness, Groundednesss, ROUGE, Relevance
-  📈 POTENTIAL GAINS: Accuracy: +2%, BLEU: +10%, Completeness: +10%, Groundednesss: +5%, ROUGE: +15%, Relevance: +5%
+  📌 TARGET METRICS: Accuracy, Completeness, Groundedness, Relevance
+  📈 POTENTIAL GAINS: Accuracy: +7%, Completeness: +15%, Groundedness: +10%, Relevance: +5%
 
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
   🔄 PROMPT COMPARISON
@@ -104,30 +104,34 @@ Responses saved to responses/question_8889.json
 
   ✨ IMPROVED PROMPT:
   ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant.  Provide a concise bulleted list of strategies for       │
-  │ overcoming impostor syndrome.  Base your response on common knowledge and established    │
-  │ practices.  Ensure your answer is grounded in factual information and avoids             │
-  │ unsubstantiated claims.  The response should be clear, simple, and professional in tone. │
-  │ Prioritize accuracy and completeness over extreme brevity.  Your response should         │
-  │ resemble the following example format:                                                   │
+  │ You are a helpful and knowledgeable AI assistant providing expert advice on overcoming   │
+  │ impostor syndrome.  Respond in a concise and professional tone using a bulleted list     │
+  │ format. Your response should be grounded in established psychological principles         │
+  │ regarding coping mechanisms.  Ensure the response addresses strategies including but not │
+  │ limited to: acknowledging and challenging negative thoughts, focusing on                 │
+  │ accomplishments, setting realistic goals, building self-compassion, and seeking support. │
+  │ Do not hesitate to offer well-supported suggestions based on these common strategies.    │
+  │ Prioritize accuracy and completeness. Provide a response similar in structure and        │
+  │ content to the following example:                                                        │
   │                                                                                          │
-  │ * Strategy 1 * Strategy 2 * Strategy 3 ...                                               │
+  │ Example: * Strategy 1: Description and explanation * Strategy 2: Description and         │
+  │ explanation * Strategy 3: Description and explanation ...                                │
   └──────────────────────────────────────────────────────────────────────────────────────────┘
 
-Improved prompt saved to: prompts/improved_prompts_20250316_133804_8889.json
+Improved prompt saved to: prompts/improved_prompts_20250316_153019_4883.json
 
-  🚀 Overall, I estimate a 15-20% improvement in the overall RAGAS score.  The most significant gains will likely be seen in Completeness, ROUGE, and BLEU scores due to the improved formatting and more direct instruction.   
+  🚀 Estimated overall improvement: +30-40%
 
 📈  LLAMA
 ──────────────────────────────────────────────────
 
   🔍 KEY ISSUES SUMMARY:
-  • Lack of emphasis on matching reference response structure and key points.
-  • Overemphasis on brevity potentially sacrificing completeness.
-  • Lack of specific guidance on response format.
+  • Lack of instruction to match reference response structure and phrasing.
+  • Overly broad instructions on conciseness.
+  • Absence of instructions to prioritize specific keywords from the reference response.
 
-  📌 TARGET METRICS: Accuracy, BLEU, Completeness, ROUGE, Relevance
-  📈 POTENTIAL GAINS: Accuracy: +2%, BLEU: +15%, Completeness: +10%, ROUGE: +10%, Relevance: +5%
+  📌 TARGET METRICS: BLEU, Completeness, Groundedness, ROUGE, Relevance
+  📈 POTENTIAL GAINS: BLEU: +10%, Completeness: +10%, Groundedness: +15%, ROUGE: +15%, Relevance: +5%
 
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
   🔄 PROMPT COMPARISON
@@ -143,31 +147,35 @@ Improved prompt saved to: prompts/improved_prompts_20250316_133804_8889.json
 
   ✨ IMPROVED PROMPT:
   ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant tasked with providing strategies for overcoming impostor  │
-  │ syndrome.  Your response should closely mirror the structure and key points of the       │
-  │ provided reference response.  Format your answer as a bulleted list. Prioritize          │
-  │ conciseness and ensure all key aspects are covered.  Use clear and simple language,      │
-  │ focus on factual information, and avoid speculation or uncertain statements.  If unsure  │
-  │ about a specific point, state that you lack information on that specific detail.         │
-  │ Maintain a professional tone.                                                            │
+  │ You are a helpful AI assistant.  Your task is to provide concise and accurate strategies │
+  │ for overcoming impostor syndrome.  You will be given a reference response as an example  │
+  │ of the desired format and style. Please follow these guidelines:                         │
+  │                                                                                          │
+  │ - Structure your response similarly to the provided reference response, aiming for       │
+  │ point-by-point alignment. - Use clear and simple language, prioritizing concise          │
+  │ phrasing. - Focus on factual information and avoid speculation or uncertain statements.  │
+  │ - Incorporate keywords and phrases from the reference response where appropriate to      │
+  │ enhance semantic similarity. - The target response length should be approximately the    │
+  │ same as the provided reference response. - If unsure about a point, acknowledge          │
+  │ limitations. - Maintain a professional tone.                                             │
   │                                                                                          │
   │ Reference Response: [Insert Reference Response Here]                                     │
   └──────────────────────────────────────────────────────────────────────────────────────────┘
 
-Improved prompt saved to: prompts/improved_prompts_20250316_133804_8889.json
+Improved prompt saved to: prompts/improved_prompts_20250316_153019_4883.json
 
-  🚀 Estimated overall improvement: +10%
+  🚀 Estimated overall improvement: +15%
 
 📈  ALIBABA
 ──────────────────────────────────────────────────
 
   🔍 KEY ISSUES SUMMARY:
-  • Lack of specific formatting instructions
-  • Absence of keyword guidance
-  • Overemphasis on brevity, potentially sacrificing completeness
+  • Lack of specific output format instruction
+  • Generic instructions on conciseness
+  • Absence of specific keywords and concepts
 
-  📌 TARGET METRICS: BLEU, Completeness, ROUGE, Relevance
-  📈 POTENTIAL GAINS: BLEU: +5%, Completeness: +5%, ROUGE: +10%, Relevance: +3%
+  📌 TARGET METRICS: Accuracy, BLEU, Completeness, ROUGE, Relevance
+  📈 POTENTIAL GAINS: Accuracy: +2%, BLEU: +10%, Completeness: +5%, ROUGE: +15%, Relevance: +4%
 
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
   🔄 PROMPT COMPARISON
@@ -183,29 +191,32 @@ Improved prompt saved to: prompts/improved_prompts_20250316_133804_8889.json
 
   ✨ IMPROVED PROMPT:
   ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-  │ You are a helpful AI assistant providing strategies for overcoming impostor syndrome.    │
-  │ Your response should be in the form of a bulleted list, mirroring the style and          │
-  │ conciseness of the provided reference response.  Include and incorporate the following   │
-  │ concepts: self-compassion, self-efficacy, realistic expectations, focusing on            │
-  │ accomplishments, challenging negative self-talk, seeking feedback, and professional      │
-  │ support. Ensure the response is concise yet comprehensive, focusing on factual           │
-  │ information and avoiding speculation. Use clear and simple language, and maintain a      │
-  │ professional tone.  Prioritize accuracy.  Reference Response:                            │
+  │ You are a helpful AI assistant.  Your task is to provide a concise list of strategies    │
+  │ for overcoming impostor syndrome.  Respond using bullet points, mirroring the following  │
+  │ example structure:                                                                       │
   │                                                                                          │
-  │ Strategies for overcoming impostor syndrome include:                                     │
+  │ * Strategy 1: concise description * Strategy 2: concise description                      │
   │                                                                                          │
-  │ * **Focus on accomplishments:**  Actively list and reflect on past successes. *          │
-  │ **Challenge negative self-talk:** Identify and reframe self-critical thoughts. * **Seek  │
-  │ feedback:** Request constructive criticism from trusted sources. * **Set realistic       │
-  │ expectations:** Avoid perfectionism and focus on progress. * **Build self-compassion:**  │
-  │ Treat yourself with kindness and understanding. * **Develop self-efficacy:**  Focus on   │
-  │ building skills and knowledge. * **Seek professional support:** Consider therapy or      │
+  │ Focus on providing accurate and relevant information.  Your response should be factually │
+  │ grounded and complete, aiming to cover key strategies such as acknowledging and          │
+  │ challenging negative thoughts, focusing on accomplishments, setting realistic goals,     │
+  │ seeking feedback, practicing self-compassion, prioritizing self-care, and seeking        │
+  │ professional support. Use clear and simple language, avoiding speculation.  The response │
+  │ should be comprehensive but avoid unnecessary detail.  Prioritize strategies similar to  │
+  │ those presented in the following example:                                                │
+  │                                                                                          │
+  │ * Acknowledge and challenge negative thoughts: Identify and actively refute self-        │
+  │ critical beliefs. * Focus on accomplishments: Keep a record of successes and positive    │
+  │ feedback. * Set realistic goals: Avoid perfectionism and celebrate progress. * Seek      │
+  │ feedback: Request constructive criticism from trusted sources. * Build self-compassion:  │
+  │ Treat yourself with kindness and understanding. * Practice self-care: Prioritize         │
+  │ physical and mental well-being. * Seek professional support: Consider therapy or         │
   │ coaching if needed.                                                                      │
   └──────────────────────────────────────────────────────────────────────────────────────────┘
 
-Improved prompt saved to: prompts/improved_prompts_20250316_133804_8889.json
+Improved prompt saved to: prompts/improved_prompts_20250316_153019_4883.json
 
-  🚀 Estimated overall improvement: +15-20%
+  🚀 I estimate an overall RAGAS score improvement of approximately 15-20%, resulting in a score of 0.85-0.87.    
 
 📈  MIXTRAL
 ──────────────────────────────────────────────────
@@ -243,13 +254,25 @@ ITERATION 1
 
 ⚡ Generating improved response for ALIBABA
 Evaluating deepseek...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for deepseek...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating llama...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for llama...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating alibaba...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for alibaba...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 
-Iteration 1 data saved to improved_responses/comparison_20250316_133952_8889_iteration_1.json
+Iteration 1 data saved to improved_responses/comparison_20250316_153038_4883_iteration_1.json
 
 ══════════════════════════════════════════════════
 ITERATION 2
@@ -263,18 +286,11 @@ ITERATION 2
 Evaluating deepseek...
 Generating prompt improvements for deepseek...
 Evaluating llama...
-Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for llama...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating alibaba...
-Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
-Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for alibaba...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 
-Iteration 2 data saved to improved_responses/comparison_20250316_134011_8889_iteration_2.json
+Iteration 2 data saved to improved_responses/comparison_20250316_153108_4883_iteration_2.json
 
 ══════════════════════════════════════════════════
 ITERATION 3
@@ -287,51 +303,89 @@ ITERATION 3
 ⚡ Generating improved response for ALIBABA
 Evaluating deepseek...
 Generating prompt improvements for deepseek...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating llama...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for llama...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 Evaluating alibaba...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
 Generating prompt improvements for alibaba...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
 
-Iteration 3 data saved to improved_responses/comparison_20250316_134041_8889_iteration_3.json
+Iteration 3 data saved to improved_responses/comparison_20250316_153120_4883_iteration_3.json
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 📊 MULTI-ITERATION METRICS COMPARISON TABLE
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Model           Metric          Original    Iter 1      Iter 2      Iter 3      Total Gain
+Model        Metric       Original  Iter 1     Gain 1%   Iter 2     Gain 2%   Iter 3     Gain 3%   Total Gain     
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-alibaba         Accuracy        0.900       1.000       0.500       1.000       ✅ +11.1%
-                BLEU            0.000       0.416       0.563       0.526       +0.0%
-                Completeness    0.860       1.000       0.500       1.000       ✅ +16.3%
-                Groundedness    0.800       1.000       0.500       1.000       ✅ +25.0%
-                Overall         0.700       0.831       0.617       0.913       ✅ +30.4%    
-                ROUGE           0.152       0.407       0.627       0.641       ✅ +321.7%
-                Relevance       0.855       0.745       0.989       0.981       ✅ +14.7%
+alibaba         Accuracy        0.950       0.500     🚩-47.4%   1.000     ✅+5.3%    0.500     🚩-47.4%   🚩 -47.4%
+                BLEU            0.000       0.605     +0.0%     0.605     +0.0%     0.394     +0.0%     +0.0%     
+
+                Completeness    0.700       0.500     🚩-28.6%   0.860     ✅+22.9%   0.500     🚩-28.6%   🚩 -28.6%
+                Groundedness    0.800       0.500     🚩-37.5%   0.860     ✅+7.5%    0.500     🚩-37.5%   🚩 -37.5%
+                Overall         0.700       0.622     🚩-11.1%   0.873     ✅+24.7%   0.585     🚩-16.4%   🚩 -16.4%
+                ROUGE           0.176       0.636     ✅+261.4%  0.636     ✅+261.4%  0.489     ✅+177.8%  ✅ +177.8%
+                Relevance       0.897       0.991     ✅+10.5%   0.991     ✅+10.5%   0.985     ✅+9.8%    ✅ +9.8%
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-deepseek        Accuracy        0.900       0.950       0.950       0.950       ✅ +5.6%
-                BLEU            0.001       0.001       0.000       0.001       +0.0%
-                Completeness    0.700       0.800       0.900       0.800       ✅ +14.3%
-                Groundedness    0.800       0.700       0.700       0.800       +0.0%
-                Overall         0.660       0.672       0.680       0.691       ✅ +4.7%
-                ROUGE           0.090       0.086       0.123       0.105       ✅ +16.7%
-                Relevance       0.804       0.829       0.777       0.812       ✅ +1.0%
+deepseek        Accuracy        0.950       0.500     🚩-47.4%   0.950     +0.0%     0.950     +0.0%     +0.0%    
+
+                BLEU            0.001       0.001     +0.0%     0.001     +0.0%     0.000     🚩-100.0%  🚩 -100.0%
+                Completeness    0.900       0.500     🚩-44.4%   0.800     🚩-11.1%   0.900     +0.0%     +0.0%   
+
+                Groundedness    0.800       0.500     🚩-37.5%   0.800     +0.0%     0.800     +0.0%     +0.0%    
+
+                Overall         0.707       0.474     🚩-33.0%   0.690     🚩-2.4%    0.701     🚩-0.8%    🚩 -0.8%
+                ROUGE           0.099       0.104     ✅+5.1%    0.098     🚩-1.0%    0.098     🚩-1.0%    🚩 -1.0%
+                Relevance       0.823       0.819     🚩-0.5%    0.814     🚩-1.1%    0.794     🚩-3.5%    🚩 -3.5%
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-llama           Accuracy        0.950       0.950       0.500       0.950       +0.0%
-                BLEU            0.000       0.010       0.012       0.010       +0.0%
-                Completeness    0.800       0.700       0.500       0.800       +0.0%
-                Groundedness    0.800       0.600       0.700       0.600       🚩 -25.0%
-                Overall         0.715       0.666       0.538       0.673       🚩 -5.9%
-                ROUGE           0.170       0.147       0.144       0.143       🚩 -15.9%    
-                Relevance       0.902       0.938       0.914       0.901       🚩 -0.1%
+llama           Accuracy        0.950       0.500     🚩-47.4%   0.950     +0.0%     0.500     🚩-47.4%   🚩 -47.4%
+                BLEU            0.000       0.140     +0.0%     0.039     +0.0%     0.117     +0.0%     +0.0%     
+
+                Completeness    0.800       0.500     🚩-37.5%   0.600     🚩-25.0%   0.500     🚩-37.5%   🚩 -37.5%
+                Groundedness    0.700       0.500     🚩-28.6%   0.500     🚩-28.6%   0.500     🚩-28.6%   🚩 -28.6%
+                Overall         0.696       0.507     🚩-27.2%   0.630     🚩-9.5%    0.507     🚩-27.2%   🚩 -27.2%
+                ROUGE           0.154       0.143     🚩-7.1%    0.157     ✅+1.9%    0.145     🚩-5.8%    🚩 -5.8%
+                Relevance       0.916       0.892     🚩-2.6%    0.916     +0.0%     0.902     🚩-1.5%    🚩 -1.5%
+
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-mixtral         Accuracy        0.950       0.000       0.000       0.000       🚩 -100.0%
-                BLEU            0.000       0.000       0.000       0.000       +0.0%       
-                Completeness    0.800       0.000       0.000       0.000       🚩 -100.0%
-                Groundedness    0.700       0.000       0.000       0.000       🚩 -100.0%
-                Overall         0.684       0.000       0.000       0.000       🚩 -100.0%
-                ROUGE           0.161       0.000       0.000       0.000       🚩 -100.0%
-                Relevance       0.854       0.000       0.000       0.000       🚩 -100.0%
+mixtral         Accuracy        0.950       0.000     🚩-100.0%  0.000     🚩-100.0%  0.000     🚩-100.0%  🚩 -100.0%
+                BLEU            0.001       0.000     🚩-100.0%  0.000     🚩-100.0%  0.000     🚩-100.0%  🚩 -100.0%
+                Completeness    0.500       0.000     🚩-100.0%  0.000     🚩-100.0%  0.000     🚩-100.0%  🚩 -100.0%
+                Groundedness    0.600       0.000     🚩-100.0%  0.000     🚩-100.0%  0.000     🚩-100.0%  🚩 -100.0%
+                Overall         0.609       0.000     🚩-100.0%  0.000     🚩-100.0%  0.000     🚩-100.0%  🚩 -100.0%
+                ROUGE           0.113       0.000     🚩-100.0%  0.000     🚩-100.0%  0.000     🚩-100.0%  🚩 -100.0%
+                Relevance       0.827       0.000     🚩-100.0%  0.000     🚩-100.0%  0.000     🚩-100.0%  🚩 -100.0%
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+🏆 BEST ITERATION: Iteration 2 with average gain of -17.1%
+    Success rate: 26.9% of metrics improved
+    Recommended prompt set: prompts/improved_prompts_*_iteration_2.json
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Press Enter to continue...
+
+==================================================
+MAIN MENU
+==================================================
+
+What would you like to do?
+1. Enter your own question
+2. Choose from sample questions
+3. Set reference model
+4. Evaluate previous question with improved prompts: 'What are the best strategies for overcoming impostor syndrome?'
+5. Exit
+
+Enter your choice (number): 5
+
+Thank you for using the Interactive Model Evaluator. Goodbye!
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1742119346.075368   20104 init.cc:232 grpc_wait_for_shutdown_with_timeout() timed out.
