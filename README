@@ -1,82 +1,111 @@
-# RAGA_EVAL: LLM Response Evaluation Tool (IN PROGRESS)
+🚀 RAGA_EVAL: LLM Response Evaluation Tool
+<img alt="Status" src="https://img.shields.io/badge/status-beta-green">
+<img alt="Python" src="https://img.shields.io/badge/python-3.8+-blue">
+<img alt="License" src="https://img.shields.io/badge/license-MIT-orange">
+📋 Overview
+RAGA_EVAL is an advanced tool designed to evaluate and optimize responses from Large Language Models (LLMs) through iterative prompt improvement. It generates ground truth responses using Gemini and compares them with responses from models such as Mixtral, Llama, Qwen, and DeepSeek. The evaluation uses multiple metrics including Relevance, Accuracy, Groundedness, Completeness, BLEU, and ROUGE.
 
-## Overview
-RAGA_EVAL is a tool designed to evaluate responses from Large Language Models (LLMs) based on **RAG (Retrieval-Augmented Generation) assessment**. It generates **ground truth responses using Gemini** and compares them with responses from **Groq-based models** such as **Mixtral, Llama, Qwen, and DeepSeek**. The evaluation is conducted using **RAGAS scores**, and **recommendations are provided by Gemini** to improve these scores, including an updated **system prompt**.
-
-## Features
-- **Ground Truth Generation**: Uses **Gemini** to generate reference responses.
-- **LLM Response Evaluation**: Generates responses from **Mixtral, Llama, Qwen, and DeepSeek**.
-- **RAGAS Scoring**: Evaluates model responses based on **retrieval accuracy, faithfulness, and relevance**.
-- **Recommendation System**: Uses **Gemini** to provide suggestions on how to improve **RAGAS scores**.
-- **Updated System Prompt**: Generates an improved **system prompt** for better response quality.
-
-## Folder Structure
-
+✨ Key Innovations
+Iterative Prompt Improvement: Automatically optimizes prompts across 3 iterations
+Comprehensive Metrics: Multiple evaluation dimensions for thorough analysis
+API Rate Limit Handling: Intelligent backoff strategies to prevent quota exhaustion
+Performance Visualization: Clear gain/loss tracking between iterations
+🔍 Features
+🧠 Ground Truth Generation: Uses Gemini to generate reference responses
+🤖 Multi-Model Evaluation: Tests Mixtral, Llama, Qwen, and DeepSeek via Groq API
+📊 Comprehensive Metrics: Evaluates using Relevance, Accuracy, Groundedness, Completeness, BLEU, and ROUGE
+📈 Iteration Tracking: Shows performance changes across multiple prompt iterations
+💡 Smart Prompt Enhancement: Automatically identifies weak areas and improves prompts
+📁 Results Export: Saves detailed performance data in organized CSV reports
+📂 Folder Structure
 RAGA_EVAL/ 
 ├── .gitignore 
 ├── .env
 ├── README.md 
 ├── requirements.txt 
-├── interactive_eval.py 
-├── questions.json # Input questions for evaluation 
-├── evaluation/ │ 
-      ├── dynamic_recom.py # Dynamic recommendations based on RAGAS scores │ 
-      ├── evaluator.py # Evaluation logic using RAGAS │ 
-      ├── metrics.py # Metrics computation │       
-      ├── prompt_improver.py # Improves prompts based on evaluation feedback │       
-      ├── recommendation.py # Generates recommendations using Gemini 
-├── models/ │ 
-      ├── gemini_model.py # Gemini model for generating ground truth and recommendations │ 
-      ├── groq_models.py # Groq models (Mixtral, Llama, Qwen, DeepSeek) │       
-      ├── model_factory.py # Model initialization and selection │ 
-├── responses/ # Stores model-generated responses 
-├── utils/ 
-├── venv/ 
-├── Version1/
+├── interactive_eval.py       # Main evaluation interface
+├── questions.json            # Input questions for evaluation 
+├── evaluation/               # Evaluation logic
+│   ├── dynamic_recom.py      # Dynamic recommendations based on metrics
+│   ├── evaluator.py          # Core evaluation functionality
+│   ├── metrics.py            # Metrics computation
+│   ├── prompt_improver.py    # Improves prompts based on feedback
+│   └── recommendation.py     # Generates recommendations using Gemini
+├── models/                   # Model interfaces
+│   ├── gemini_model.py       # Gemini for ground truth and recommendations
+│   ├── groq_models.py        # Groq-based models
+│   └── model_factory.py      # Model initialization and selection
+├── responses/                # Stores generated responses
+├── improved_responses/       # Stores responses from improved prompts
+├── prompts/                  # Stores improved prompt versions
+└── results/                  # CSV exports of evaluation metrics
 
+🛠️ Technology Stack
+🐍 Programming: Python 3.8+
+🧠 LLMs Used:
+Ground Truth: Gemini
+Response Generation: Mixtral, Llama, Qwen, DeepSeek (via Groq API)
+📊 Evaluation Metrics:
+Relevance: Response pertinence to question
+Accuracy: Factual correctness
+Groundedness: Based on reference material
+Completeness: Coverage of required information
+BLEU/ROUGE: Text similarity metrics
+💾 Data Storage: JSON and CSV for structured output
+📥 Installation
+Clone the repository:
+git clone https://github.com/Tejaswini-41/RAGA_Eaval.git
+cd RAGA_Eaval
+Create a virtual environment:
 
+Install dependencies:
 
-## Technology Stack
-- **Programming Language**: Python
-- **LLMs Used**:
-  - **Ground Truth**: Gemini
-  - **Response Generation**: Mixtral, Llama, Qwen, DeepSeek (via Groq API)
-- **Evaluation Metrics**:
-  - **RAGAS**: Measures faithfulness, context relevance, and answer correctness.
-- **Data Storage**: JSON for structured output.
+Set up environment variables:
 
+Create a .env file and add your API keys:
+🚦 Usage
+Prepare questions: Update or create questions in questions.json
 
-## Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Tejaswini-41/RAGA_Eaval.git
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Set up environment variables:
-   - Create a `.env` file and add your API keys:
-     ```
-     GROQ_API_KEY=your_groq_api_key
-     GEMINI_API_KEY=your_gemini_api_key
-     ```
+Run the evaluation script:
 
-## Usage
-1. Prepare your input questions in `questions.json`.
-2. Run the evaluation script:
-   ```bash
-   python interactive_eval.py
-   ```
+Interactive menu options:
 
-## Future Enhancements
-- Integrate additional LLMs like Gemini.
-- Implement automated RAG-based evaluation scoring.
+Evaluate single question
+Evaluate with iterative improvement (3 iterations)
+View all available questions
+Quit
+Review results:
 
-## Contributors
-- Tejaswini Durge
-- Dipali Gangarde
+Terminal output shows metrics comparison
+CSV exports in results directory
+Improved prompts stored in prompts
+🔄 Current Development Status
+✅ Core evaluation framework complete
+✅ Multi-model comparison working
+✅ Iterative prompt improvement implemented
+✅ API rate limiting and backoff strategies added
+✅ CSV export functionality added
+✅ Performance summary with best iteration identification
+🔜 Integration with RAG-based agent (next phase)
+📊 Sample Results
+The system generates comprehensive metrics tables showing performance across iterations:
 
-## License
+Model           Metric          Original    Iter 1      Gain 1%    Iter 2      Gain 2%    Iter 3      Gain 3%    Total Gain
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+deepseek        Accuracy        0.900       0.950      ✅+5.6%     0.950      ✅+5.6%     0.950      ✅+5.6%     ✅ +5.6%
+                Completeness    0.800       0.850      ✅+6.3%     0.900      ✅+12.5%    0.850      ✅+6.3%     ✅ +6.3%
+                Groundedness    0.750       0.850      ✅+13.3%    0.850      ✅+13.3%    0.900      ✅+20.0%    ✅ +20.0%
+
+🔮 Future Enhancements
+🔍 Integration with RAG-based agent for code review
+📈 Enhanced visualization of metrics using charts
+🧪 Support for additional evaluation dimensions
+🔄 Parallel processing for faster evaluation
+🌐 Web interface for easier interaction
+👥 Contributors
+Tejaswini Durge
+Dipali Gangarde
+📄 License
 This project is licensed under the MIT License.
 
+Last updated: March 16, 2025                
