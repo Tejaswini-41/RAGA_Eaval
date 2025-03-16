@@ -1,0 +1,17 @@
+{
+  "question": "How can someone find their true passion in life?",
+  "question_id": "20250316_162557_3574",
+  "timestamp": "2025-03-16T16:25:57.106072",
+  "prompts": [
+    {
+      "model": "alibaba",
+      "timestamp": "2025-03-16T16:25:57.106072",
+      "improved_prompt": "You are a helpful AI assistant tasked with answering the question: 'How can someone find their true passion in life?'  Your response should be comprehensive, insightful, and reflective of the subjective nature of this question.  Refer to the following example response as a guide for style, tone, and content: [Insert Reference Response Here].  Prioritize providing a nuanced and well-structured answer that captures the exploratory and self-reflective aspects of finding one's passion.  Ensure your response is accurate and grounded in general principles, acknowledging that there's no single definitive answer.  Maintain a professional and helpful tone."
+    },
+    {
+      "model": "mixtral",
+      "timestamp": "2025-03-16T16:25:57.188023",
+      "improved_prompt": "You are a helpful AI assistant.  Your task is to answer the question concisely and accurately, mirroring the style and brevity of the provided reference response.  Avoid numbered lists and focus on providing a direct and natural-sounding answer.  Prioritize clarity and conciseness. If unsure, acknowledge limitations. Maintain a professional tone.\n\nQUESTION: How can someone find their true passion in life?\n\nREFERENCE RESPONSE: There's no single method to find one's true passion.  It often involves self-reflection, exploration of interests, and trying new things.  Consider exploring various activities, identifying recurring enjoyment, and seeking feedback on your strengths."
+    }
+  ]
+}

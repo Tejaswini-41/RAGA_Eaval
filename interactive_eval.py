@@ -606,7 +606,7 @@ class InteractiveEvaluator:
         print("═" * 120)
 
     def _save_comparison_to_csv(self, question, iteration_metrics, current_prompts):
-        """Save the multi-iteration metrics comparison to a CSV file"""
+        """Save the multi-iteration metrics comparison to a CSV file with enhanced formatting"""
         question_id = self._generate_question_id(question)
         filename = f"results/metrics_comparison_{question_id}.csv"
         
@@ -623,86 +623,92 @@ class InteractiveEvaluator:
                     all_models.add(model)
                     all_metrics.update(scores.keys())
         
-        # Prepare CSV data
-        rows = []
+        all_metrics = sorted(all_metrics)
+        all_models = sorted(all_models)
         
-        # Add headers
-        headers = ["Question", "Model", "Metric", "Original"]
-        for i in range(1, 4):
-            headers.extend([f"Iter_{i}", f"Gain_{i}"])
-        headers.append("Total_Gain")
-        rows.append(headers)
-        
-        # Add data rows
-        for model_name in sorted(all_models):
-            current_prompt = current_prompts.get(model_name, {}).get("improved_prompt", "N/A")
-            
-            for metric in sorted(all_metrics):
-                orig_val = iteration_metrics["original"].get(model_name, {}).get(metric, 0.0)
-                
-                # Get values and gains for each iteration
-                iter_vals = []
-                iter_gains = []
-                for i in range(1, 4):
-                    iter_val = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get(metric, 0.0)
-                    iter_vals.append(iter_val)
-                    
-                    # Calculate gain
-                    iter_gain = ((iter_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
-                    iter_gains.append(f"{iter_gain:+.1f}%")
-                
-                # Calculate total gain
-                final_val = iter_vals[-1]
-                total_gain = ((final_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
-                
-                # Create row
-                row = [
-                    question,
-                    model_name,
-                    metric,
-                    f"{orig_val:.3f}"
-                ]
-                
-                # Add iteration values and gains
-                for i in range(3):
-                    row.append(f"{iter_vals[i]:.3f}")
-                    row.append(iter_gains[i])
-                    
-                # Add total gain
-                row.append(f"{total_gain:+.1f}%")
-                
-                rows.append(row)
-        
-        # Write to CSV
+        # Create professional CSV structure
         with open(filename, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerows(rows)
+            
+            # Write title and metadata
+            writer.writerow(["Model Performance Analysis"])
+            writer.writerow(["Question:", question])
+            writer.writerow(["Generated:", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+            writer.writerow([])  # Empty row for spacing
+            
+            # For each model, create a complete section
+            for model_name in all_models:
+                # Model header
+                writer.writerow([f"MODEL: {model_name.upper()}"])
+                
+                # Headers for this model's table
+                model_headers = ["Metric", "Original"]
+                for i in range(1, 4):
+                    model_headers.extend([f"Iteration {i}", f"Gain {i}"])
+                model_headers.append("Total Gain")
+                writer.writerow(model_headers)
+                
+                # Add metric rows for this model
+                for metric in all_metrics:
+                    orig_val = iteration_metrics["original"].get(model_name, {}).get(metric, 0.0)
+                    
+                    # Get values and gains for each iteration
+                    row = [metric, f"{orig_val:.3f}"]
+                    
+                    iter_vals = []
+                    for i in range(1, 4):
+                        iter_val = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get(metric, 0.0)
+                        iter_vals.append(iter_val)
+                        
+                        # Calculate gain
+                        iter_gain = ((iter_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+                        
+                        # Add value and gain
+                        row.append(f"{iter_val:.3f}")
+                        row.append(f"{iter_gain:+.1f}%")
+                    
+                    # Calculate total gain
+                    final_val = iter_vals[-1]
+                    total_gain = ((final_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+                    row.append(f"{total_gain:+.1f}%")
+                    
+                    writer.writerow(row)
+                
+                # Add empty row for spacing between models
+                writer.writerow([])
+            
+            # Add summary section
+            writer.writerow(["PERFORMANCE SUMMARY"])
+            summary_headers = ["Model", "Initial Overall", "Final Overall", "Change", "Best Iteration"]
+            writer.writerow(summary_headers)
+            
+            # Calculate which iteration was best for each model
+            for model_name in all_models:
+                orig_overall = iteration_metrics["original"].get(model_name, {}).get("Overall", 0.0)
+                final_overall = iteration_metrics.get("iteration_3", {}).get(model_name, {}).get("Overall", 0.0)
+                change_pct = ((final_overall - orig_overall) / orig_overall * 100) if orig_overall != 0 else 0.0
+                
+                # Find best iteration
+                best_iter = 0
+                best_score = orig_overall
+                for i in range(1, 4):
+                    iter_score = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get("Overall", 0.0)
+                    if iter_score > best_score:
+                        best_score = iter_score
+                        best_iter = i
+                
+                best_iter_text = f"Iteration {best_iter}" if best_iter > 0 else "Original"
+                
+                writer.writerow([
+                    model_name, 
+                    f"{orig_overall:.3f}", 
+                    f"{final_overall:.3f}", 
+                    f"{change_pct:+.1f}%",
+                    best_iter_text
+                ])
         
-        print(f"\nMetrics comparison saved to CSV: {filename}")
+        print(f"\n📊 Enhanced metrics report saved to CSV: {filename}")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
     def _display_results(self, question, results):
         """Display evaluation results with focus on prompt comparison"""
         import textwrap
