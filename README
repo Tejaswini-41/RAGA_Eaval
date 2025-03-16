@@ -1,6 +1,14 @@
 # 🚀 RAGA\_EVAL: LLM Response Evaluation Tool
 
-![RAGA_EVAL](https://img.shields.io/badge/RAGA_EVAL-LLM%20Evaluation%20Tool-blue)
+<div align="center"> 
+  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" /> 
+  <img src="https://img.shields.io/badge/python-3.8+-green.svg" /> 
+  <img src="https://img.shields.io/badge/license-MIT-yellow.svg" /> 
+</div> 
+
+<p align="center"> 
+  <img width="180" src="https://i.imgur.com/pSOxq3J.png" alt="RAGA_EVAL Logo"/> 
+</p> 
 
 ## 📋 Overview
 
@@ -132,12 +140,6 @@ The system generates comprehensive metrics tables showing performance across ite
 Model       Metric       Original   Iter 1   Gain 1%  Iter 2   Gain 2%  Iter 3   Gain 3%  Total Gain
 ───────────────────────────────────────────────────────────────────────────────────────────────
 alibaba     Accuracy     0.900      0.950   ✅+5.6%   0.500   🚩-44.4%   0.950   ✅+5.6%   ✅ +5.6%
-            BLEU        0.043      0.126   ✅+193.0% 0.128   ✅+197.7% 0.137   ✅+218.6% ✅ +218.6%
-            Completeness 0.500      0.800   ✅+60.0%  0.500   +0.0%     0.800   ✅+60.0%  ✅ +60.0%
-            Groundedness 0.200      0.200   +0.0%    0.500   ✅+150.0% 0.200   +0.0%     +0.0%
-            Overall      0.531      0.575   ✅+8.3%   0.470   🚩-11.5%  0.573   ✅+7.9%   ✅ +7.9%
-            ROUGE       0.214      0.107   🚩-50.0%  0.102   🚩-52.3%  0.106   🚩-50.5%  🚩 -50.5%
-            Relevance   0.828      0.771   🚩-6.9%   0.734   🚩-11.4%  0.758   🚩-8.5%   🚩 -8.5%
 ```
 
 ## 🔮 Future Enhancements
