@@ -679,7 +679,7 @@ class InteractiveEvaluator:
             
             # Add summary section
             writer.writerow(["PERFORMANCE SUMMARY"])
-            summary_headers = ["Model", "Initial Overall", "Final Overall", "Change", "Best Iteration"]
+            summary_headers = ["Model", "Initial Overall", "Final Overall", "Change", "Best Score", "Best Iteration"]
             writer.writerow(summary_headers)
             
             # Calculate which iteration was best for each model
@@ -704,6 +704,7 @@ class InteractiveEvaluator:
                     f"{orig_overall:.3f}", 
                     f"{final_overall:.3f}", 
                     f"{change_pct:+.1f}%",
+                    f"{best_score:.3f}",
                     best_iter_text
                 ])
         

@@ -1,0 +1,50 @@
+Model Performance Analysis
+Question:,What are the best strategies for overcoming impostor syndrome?
+Generated:,2025-03-16 16:44:49
+
+MODEL: ALIBABA
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.950,0.500,-47.4%,0.950,+0.0%,0.950,+0.0%,+0.0%
+BLEU,0.050,0.390,+680.0%,0.653,+1206.0%,0.500,+900.0%,+900.0%
+Completeness,0.800,0.500,-37.5%,1.000,+25.0%,1.000,+25.0%,+25.0%
+Groundedness,0.800,1.000,+25.0%,1.000,+25.0%,1.000,+25.0%,+25.0%
+Overall,0.719,0.644,-10.4%,0.851,+18.4%,0.848,+17.9%,+17.9%
+ROUGE,0.192,0.293,+52.6%,0.300,+56.2%,0.341,+77.6%,+77.6%
+Relevance,0.884,0.877,-0.8%,0.843,-4.6%,0.882,-0.2%,-0.2%
+
+MODEL: DEEPSEEK
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.950,0.500,-47.4%,0.950,+0.0%,0.900,-5.3%,-5.3%
+BLEU,0.051,0.142,+178.4%,0.142,+178.4%,0.142,+178.4%,+178.4%
+Completeness,0.800,0.500,-37.5%,0.800,+0.0%,0.800,+0.0%,+0.0%
+Groundedness,0.800,0.500,-37.5%,0.800,+0.0%,0.800,+0.0%,+0.0%
+Overall,0.677,0.494,-27.0%,0.700,+3.4%,0.687,+1.5%,+1.5%
+ROUGE,0.106,0.091,-14.2%,0.085,-19.8%,0.083,-21.7%,-21.7%
+Relevance,0.721,0.852,+18.2%,0.798,+10.7%,0.798,+10.7%,+10.7%
+
+MODEL: LLAMA
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.950,0.500,-47.4%,0.950,+0.0%,0.950,+0.0%,+0.0%
+BLEU,0.089,0.166,+86.5%,0.132,+48.3%,0.181,+103.4%,+103.4%
+Completeness,0.800,0.500,-37.5%,0.900,+12.5%,1.000,+25.0%,+25.0%
+Groundedness,0.600,0.500,-16.7%,0.860,+43.3%,1.000,+66.7%,+66.7%
+Overall,0.686,0.522,-23.9%,0.746,+8.7%,0.810,+18.1%,+18.1%
+ROUGE,0.193,0.243,+25.9%,0.170,-11.9%,0.278,+44.0%,+44.0%
+Relevance,0.900,0.904,+0.4%,0.856,-4.9%,0.882,-2.0%,-2.0%
+
+MODEL: MIXTRAL
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.950,0.000,-100.0%,0.000,-100.0%,0.000,-100.0%,-100.0%
+BLEU,0.027,0.000,-100.0%,0.000,-100.0%,0.000,-100.0%,-100.0%
+Completeness,0.800,0.000,-100.0%,0.000,-100.0%,0.000,-100.0%,-100.0%
+Groundedness,0.700,0.000,-100.0%,0.000,-100.0%,0.000,-100.0%,-100.0%
+Overall,0.673,0.000,-100.0%,0.000,-100.0%,0.000,-100.0%,-100.0%
+ROUGE,0.117,0.000,-100.0%,0.000,-100.0%,0.000,-100.0%,-100.0%
+Relevance,0.804,0.000,-100.0%,0.000,-100.0%,0.000,-100.0%,-100.0%
+
+PERFORMANCE SUMMARY
+Model,Initial Overall,Final Overall,Change,Best Score,Best Iteration
+alibaba,0.719,0.848,+17.9%,0.851,Iteration 2
+deepseek,0.677,0.687,+1.5%,0.700,Iteration 2
+llama,0.686,0.810,+18.1%,0.810,Iteration 3
+mixtral,0.673,0.000,-100.0%,0.673,Original
