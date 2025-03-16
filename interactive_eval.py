@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import datetime
+import csv
 from models.model_factory import ModelFactory
 from evaluation.evaluator import ResponseEvaluator
 
@@ -317,7 +318,7 @@ class InteractiveEvaluator:
             # Add progressive delay before iterations 2 and 3
             if iteration > 1:
                 # Progressive delay: 10 seconds for iteration 2, 20 seconds for iteration 3
-                delay_seconds = (iteration - 1) * 10
+                delay_seconds = (iteration - 1) * 14
                 print(f"\n⏱️ Adding {delay_seconds} second delay before iteration {iteration} to avoid API rate limits...")
                 await asyncio.sleep(delay_seconds)
                 print("Continuing with evaluation...")
@@ -394,6 +395,7 @@ class InteractiveEvaluator:
 
         # Display final comparison
         self._display_multi_iteration_comparison(iteration_metrics)
+        self._save_comparison_to_csv(question, iteration_metrics, current_prompts)
 
 
     def _generate_new_improved_prompts(self, question, evaluation_results, current_prompts):
@@ -602,6 +604,81 @@ class InteractiveEvaluator:
             print("⚠️ No clear best iteration identified. All iterations showed similar or negative performance.")
         
         print("═" * 120)
+
+    def _save_comparison_to_csv(self, question, iteration_metrics, current_prompts):
+        """Save the multi-iteration metrics comparison to a CSV file"""
+        question_id = self._generate_question_id(question)
+        filename = f"results/metrics_comparison_{question_id}.csv"
+        
+        # Create results directory if it doesn't exist
+        if not os.path.exists("results"):
+            os.makedirs("results")
+        
+        # Get all models and metrics
+        all_models = set()
+        all_metrics = set()
+        for metrics in iteration_metrics.values():
+            for model, scores in metrics.items():
+                if model != "gemini":
+                    all_models.add(model)
+                    all_metrics.update(scores.keys())
+        
+        # Prepare CSV data
+        rows = []
+        
+        # Add headers
+        headers = ["Question", "Model", "Metric", "Original"]
+        for i in range(1, 4):
+            headers.extend([f"Iter_{i}", f"Gain_{i}"])
+        headers.append("Total_Gain")
+        rows.append(headers)
+        
+        # Add data rows
+        for model_name in sorted(all_models):
+            current_prompt = current_prompts.get(model_name, {}).get("improved_prompt", "N/A")
+            
+            for metric in sorted(all_metrics):
+                orig_val = iteration_metrics["original"].get(model_name, {}).get(metric, 0.0)
+                
+                # Get values and gains for each iteration
+                iter_vals = []
+                iter_gains = []
+                for i in range(1, 4):
+                    iter_val = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get(metric, 0.0)
+                    iter_vals.append(iter_val)
+                    
+                    # Calculate gain
+                    iter_gain = ((iter_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+                    iter_gains.append(f"{iter_gain:+.1f}%")
+                
+                # Calculate total gain
+                final_val = iter_vals[-1]
+                total_gain = ((final_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+                
+                # Create row
+                row = [
+                    question,
+                    model_name,
+                    metric,
+                    f"{orig_val:.3f}"
+                ]
+                
+                # Add iteration values and gains
+                for i in range(3):
+                    row.append(f"{iter_vals[i]:.3f}")
+                    row.append(iter_gains[i])
+                    
+                # Add total gain
+                row.append(f"{total_gain:+.1f}%")
+                
+                rows.append(row)
+        
+        # Write to CSV
+        with open(filename, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(rows)
+        
+        print(f"\nMetrics comparison saved to CSV: {filename}")
 
 
 
