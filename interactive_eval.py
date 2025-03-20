@@ -475,22 +475,90 @@ class InteractiveEvaluator:
 
 
 
+    # def _display_multi_iteration_comparison(self, iteration_metrics):
+    #     """Display comparison table of original and all iteration metrics"""
+    #     print("\n" + "═" * 120)
+    #     print("📊 MULTI-ITERATION METRICS COMPARISON TABLE")
+    #     print("═" * 120)
+
+    #     # Header
+    #     print("\n" + "─" * 120)
+    #     header = f"{'Model':<15} {'Metric':<15} {'Original':<12}"
+    #     for i in range(1, 4):
+    #         header += f"{'Iter '+str(i):<12}"
+    #     header += f"{'Total Gain':<12}"
+    #     print(header)
+    #     print("─" * 120)
+
+    #     # Get all models from all results (excluding reference model)
+    #     all_models = set()
+    #     all_metrics = set()
+    #     for metrics in iteration_metrics.values():
+    #         for model, scores in metrics.items():
+    #             if model != "gemini":
+    #                 all_models.add(model)
+    #                 all_metrics.update(scores.keys())
+
+    #     for model_name in sorted(all_models):
+    #         first_line = True
+    #         for metric in sorted(all_metrics):
+    #             # Get values across iterations
+    #             orig_val = iteration_metrics["original"].get(model_name, {}).get(metric, 0.0)
+    #             iter_vals = []
+    #             for i in range(1, 4):
+    #                 iter_val = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get(metric, 0.0)
+    #                 iter_vals.append(iter_val)
+            
+    #             # Calculate total improvement
+    #             final_val = iter_vals[-1]
+    #             total_change_pct = ((final_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+            
+    #             # Format the line
+    #             model_col = f"{model_name:<15}" if first_line else " " * 15
+    #             line = f"{model_col} {metric:<15} {orig_val:<12.3f}"
+            
+    #             # Add iteration values
+    #             for val in iter_vals:
+    #                 line += f"{val:<12.3f}"
+            
+    #             # Add total change with indicator
+    #             change_str = f"{total_change_pct:+.1f}%"
+    #             if total_change_pct > 0:
+    #                 change_str = f"✅ {change_str}"
+    #             elif total_change_pct < 0:
+    #                 change_str = f"🚩 {change_str}"
+    #             line += f"{change_str:<12}"
+            
+    #             print(line)
+    #             first_line = False
+        
+    #         print("─" * 120)
+
+    #     print("\n" + "═" * 120)
+
+
+
+
     def _display_multi_iteration_comparison(self, iteration_metrics):
-        """Display comparison table of original and all iteration metrics"""
-        print("\n" + "═" * 120)
+        """Display comparison table of original and iteration metrics with per-iteration gains"""
+        print("\n" + "═" * 160)
         print("📊 MULTI-ITERATION METRICS COMPARISON TABLE")
-        print("═" * 120)
+        print("═" * 160)
 
         # Header
-        print("\n" + "─" * 120)
-        header = f"{'Model':<15} {'Metric':<15} {'Original':<12}"
-        for i in range(1, 4):
-            header += f"{'Iter '+str(i):<12}"
-        header += f"{'Total Gain':<12}"
+        print("\n" + "─" * 160)
+        header = (
+            f"{'Model':<15} {'Metric':<15} "
+            f"{'Original':<12} "
+            f"{'Iter 1':<12} {'Gain 1':<12} "
+            f"{'Iter 2':<12} {'Gain 2':<12} "
+            f"{'Iter 3':<12} {'Gain 3':<12} "
+            f"{'Total Gain':<15}"
+        )
         print(header)
-        print("─" * 120)
+        print("─" * 160)
 
-        # Get all models from all results (excluding reference model)
+        # Get all models and metrics
         all_models = set()
         all_metrics = set()
         for metrics in iteration_metrics.values():
@@ -502,44 +570,56 @@ class InteractiveEvaluator:
         for model_name in sorted(all_models):
             first_line = True
             for metric in sorted(all_metrics):
-                # Get values across iterations
+                # Get original value
                 orig_val = iteration_metrics["original"].get(model_name, {}).get(metric, 0.0)
+                
+                # Get iteration values and calculate gains
                 iter_vals = []
+                iter_gains = []
                 for i in range(1, 4):
                     iter_val = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get(metric, 0.0)
                     iter_vals.append(iter_val)
-            
-                # Calculate total improvement
+                    
+                    # Calculate gain percentage compared to original
+                    gain_pct = ((iter_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+                    iter_gains.append(gain_pct)
+                
+                # Calculate total gain
                 final_val = iter_vals[-1]
                 total_change_pct = ((final_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
-            
+                
                 # Format the line
                 model_col = f"{model_name:<15}" if first_line else " " * 15
                 line = f"{model_col} {metric:<15} {orig_val:<12.3f}"
-            
-                # Add iteration values
-                for val in iter_vals:
+                
+                # Add iteration values and gains
+                for val, gain in zip(iter_vals, iter_gains):
                     line += f"{val:<12.3f}"
-            
+                    
+                    # Format gain with color indicator
+                    gain_str = f"{gain:+.1f}%"
+                    if gain > 0:
+                        gain_str = f"✅{gain_str}"
+                    elif gain < 0:
+                        gain_str = f"🔻{gain_str}"
+                    else:
+                        gain_str = f"  {gain_str}"
+                    line += f"{gain_str:<12}"
+                
                 # Add total change with indicator
                 change_str = f"{total_change_pct:+.1f}%"
                 if total_change_pct > 0:
                     change_str = f"✅ {change_str}"
                 elif total_change_pct < 0:
-                    change_str = f"🚩 {change_str}"
-                line += f"{change_str:<12}"
-            
+                    change_str = f"🔻 {change_str}"
+                line += f"{change_str:<15}"
+                
                 print(line)
                 first_line = False
-        
-            print("─" * 120)
+            
+            print("─" * 160)
 
-        print("\n" + "═" * 120)
-
-
-
-
-
+        print("\n" + "═" * 160)
 
 
 
