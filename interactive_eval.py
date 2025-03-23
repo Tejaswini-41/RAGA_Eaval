@@ -399,6 +399,129 @@ class InteractiveEvaluator:
 
 
     def _generate_new_improved_prompts(self, question, current_results, current_prompts):
+        """Generate new improved prompts based on cumulative analysis of all previous iterations"""
+        new_prompts = {}
+        
+        # Collect historical data from all previous iterations
+        iteration_history = self._collect_iteration_history(question)
+        
+        for model_name, prompt_data in current_prompts.items():
+            # Get current performance metrics
+            current_metrics = next(
+                (scores for model, scores in current_results["rankings"] 
+                if model == model_name),
+                None
+            )
+            
+            if current_metrics:
+                # Analyze cumulative performance trends
+                cumulative_analysis = {
+                    "metric_progression": self._analyze_metric_progression(model_name, iteration_history),
+                    "successful_patterns": self._identify_successful_patterns(model_name, iteration_history),
+                    "failed_approaches": self._identify_failed_approaches(model_name, iteration_history),
+                    "current_weaknesses": self._identify_current_weaknesses(current_metrics)
+                }
+                
+                # Generate improved prompt using cumulative insights
+                new_prompt = self._generate_cumulative_improved_prompt(
+                    prompt_data["improved_prompt"],
+                    cumulative_analysis,
+                    iteration_history
+                )
+                
+                new_prompts[model_name] = {
+                    "model": model_name,
+                    "timestamp": datetime.datetime.now().isoformat(),
+                    "improved_prompt": new_prompt,
+                    "analysis_basis": cumulative_analysis,
+                    "iteration_history": iteration_history
+                }
+        
+        return new_prompts
+
+    def _collect_iteration_history(self, question):
+        """Collect and organize data from all previous iterations"""
+        history = {
+            "iterations": {},
+            "progression_summary": {}
+        }
+        
+        try:
+            for filename in os.listdir("improved_responses"):
+                if filename.startswith(f"comparison_{self._generate_question_id(question)}"):
+                    with open(os.path.join("improved_responses", filename), "r") as f:
+                        data = json.load(f)
+                        iteration = data["iteration"]
+                        history["iterations"][iteration] = {
+                            "prompts": data["prompts_used"],
+                            "metrics": data["improved_metrics"],
+                            "responses": data["improved_responses"],
+                            "original_metrics": data["original_metrics"]
+                        }
+        except Exception as e:
+            print(f"Warning: Could not load complete iteration history: {e}")
+        
+        return history
+
+    def _analyze_metric_progression(self, model_name, history):
+        """Analyze how metrics have progressed across all iterations"""
+        progression = {}
+        metrics = ["Relevance", "Accuracy", "Groundedness", "Completeness", "BLEU", "ROUGE"]
+        
+        for metric in metrics:
+            values = []
+            changes = []
+            
+            # Collect values across iterations
+            for iter_num in sorted(history["iterations"].keys()):
+                iter_data = history["iterations"][iter_num]
+                value = iter_data["metrics"].get(model_name, {}).get(metric, 0.0)
+                values.append(value)
+                
+                if len(values) > 1:
+                    change = ((value - values[-2]) / values[-2] * 100) if values[-2] != 0 else 0
+                    changes.append(change)
+            
+            progression[metric] = {
+                "values": values,
+                "trend": self._calculate_trend(values),
+                "changes": changes,
+                "consistently_improving": all(c > 0 for c in changes),
+                "best_value": max(values) if values else 0.0,
+                "worst_value": min(values) if values else 0.0
+            }
+        
+        return progression
+
+    def _generate_cumulative_improved_prompt(self, current_prompt, analysis, history):
+        """Generate new prompt incorporating learnings from all iterations"""
+        improved_prompt = current_prompt
+        
+        # Extract successful patterns that consistently improved metrics
+        successful_patterns = analysis["successful_patterns"]
+        for pattern in successful_patterns:
+            if pattern not in improved_prompt:
+                improved_prompt = self._incorporate_pattern(improved_prompt, pattern)
+        
+        # Remove or modify approaches that consistently failed
+        failed_approaches = analysis["failed_approaches"]
+        for approach in failed_approaches:
+            improved_prompt = self._remove_failed_approach(improved_prompt, approach)
+        
+        # Add specific improvements for current weaknesses
+        for weakness, details in analysis["current_weaknesses"].items():
+            improvement = self._generate_targeted_improvement(weakness, details, history)
+            improved_prompt = self._incorporate_improvement(improved_prompt, improvement)
+        
+        # Add learnings from metric progression
+        for metric, progression in analysis["metric_progression"].items():
+            if not progression["consistently_improving"]:
+                enhancement = self._generate_metric_enhancement(metric, progression)
+                improved_prompt = self._incorporate_enhancement(improved_prompt, enhancement)
+        
+        return improved_prompt
+
+    def _generate_new_improved_prompts(self, question, current_results, current_prompts):
         """Generate new improved prompts based on analysis of all previous iterations"""
         new_prompts = {}
 
