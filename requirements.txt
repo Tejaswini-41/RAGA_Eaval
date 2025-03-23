@@ -1,6 +1,11 @@
 google-generativeai 
-sentence-transformers 
-groq 
+PyGithub
+chromadb
+sentence-transformers
+python-dotenv
+transformers
+groq  
 ragas 
 sacrebleu 
 rouge_score
+httpx
