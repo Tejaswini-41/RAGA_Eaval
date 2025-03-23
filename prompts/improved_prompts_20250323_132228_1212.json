@@ -1,0 +1,27 @@
+{
+  "question": "What are the best strategies for overcoming impostor syndrome?",
+  "question_id": "20250323_132228_1212",
+  "timestamp": "2025-03-23T13:22:28.491902",
+  "prompts": [
+    {
+      "model": "deepseek",
+      "timestamp": "2025-03-23T13:22:28.491902",
+      "improved_prompt": "You are a helpful AI assistant.  Respond to the following question by providing a concise, bulleted list of strategies.  Focus on factual information and avoid speculation or uncertain statements.  Prioritize accuracy and completeness.  If unsure about a strategy, omit it.\n\nQUESTION: What are the best strategies for overcoming impostor syndrome?"
+    },
+    {
+      "model": "llama",
+      "timestamp": "2025-03-23T13:22:28.567402",
+      "improved_prompt": "You are a helpful AI assistant providing concise and actionable strategies for overcoming imposter syndrome.  Please respond using bullet points. Prioritize strategies that are directly applicable and easily implemented.  Your response should mirror the style and level of detail in the following example:\n\nExample:\nStrategies for overcoming imposter syndrome include:\n* Focus on accomplishments: Actively list and reflect on past successes.\n* Challenge negative self-talk: Replace self-critical thoughts with realistic and positive affirmations.\n* Seek feedback: Request constructive criticism from trusted colleagues or mentors.\n* Set realistic goals: Break down large tasks into smaller, manageable steps.\n* Practice self-compassion: Treat yourself with the same kindness and understanding you would offer a friend.\n* Seek professional help: Consider therapy or coaching if symptoms significantly impact daily life.\n\nNow, answer the following question:\nWhat are the best strategies for overcoming imposter syndrome?"
+    },
+    {
+      "model": "alibaba",
+      "timestamp": "2025-03-23T13:22:28.631311",
+      "improved_prompt": "You are a helpful AI assistant tasked with providing strategies for overcoming imposter syndrome.  Your response should be structured as a bulleted list, similar to the example provided below.  Use concise and accurate language, mirroring the style and phrasing of the reference response as closely as possible.  Include key concepts such as self-compassion, realistic affirmations, and constructive criticism. Avoid speculation.  If unsure about a point, omit it rather than speculating.  \n\n**Reference Response Example:**\n\nStrategies for overcoming imposter syndrome include:\n\n* **Focus on accomplishments:**  Actively list and reflect on past successes.\n* **Challenge negative self-talk:** Replace self-critical thoughts with realistic and positive affirmations.\n* **Seek feedback:** Request constructive criticism from trusted colleagues or mentors.\n* **Set realistic goals:** Break down large tasks into smaller, manageable steps.\n* **Practice self-compassion:** Treat yourself with the same kindness and understanding you would offer a friend.\n* **Seek professional help:** Consider therapy or coaching if symptoms significantly impact daily life."
+    },
+    {
+      "model": "mixtral",
+      "timestamp": "2025-03-23T13:22:28.681923",
+      "improved_prompt": "You are a helpful AI assistant providing advice on overcoming imposter syndrome.  Respond with a bulleted list of actionable strategies. For each strategy, provide a concise but clear explanation of how it helps overcome imposter syndrome.  Focus on practical steps individuals can take.  The response should be informative, helpful, and accurate, avoiding speculation or uncertain statements.  Ensure the strategies are well-grounded and evidence-based where possible.  Prioritize strategies that are readily implementable and effective."
+    }
+  ]
+}
