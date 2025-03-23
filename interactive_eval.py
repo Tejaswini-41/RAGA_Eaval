@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import datetime
+import csv
 from models.model_factory import ModelFactory
 from evaluation.evaluator import ResponseEvaluator
 
@@ -313,6 +314,14 @@ class InteractiveEvaluator:
             print(f"\n{'═' * 50}")
             print(f"ITERATION {iteration}")
             print(f"{'═' * 50}")
+            
+            # Add progressive delay before iterations 2 and 3
+            if iteration > 1:
+                # Progressive delay: 10 seconds for iteration 2, 20 seconds for iteration 3
+                delay_seconds = (iteration - 1) * 14
+                print(f"\n⏱️ Adding {delay_seconds} second delay before iteration {iteration} to avoid API rate limits...")
+                await asyncio.sleep(delay_seconds)
+                print("Continuing with evaluation...")
 
             improved_responses = {}
         
@@ -386,85 +395,173 @@ class InteractiveEvaluator:
 
         # Display final comparison
         self._display_multi_iteration_comparison(iteration_metrics)
+        self._save_comparison_to_csv(question, iteration_metrics, current_prompts)
 
 
-    def _generate_new_improved_prompts(self, question, evaluation_results, current_prompts):
-        """Generate new improved prompts based on evaluation results"""
+    def _generate_new_improved_prompts(self, question, current_results, current_prompts):
+        """Generate new improved prompts based on analysis of all previous iterations"""
         new_prompts = {}
-    
+
+        # Get metrics from all previous iterations
+        iteration_metrics = {}
+        try:
+            # Find all iteration files for this question
+            for filename in os.listdir("improved_responses"):
+                if filename.startswith(f"comparison_{self._generate_question_id(question)}"):
+                    with open(os.path.join("improved_responses", filename), "r") as f:
+                        data = json.load(f)
+                        iteration = data["iteration"]
+                        iteration_metrics[iteration] = {
+                            "metrics": data["improved_metrics"],
+                            "prompts": data["prompts_used"],
+                            "responses": data["improved_responses"]
+                        }
+        except Exception as e:
+            print(f"Warning: Could not load previous iteration data: {e}")
+
         for model_name, prompt_data in current_prompts.items():
-            # Get current prompt and its performance metrics
-            current_prompt = prompt_data["improved_prompt"]
-            model_metrics = next(
-                (scores for model, scores in evaluation_results["rankings"] 
-                if model == model_name), 
+            # Get current metrics
+            current_metrics = next(
+                (scores for model, scores in current_results["rankings"] 
+                if model == model_name),
                 None
-         )
-        
-            if model_metrics:
-                # Analyze metrics and generate improved prompt
-                # This is where you would implement your prompt improvement logic
-                # based on the evaluation results
-                new_prompt = self._improve_prompt_based_on_metrics(
-                    current_prompt, 
-                    model_metrics
-                )
+            )
             
+            if current_metrics:
+                # Analyze trends across iterations
+                metric_trends = self._analyze_metric_trends(
+                    model_name, 
+                    current_metrics,
+                    iteration_metrics
+                )
+
+                # Generate improved prompt based on historical analysis
+                new_prompt = self._generate_prompt_from_trends(
+                    prompt_data["improved_prompt"],
+                    metric_trends,
+                    iteration_metrics
+                )
+
                 new_prompts[model_name] = {
                     "model": model_name,
                     "timestamp": datetime.datetime.now().isoformat(),
                     "improved_prompt": new_prompt
                 }
-    
+
         return new_prompts
 
-    def _improve_prompt_based_on_metrics(self, current_prompt, model_metrics):
-        """Generate improved prompt based on model performance metrics"""
-    
-        # Initialize base score weights
-        metric_weights = {
-            'Relevance': 0.3,
-            'Coherence': 0.2,
-            'Accuracy': 0.3,
-            'Completeness': 0.2
-        }
-    
-        # Analyze weak points in metrics
-        weak_points = []
-        for metric, score in model_metrics.items():
-            if metric != 'Overall':
-                if score < 0.7:  # Consider scores below 0.7 as areas needing improvement
-                    weak_points.append((metric, score))
-    
-        # Sort weak points by score (ascending)
-        weak_points.sort(key=lambda x: x[1])
-    
-        # Generate improvements based on weak points
-        improvements = []
-    
-        # Basic prompt enhancement templates
-        enhancement_templates = {
-            'Relevance': "Focus on providing information that directly addresses the question. Stay on topic and avoid tangential information.",
-            'Coherence': "Structure your response logically with clear transitions between ideas. Maintain a consistent flow throughout.",
-            'Accuracy': "Ensure all statements are factual and well-supported. Verify information before including it.",
-            'Completeness': "Cover all essential aspects of the topic. Include relevant examples and explanations where necessary."
-        }
-    
-        # Build improved prompt
+    def _analyze_metric_trends(self, model_name, current_metrics, iteration_metrics):
+        """Analyze trends in metrics across iterations"""
+        trends = {}
+        
+        # Metrics to track
+        key_metrics = ["Relevance", "Accuracy", "Groundedness", "Completeness", "BLEU", "ROUGE"]
+        
+        for metric in key_metrics:
+            scores = []
+            prompts = []
+            
+            # Collect scores and prompts from each iteration
+            for iter_num, iter_data in sorted(iteration_metrics.items()):
+                if model_name in iter_data["metrics"]:
+                    score = iter_data["metrics"][model_name].get(metric, 0.0)
+                    prompt = iter_data["prompts"].get(model_name, {}).get("improved_prompt", "")
+                    scores.append(score)
+                    prompts.append(prompt)
+            
+            # Add current score
+            scores.append(current_metrics.get(metric, 0.0))
+            
+            # Analyze trend
+            trends[metric] = {
+                "scores": scores,
+                "best_score": max(scores),
+                "best_prompt": prompts[scores.index(max(scores[:-1]))] if scores[:-1] else None,
+                "is_improving": scores[-1] > scores[-2] if len(scores) > 1 else False,
+                "improvement_needed": scores[-1] < 0.7  # Threshold for improvement
+            }
+        
+        return trends
+
+    def _generate_prompt_from_trends(self, current_prompt, metric_trends, iteration_metrics):
+        """Generate improved prompt based on historical trends"""
         improved_prompt = current_prompt
-    
-        # Add specific improvements based on weak points
-        for metric, score in weak_points:
-            if metric in enhancement_templates:
-                improvement = enhancement_templates[metric]
-                if improvement not in improved_prompt:
-                    improved_prompt += f"\n\n{improvement}"
-    
-        # Add general quality reminder if needed
-        if len(weak_points) > 0:
-            improved_prompt += "\n\nEnsure your response maintains high standards of clarity, precision, and relevance."
-    
+        
+        # Identify areas needing most improvement
+        weak_metrics = [
+            metric for metric, data in metric_trends.items() 
+            if data["improvement_needed"]
+        ]
+        
+        # Use best performing prompts as reference
+        for metric in weak_metrics:
+            if metric_trends[metric]["best_prompt"]:
+                # Extract successful patterns from best performing prompt
+                best_prompt = metric_trends[metric]["best_prompt"]
+                
+                # Add relevant instructions from successful prompts
+                key_phrases = self._extract_key_instructions(best_prompt)
+                for phrase in key_phrases:
+                    if phrase not in improved_prompt:
+                        improved_prompt += f"\n\n{phrase}"
+        
+        # Add targeted improvements based on trends
+        improvement_suggestions = self._get_trend_based_improvements(metric_trends)
+        for suggestion in improvement_suggestions:
+            if suggestion not in improved_prompt:
+                improved_prompt += f"\n\n{suggestion}"
+        
         return improved_prompt
+
+    def _extract_key_instructions(self, prompt):
+        """Extract key instruction phrases from a prompt"""
+        # Split into sentences and identify instruction-like phrases
+        sentences = prompt.split('.')
+        key_phrases = []
+        
+        instruction_indicators = ['must', 'should', 'need to', 'ensure', 'focus on', 'avoid']
+        for sentence in sentences:
+            if any(indicator in sentence.lower() for indicator in instruction_indicators):
+                key_phrases.append(sentence.strip() + '.')
+        
+        return key_phrases
+
+    def _get_trend_based_improvements(self, metric_trends):
+        """Generate improvement suggestions based on metric trends"""
+        suggestions = []
+        
+        improvement_templates = {
+            "Relevance": [
+                "Ensure responses directly address the core question",
+                "Focus on maintaining topical consistency throughout"
+            ],
+            "Accuracy": [
+                "Verify all factual claims before including",
+                "Provide specific, concrete examples"
+            ],
+            "Groundedness": [
+                "Base responses on established knowledge",
+                "Connect statements to reliable sources"
+            ],
+            "Completeness": [
+                "Cover all essential aspects of the topic",
+                "Address potential counterarguments"
+            ],
+            "BLEU": [
+                "Use standard terminology consistently",
+                "Maintain consistent phrasing patterns"
+            ],
+            "ROUGE": [
+                "Structure responses with clear sections",
+                "Use key terms consistently throughout"
+            ]
+        }
+        
+        for metric, data in metric_trends.items():
+            if data["improvement_needed"]:
+                suggestions.extend(improvement_templates.get(metric, []))
+        
+        return suggestions
 
 
 
@@ -546,15 +643,12 @@ class InteractiveEvaluator:
         print("═" * 160)
 
         # Header
-        print("\n" + "─" * 160)
-        header = (
-            f"{'Model':<15} {'Metric':<15} "
-            f"{'Original':<12} "
-            f"{'Iter 1':<12} {'Gain 1':<12} "
-            f"{'Iter 2':<12} {'Gain 2':<12} "
-            f"{'Iter 3':<12} {'Gain 3':<12} "
-            f"{'Total Gain':<15}"
-        )
+        print("\n" + "─" * 120)
+        # Calculate and display both per-iteration and total gains
+        header = f"{'Model':<15} {'Metric':<15} {'Original':<12}"  # Changed from 12 to 15 for Model/Metric
+        for i in range(1, 4):
+            header += f"{'Iter '+str(i):<10} {'Gain '+str(i)+'%':<10}"
+        header += f"{'Total Gain':<12}"
         print(header)
         print("─" * 160)
 
@@ -591,22 +685,26 @@ class InteractiveEvaluator:
                 # Format the line
                 model_col = f"{model_name:<15}" if first_line else " " * 15
                 line = f"{model_col} {metric:<15} {orig_val:<12.3f}"
-                
-                # Add iteration values and gains
-                for val, gain in zip(iter_vals, iter_gains):
-                    line += f"{val:<12.3f}"
+            
+                # Add iteration values and their respective gains
+                for i, val in enumerate(iter_vals):
+                    # Add the iteration value
+                    line += f"{val:<10.3f}"
                     
-                    # Format gain with color indicator
-                    gain_str = f"{gain:+.1f}%"
-                    if gain > 0:
-                        gain_str = f"✅{gain_str}"
-                    elif gain < 0:
-                        gain_str = f"🔻{gain_str}"
-                    else:
-                        gain_str = f"  {gain_str}"
-                    line += f"{gain_str:<12}"
-                
-                # Add total change with indicator
+                    # Calculate gain for this iteration compared to original
+                    iter_gain_pct = ((val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+                    
+                    # Format gain with indicator
+                    iter_gain_str = f"{iter_gain_pct:+.1f}%"
+                    if iter_gain_pct > 0:
+                        iter_gain_str = f"✅{iter_gain_str}"
+                    elif iter_gain_pct < 0:
+                        iter_gain_str = f"🚩{iter_gain_str}"
+                    
+                    # Add the gain percentage
+                    line += f"{iter_gain_str:<10}"
+
+                # Add total change with indicator (keep existing code)
                 change_str = f"{total_change_pct:+.1f}%"
                 if total_change_pct > 0:
                     change_str = f"✅ {change_str}"
@@ -619,26 +717,157 @@ class InteractiveEvaluator:
             
             print("─" * 160)
 
-        print("\n" + "═" * 160)
+        print("\n" + "═" * 120)
+        
+        # NEW CODE: Add conclusion about best iteration
+        
+        # Calculate average performance gains for each iteration
+        iteration_avg_gains = {}
+        iteration_success_rate = {}
+        
+        # Track metrics for all iterations
+        for i in range(1, 4):
+            total_gain = 0
+            total_metrics = 0
+            improvements = 0
+            
+            # Calculate across all models and metrics
+            for model_name in all_models:
+                for metric in all_metrics:
+                    orig_val = iteration_metrics["original"].get(model_name, {}).get(metric, 0.0)
+                    if orig_val == 0:
+                        continue
+                        
+                    iter_val = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get(metric, 0.0)
+                    gain_pct = ((iter_val - orig_val) / orig_val * 100)
+                    
+                    total_gain += gain_pct
+                    total_metrics += 1
+                    
+                    if gain_pct > 0:
+                        improvements += 1
+            
+            if total_metrics > 0:
+                iteration_avg_gains[i] = total_gain / total_metrics
+                iteration_success_rate[i] = (improvements / total_metrics) * 100
+        
+        # Find best iteration
+        best_iteration = max(iteration_avg_gains, key=iteration_avg_gains.get, default=None)
+        
+        if best_iteration:
+            print(f"🏆 BEST ITERATION: Iteration {best_iteration} with average gain of {iteration_avg_gains[best_iteration]:.1f}%")
+            print(f"    Success rate: {iteration_success_rate[best_iteration]:.1f}% of metrics improved")
+            print(f"    Recommended prompt set: prompts/improved_prompts_*_iteration_{best_iteration}.json")
+        else:
+            print("⚠️ No clear best iteration identified. All iterations showed similar or negative performance.")
+        
+        print("═" * 120)
 
+    def _save_comparison_to_csv(self, question, iteration_metrics, current_prompts):
+        """Save the multi-iteration metrics comparison to a CSV file with enhanced formatting"""
+        question_id = self._generate_question_id(question)
+        filename = f"results/metrics_comparison_{question_id}.csv"
+        
+        # Create results directory if it doesn't exist
+        if not os.path.exists("results"):
+            os.makedirs("results")
+        
+        # Get all models and metrics
+        all_models = set()
+        all_metrics = set()
+        for metrics in iteration_metrics.values():
+            for model, scores in metrics.items():
+                if model != "gemini":
+                    all_models.add(model)
+                    all_metrics.update(scores.keys())
+        
+        all_metrics = sorted(all_metrics)
+        all_models = sorted(all_models)
+        
+        # Create professional CSV structure
+        with open(filename, 'w', newline='') as f:
+            writer = csv.writer(f)
+            
+            # Write title and metadata
+            writer.writerow(["Model Performance Analysis"])
+            writer.writerow(["Question:", question])
+            writer.writerow(["Generated:", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+            writer.writerow([])  # Empty row for spacing
+            
+            # For each model, create a complete section
+            for model_name in all_models:
+                # Model header
+                writer.writerow([f"MODEL: {model_name.upper()}"])
+                
+                # Headers for this model's table
+                model_headers = ["Metric", "Original"]
+                for i in range(1, 4):
+                    model_headers.extend([f"Iteration {i}", f"Gain {i}"])
+                model_headers.append("Total Gain")
+                writer.writerow(model_headers)
+                
+                # Add metric rows for this model
+                for metric in all_metrics:
+                    orig_val = iteration_metrics["original"].get(model_name, {}).get(metric, 0.0)
+                    
+                    # Get values and gains for each iteration
+                    row = [metric, f"{orig_val:.3f}"]
+                    
+                    iter_vals = []
+                    for i in range(1, 4):
+                        iter_val = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get(metric, 0.0)
+                        iter_vals.append(iter_val)
+                        
+                        # Calculate gain
+                        iter_gain = ((iter_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+                        
+                        # Add value and gain
+                        row.append(f"{iter_val:.3f}")
+                        row.append(f"{iter_gain:+.1f}%")
+                    
+                    # Calculate total gain
+                    final_val = iter_vals[-1]
+                    total_gain = ((final_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
+                    row.append(f"{total_gain:+.1f}%")
+                    
+                    writer.writerow(row)
+                
+                # Add empty row for spacing between models
+                writer.writerow([])
+            
+            # Add summary section
+            writer.writerow(["PERFORMANCE SUMMARY"])
+            summary_headers = ["Model", "Initial Overall", "Final Overall", "Change", "Best Score", "Best Iteration"]
+            writer.writerow(summary_headers)
+            
+            # Calculate which iteration was best for each model
+            for model_name in all_models:
+                orig_overall = iteration_metrics["original"].get(model_name, {}).get("Overall", 0.0)
+                final_overall = iteration_metrics.get("iteration_3", {}).get(model_name, {}).get("Overall", 0.0)
+                change_pct = ((final_overall - orig_overall) / orig_overall * 100) if orig_overall != 0 else 0.0
+                
+                # Find best iteration
+                best_iter = 0
+                best_score = orig_overall
+                for i in range(1, 4):
+                    iter_score = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get("Overall", 0.0)
+                    if iter_score > best_score:
+                        best_score = iter_score
+                        best_iter = i
+                
+                best_iter_text = f"Iteration {best_iter}" if best_iter > 0 else "Original"
+                
+                writer.writerow([
+                    model_name, 
+                    f"{orig_overall:.3f}", 
+                    f"{final_overall:.3f}", 
+                    f"{change_pct:+.1f}%",
+                    f"{best_score:.3f}",
+                    best_iter_text
+                ])
+        
+        print(f"\n📊 Enhanced metrics report saved to CSV: {filename}")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
     def _display_results(self, question, results):
         """Display evaluation results with focus on prompt comparison"""
         import textwrap
