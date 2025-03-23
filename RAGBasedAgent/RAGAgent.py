@@ -1,27 +1,21 @@
 from github import Github
 import chromadb
-# import openai
-import os
-from dotenv import load_dotenv
+import openai
 from chromadb.utils import embedding_functions
 import httpx
 import uuid
-from models.groq_models import GroqModel
-from sentence_transformers import SentenceTransformer
 
-# Load environment variables
-load_dotenv()
 
-# Create embeddings with the names of files changes for respective PRs. Get the names of files changes in current pull request. Query DB with the same to get the matching PRs.
-# Use the contents of those PRs in prompt to ask for review on current PR.
+#Create embeddings with the names of files changes for respective PRs. Get the names of files changes in current pull request. Query DB with the same to get the matching PRs.
+#Use the contents of those PRs in prompt to ask for review on current PR.
 
-# Get GitHub access token from environment variables and initialize client
-github_access_token = os.getenv("GITHUB_ACCESS_TOKEN")
-g = Github(github_access_token)
+#Replace 'your_access_token' with your GitHub personal access token
+github_access_token = 'your_access_token'
+g = Github(f"{github_access_token}")
 
-# Replace with your repository information
-repo_owner = 'Tejaswini-41'
-repo_name = 'RAGA_Eaval'
+#Replace 'repo_owner' and 'repo_name' with the owner and name of the repository
+repo_owner = 'torvalds'
+repo_name = 'linux'
 repo = g.get_repo(f"{repo_owner}/{repo_name}")
 Changed_Files = []
 Pull_Requests = []
@@ -73,9 +67,12 @@ collection.add(
     metadatas=[{"genre": g} for g in Pull_Requests]
 )
 
-# Instead, initialize the Groq-based Alibaba model
-system_prompt = "You are a helpful assistant that analyzes GitHub pull requests."
-alibaba_model = GroqModel("alibaba", system_prompt=system_prompt)
+client2 = openai.AzureOpenAI(
+        api_version="2023-07-01-preview",
+        azure_endpoint="{Azure_Endpoint}",
+        api_key= "{OpenAI_API_Key}",
+        http_client=httpx_client
+)
 
 pull_request1 = repo.get_pull(896)
 files1 = pull_request1.get_files()
@@ -85,10 +82,8 @@ for file in files1:
     filenames += file.filename + ","
 
 def text_embedding(text):
-    # Use BAAI/bge-large-en instead of OpenAI embeddings
-    model = SentenceTransformer('BAAI/bge-large-en')
-    # Or alternatively: model = SentenceTransformer('thenlper/gte-large')
-    return model.encode(text).tolist()
+    response = client2.embeddings.create(model="text-embedding-ada-002", input=text)
+    return response.data[0].embedding[:768]
 
 vector=text_embedding(filenames)
 
@@ -189,8 +184,3 @@ response = client2.chat.completions.create(
 response_message = response.choices[0].message.content
 
 print(response_message)
-
-# Then replace the OpenAI completion call with:
-def get_pr_analysis(pr_content, similar_pr_content):
-    prompt = f"Analyze this pull request:\n{pr_content}\n\nHere is a similar historical PR:\n{similar_pr_content}"
-    return alibaba_model.generate_response(prompt, max_tokens=1000)

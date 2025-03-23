@@ -1,161 +1,402 @@
-# 🚀 RAGA\_EVAL: LLM Response Evaluation Tool
 
-![RAGA_EVAL](https://img.shields.io/badge/RAGA_EVAL-LLM%20Evaluation%20Tool-blue)
+🤖 Welcome to the Interactive Model Evaluator
 
-## 📋 Overview
+==================================================
+MAIN MENU
+==================================================
 
-RAGA\_EVAL is an advanced tool designed to evaluate and optimize responses from Large Language Models (LLMs) through iterative prompt improvement. It generates ground truth responses using Gemini and compares them with responses from models such as Mixtral, Llama, Qwen, and DeepSeek. The evaluation uses multiple metrics, including Relevance, Accuracy, Groundedness, Completeness, BLEU, and ROUGE.
+What would you like to do?
+1. Enter your own question
+2. Choose from sample questions
+3. Set reference model
+4. Exit
 
-## ✨ Key Innovations
+Enter your choice (number): 2
 
-- 🔄 **Iterative Prompt Improvement**: Automatically optimizes prompts across 3 iterations.
-- 📊 **Comprehensive Metrics**: Multiple evaluation dimensions for thorough analysis.
-- ⏳ **API Rate Limit Handling**: Intelligent backoff strategies to prevent quota exhaustion.
-- 📈 **Performance Visualization**: Clear gain/loss tracking between iterations.
+Choose a question:
+1. What are the best strategies for overcoming impostor syndrome?
+2. How can someone find their true passion in life?
+3. What are some unconventional ways to boost creativity?
+4. How should one balance ambition and contentment?
+5. How can one develop a growth mindset for lifelong learning?
+6. Is it ever justified to break the law for a greater good?
+7. What does it mean to live a meaningful life?
+8. Should artificial intelligence have rights?
+9. Is free will an illusion?
+10. What if humans could communicate with animals and how would society adapt?
 
-## 🔍 Features
+Enter your choice (number): 8
 
-- 🧠 **Ground Truth Generation**: Uses Gemini to generate reference responses.
-- 🤖 **Multi-Model Evaluation**: Tests Mixtral, Llama, Qwen, and DeepSeek via Groq API.
-- 📊 **Comprehensive Metrics**: Evaluates using Relevance, Accuracy, Groundedness, Completeness, BLEU, and ROUGE.
-- 🔄 **Iteration Tracking**: Shows performance changes across multiple prompt iterations.
-- 💡 **Smart Prompt Enhancement**: Automatically identifies weak areas and improves prompts.
-- 📁 **Results Export**: Saves detailed performance data in organized CSV reports.
+📝 Evaluating question: Should artificial intelligence have rights?
+Generating response from gemini...
+Generating response from deepseek...
+Generating response from llama...
+Generating response from alibaba...
+Generating response from mixtral...
+Evaluating deepseek...
+Generating prompt improvements for deepseek...
+Evaluating llama...
+Generating prompt improvements for llama...
+Evaluating alibaba...
+Generating prompt improvements for alibaba...
+Evaluating mixtral...
+Generating prompt improvements for mixtral...
+Responses saved to responses/question_3286.json
 
-## 📂 Folder Structure
+════════════════════════════════════════════════════════════════════════════════════════════════════
+📊  EVALUATION RESULTS: "Should artificial intelligence have rights?"
+════════════════════════════════════════════════════════════════════════════════════════════════════
 
-```
-📁 RAGA_EVAL/
-├── 📄 .gitignore
-├── 🛠️ .env
-├── 📖 README.md
-├── 📦 requirements.txt
-├── 📝 interactive_eval.py       # Main evaluation interface
-├── 📜 questions.json            # Input questions for evaluation
-├── 📂 evaluation/               # Evaluation logic
-│   ├── 📊 dynamic_recom.py      # Dynamic recommendations based on metrics
-│   ├── 🧪 evaluator.py          # Core evaluation functionality
-│   ├── 📏 metrics.py            # Metrics computation
-│   ├── 🤖 prompt_improver.py    # Improves prompts based on feedback
-│   └── 📝 recommendation.py     # Generates recommendations using Gemini
-├── 📂 models/                   # Model interfaces
-│   ├── 🧠 gemini_model.py       # Gemini for ground truth and recommendations
-│   ├── 🤖 groq_models.py        # Groq-based models
-│   └── 🔧 model_factory.py      # Model initialization and selection
-├── 📂 responses/                # Stores generated responses
-├── 📂 improved_responses/       # Stores responses from improved prompts
-├── 📂 prompts/                  # Stores improved prompt versions
-└── 📂 results/                  # CSV exports of evaluation metrics
-```
+🏆  RANKINGS (Reference: GEMINI)
+──────────────────────────────────────────────────
 
-## 🛠️ Technology Stack
+  1. MIXTRAL - Overall Score: 0.738
+     Relevance: 0.909         BLEU: 0.134
+     Accuracy: 0.950          ROUGE: 0.250
+     Groundedness: 0.800
+     Completeness: 0.800
 
-- **🐍 Programming**: Python 3.8+
-- **🧠 LLMs Used**:
-  - 📖 Ground Truth: Gemini
-  - 🤖 Response Generation: Mixtral, Llama, Qwen, DeepSeek (via Groq API)
-- **📊 Evaluation Metrics**:
-  - ✅ **Relevance**: Response pertinence to question
-  - 🎯 **Accuracy**: Factual correctness
-  - 📚 **Groundedness**: Based on reference material
-  - 📖 **Completeness**: Coverage of required information
-  - 🔡 **BLEU/ROUGE**: Text similarity metrics
-- **💾 Data Storage**: JSON and CSV for structured output
+  2. LLAMA - Overall Score: 0.685
+     Relevance: 0.819         BLEU: 0.203
+     Accuracy: 0.950          ROUGE: 0.232
+     Groundedness: 0.600
+     Completeness: 0.800
 
-## 📥 Installation
+  3. ALIBABA - Overall Score: 0.531
+     Relevance: 0.828         BLEU: 0.043
+     Accuracy: 0.900          ROUGE: 0.214
+     Groundedness: 0.200
+     Completeness: 0.500
 
-### 🔽 Clone the repository:
+  4. DEEPSEEK - Overall Score: 0.524
+     Relevance: 0.785         BLEU: 0.293
+     Accuracy: 0.800          ROUGE: 0.080
+     Groundedness: 0.200
+     Completeness: 0.600
 
-```bash
-git clone https://github.com/Tejaswini-41/RAGA_Eval.git
-cd RAGA_Eval
-```
+════════════════════════════════════════════════════════════════════════════════════════════════════
+💡  PROMPT IMPROVEMENT RECOMMENDATIONS
+════════════════════════════════════════════════════════════════════════════════════════════════════
 
-### 🛠️ Create a virtual environment:
+📈  DEEPSEEK
+──────────────────────────────────────────────────
 
-```bash
-python -m venv venv
-source venv/bin/activate  # On macOS/Linux
-venv\Scripts\activate    # On Windows
-```
+  🔍 KEY ISSUES SUMMARY:
+  • Instruction to avoid speculation is ignored.  The model provides a personal opinion instead of a neutral summary of the debate.
+  • The prompt lacks instruction on handling complex, multifaceted questions with no single definitive answer.
+  • The prompt encourages brevity which inhibits the model's ability to fully address the complexities of the question.
 
-### 📦 Install dependencies:
+  📌 TARGET METRICS: Accuracy, Completeness, Groundness, Relevance
+  📈 POTENTIAL GAINS: Accuracy: +15%, Completeness: +15%, Groundness: +20%, Relevance: +5%        
 
-```bash
-pip install -r requirements.txt
-```
+┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+  🔄 PROMPT COMPARISON
+┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
 
-### 🔑 Set up environment variables:
+  📝 CURRENT PROMPT:
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
+  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │
+  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
+  │ acknowledge limitations - Maintain professional tone                                     │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
-Create a `.env` file and add your API keys:
+  ✨ IMPROVED PROMPT:
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
+  │ accurate answers - Focus on factual information - Use clear and simple language -        │    
+  │ Summarize the main arguments and perspectives on the topic, acknowledging that there is  │    
+  │ no single consensus. - If unsure about specific details, acknowledge limitations -       │    
+  │ Maintain a professional and neutral tone. - Provide a concise yet comprehensive summary  │    
+  │ of the ongoing debate surrounding the question.  Do not offer your own opinion or        │    
+  │ conclusion.                                                                              │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
-```bash
-GEMINI_API_KEY=your_gemini_api_key
-GROQ_API_KEY=your_groq_api_key
-```
+Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
 
-## 🚦 Usage
+  🚀 Estimated overall improvement: +15-20%
 
-1. **Prepare questions**: Update or create questions in `questions.json`
-2. **Run the evaluation script**:
+📈  LLAMA
+──────────────────────────────────────────────────
 
-```bash
-python interactive_eval.py
-```
+  🔍 KEY ISSUES SUMMARY:
+  • Lack of explicit instruction to prioritize brevity and style matching the reference response. 
+  • Absence of guidance on focusing on the core philosophical and legal debate aspects.
+  • Overemphasis on factual information without considering stylistic alignment.
 
-3. **Interactive menu options**:
-   - 📌 Evaluate single question
-   - 🔄 Evaluate with iterative improvement (3 iterations)
-   - 📜 View all available questions
-   - ❌ Quit
-4. **Review results**:
-   - 📊 Terminal output shows metrics comparison
-   - 📂 CSV exports in `results/` directory
-   - 📜 Improved prompts stored in `prompts/`
+  📌 TARGET METRICS: BLEU, Completeness, Groundedness, ROUGE, Relevance
+  📈 POTENTIAL GAINS: BLEU: +10%, Completeness: +3%, Groundedness: +15%, ROUGE: +10%, Relevance: +5%
 
-## 🔄 Current Development Status
+┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+  🔄 PROMPT COMPARISON
+┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
 
-✅ Core evaluation framework complete
-✅ Multi-model comparison working
-✅ Iterative prompt improvement implemented
-✅ API rate limiting and backoff strategies added
-✅ CSV export functionality added
-✅ Performance summary with best iteration identification
-🔜 Integration with RAG-based agent (next phase)
+  📝 CURRENT PROMPT:
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
+  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │    
+  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
+  │ acknowledge limitations - Maintain professional tone                                     │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
-## 📊 Sample Results
+  ✨ IMPROVED PROMPT:
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant.  Your task is to answer the following question concisely │    
+  │ and accurately, mirroring the style and structure of the provided reference response.    │
+  │ Focus on the philosophical and legal debate surrounding the question, emphasizing the    │    
+  │ lack of consensus and the complexities involved in defining "intelligence," "rights,"    │    
+  │ and the capabilities of future AI systems. Avoid unnecessary details or tangential       │    
+  │ information. Prioritize brevity and clarity.  The reference response is provided below   │    
+  │ for stylistic guidance.                                                                  │    
+  │                                                                                          │    
+  │ QUESTION: Should artificial intelligence have rights?                                    │    
+  │                                                                                          │    
+  │ REFERENCE RESPONSE: There is no consensus on whether artificial intelligence should have │    
+  │ rights.  The question is complex and depends on definitions of "intelligence," "rights," │    
+  │ and the capabilities of future AI systems.  It is currently a topic of philosophical and │    
+  │ legal debate, not a settled matter.                                                      │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
-The system generates comprehensive metrics tables showing performance across iterations:
+Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
 
-```
-───────────────────────────────────────────────────────────────────────────────────────────────
-Model       Metric       Original   Iter 1   Gain 1%  Iter 2   Gain 2%  Iter 3   Gain 3%  Total Gain
-───────────────────────────────────────────────────────────────────────────────────────────────
-alibaba     Accuracy     0.900      0.950   ✅+5.6%   0.500   🚩-44.4%   0.950   ✅+5.6%   ✅ +5.6%
-            BLEU        0.043      0.126   ✅+193.0% 0.128   ✅+197.7% 0.137   ✅+218.6% ✅ +218.6%
-            Completeness 0.500      0.800   ✅+60.0%  0.500   +0.0%     0.800   ✅+60.0%  ✅ +60.0%
-            Groundedness 0.200      0.200   +0.0%    0.500   ✅+150.0% 0.200   +0.0%     +0.0%
-            Overall      0.531      0.575   ✅+8.3%   0.470   🚩-11.5%  0.573   ✅+7.9%   ✅ +7.9%
-            ROUGE       0.214      0.107   🚩-50.0%  0.102   🚩-52.3%  0.106   🚩-50.5%  🚩 -50.5%
-            Relevance   0.828      0.771   🚩-6.9%   0.734   🚩-11.4%  0.758   🚩-8.5%   🚩 -8.5%
-```
+  🚀 An overall improvement of approximately 10-15% in the RAGAS score is expected.
 
-## 🔮 Future Enhancements
+📈  ALIBABA
+──────────────────────────────────────────────────
 
-- 🔍 Integration with RAG-based agent for code review
-- 📈 Enhanced visualization of metrics using charts
-- 🧪 Support for additional evaluation dimensions
-- 🔄 Parallel processing for faster evaluation
-- 🌐 Web interface for easier interaction
+  🔍 KEY ISSUES SUMMARY:
+  • Overemphasis on factual certainty and avoidance of speculation.
+  • Lack of instruction to consider multiple perspectives.
+  • Instruction to keep responses brief might hinder completeness.
 
-## 👥 Contributors
+  📌 TARGET METRICS: Completeness, Groundedness, Relevance
+  📈 POTENTIAL GAINS: Completeness: +20%, Groundedness: +30%, Relevance: +10%
 
-- 👩‍💻 **Tejaswini Durge**
-- 👩‍💻 **Dipali Gangarde**
+┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+  🔄 PROMPT COMPARISON
+┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
 
-## 📄 License
+  📝 CURRENT PROMPT:
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
+  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │    
+  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
+  │ acknowledge limitations - Maintain professional tone                                     │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘
 
-📜 This project is licensed under the MIT License.
+  ✨ IMPROVED PROMPT:
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant providing nuanced responses to complex questions.  For    │    
+  │ the following question, consider the lack of a definitive answer and the ongoing debate  │    
+  │ surrounding the topic.  Explore the different perspectives and arguments for and against │    
+  │ the proposition, addressing the ethical, legal, and philosophical dimensions involved.   │    
+  │ Provide a comprehensive yet concise answer, acknowledging the uncertainties and ongoing  │    
+  │ discussions.  Prioritize accuracy and completeness while maintaining a professional      │    
+  │ tone.  Do not simply state your own opinion, instead summarize the different views and   │    
+  │ their supporting rationales.  Focus on presenting a balanced and informed overview of    │    
+  │ the current state of the debate.  Question: Should artificial intelligence have rights?  │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
 
-🕒 *Last updated: March 16, 2025*
+Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
 
+  🚀 Estimated overall improvement: +20%
+
+📈  MIXTRAL
+──────────────────────────────────────────────────
+
+  🔍 KEY ISSUES SUMMARY:
+  • Overly comprehensive response generation; lacks focus on mirroring the reference response's brevity and style.
+  • Lack of emphasis on addressing the definitional complexities inherent in the question.        
+  • Focus on factual information overshadows stylistic and structural mirroring.
+
+  📌 TARGET METRICS: Accuracy, BLEU, Completeness, Groundedness, Overall, ROUGE, Relevance        
+  📈 POTENTIAL GAINS: Accuracy: +2%, BLEU: +10%, Completeness: +5%, Groundedness: +5%, Overall: +3%, ROUGE: +15%, Relevance: +3%
+
+┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+  🔄 PROMPT COMPARISON
+┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+
+  📝 CURRENT PROMPT:
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
+  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │    
+  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
+  │ acknowledge limitations - Maintain professional tone                                     │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
+
+  ✨ IMPROVED PROMPT:
+  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
+  │ You are a helpful AI assistant. Your task is to answer the following question concisely  │    
+  │ and accurately, mirroring the style and structure of the provided reference response.    │    
+  │ Prioritize brevity and directness.  Explicitly acknowledge the dependence of the answer  │    
+  │ on the definitions of 'intelligence,' 'rights,' and the capabilities of future AI        │    
+  │ systems.                                                                                 │    
+  │                                                                                          │    
+  │ QUESTION: Should artificial intelligence have rights?                                    │    
+  │                                                                                          │    
+  │ REFERENCE RESPONSE: There is no consensus on whether artificial intelligence should have │    
+  │ rights.  The question is complex and depends on definitions of "intelligence," "rights," │    
+  │ and the capabilities of future AI systems.  It is currently a topic of philosophical and │    
+  │ legal debate, not a settled matter.                                                      │    
+  │                                                                                          │    
+  │ Provide your answer below:                                                               │    
+  └──────────────────────────────────────────────────────────────────────────────────────────┘    
+
+Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
+
+  🚀 Estimated overall improvement: +10%
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Press Enter to continue...
+
+==================================================
+MAIN MENU
+==================================================
+
+What would you like to do?
+1. Enter your own question
+2. Choose from sample questions
+3. Set reference model
+4. Evaluate previous question with improved prompts: 'Should artificial intelligence have rights?'
+5. Exit
+
+Enter your choice (number): 4
+
+📝 Re-evaluating: Should artificial intelligence have rights?
+
+📝 Evaluating question with iterative prompt improvements: Should artificial intelligence have rights?
+
+══════════════════════════════════════════════════
+ITERATION 1
+══════════════════════════════════════════════════
+
+⚡ Generating improved response for DEEPSEEK
+
+⚡ Generating improved response for LLAMA
+
+⚡ Generating improved response for ALIBABA
+
+⚡ Generating improved response for MIXTRAL
+Evaluating deepseek...
+Generating prompt improvements for deepseek...
+Evaluating llama...
+Generating prompt improvements for llama...
+Evaluating alibaba...
+Generating prompt improvements for alibaba...
+Evaluating mixtral...
+Generating prompt improvements for mixtral...
+
+Iteration 1 data saved to improved_responses/comparison_20250316_155109_6714_iteration_1.json     
+
+══════════════════════════════════════════════════
+ITERATION 2
+══════════════════════════════════════════════════
+
+⏱️ Adding 10 second delay before iteration 2 to avoid API rate limits...
+Continuing with evaluation...
+
+⚡ Generating improved response for DEEPSEEK
+
+⚡ Generating improved response for LLAMA
+
+⚡ Generating improved response for ALIBABA
+
+⚡ Generating improved response for MIXTRAL
+Evaluating deepseek...
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
+Generating prompt improvements for deepseek...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
+Evaluating llama...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
+Generating prompt improvements for llama...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
+Evaluating alibaba...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
+Generating prompt improvements for alibaba...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
+Evaluating mixtral...
+Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
+Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
+Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
+Generating prompt improvements for mixtral...
+Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
+
+Iteration 2 data saved to improved_responses/comparison_20250316_155133_6714_iteration_2.json     
+
+══════════════════════════════════════════════════
+ITERATION 3
+══════════════════════════════════════════════════
+
+⏱️ Adding 20 second delay before iteration 3 to avoid API rate limits...
+Continuing with evaluation...
+
+⚡ Generating improved response for DEEPSEEK
+
+⚡ Generating improved response for LLAMA
+
+⚡ Generating improved response for ALIBABA
+
+⚡ Generating improved response for MIXTRAL
+Evaluating deepseek...
+Generating prompt improvements for deepseek...
+Evaluating llama...
+Generating prompt improvements for llama...
+Evaluating alibaba...
+Generating prompt improvements for alibaba...
+Evaluating mixtral...
+Generating prompt improvements for mixtral...
+
+Iteration 3 data saved to improved_responses/comparison_20250316_155228_6714_iteration_3.json     
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+📊 MULTI-ITERATION METRICS COMPARISON TABLE
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Model           Metric          Original    Iter 1     Gain 1%   Iter 2     Gain 2%   Iter 3     Gain 3%   Total Gain
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+alibaba         Accuracy        0.900       0.950     ✅+5.6%    0.500     🚩-44.4%   0.950     ✅+5.6%    ✅ +5.6%
+                BLEU            0.043       0.126     ✅+193.0%  0.128     ✅+197.7%  0.137     ✅+218.6%  ✅ +218.6%
+                Completeness    0.500       0.800     ✅+60.0%   0.500     +0.0%     0.800     ✅+60.0%   ✅ +60.0%
+                Groundedness    0.200       0.200     +0.0%     0.500     ✅+150.0%  0.200     +0.0%     +0.0%
+                Overall         0.531       0.575     ✅+8.3%    0.470     🚩-11.5%   0.573     ✅+7.9%    ✅ +7.9%
+                ROUGE           0.214       0.107     🚩-50.0%   0.102     🚩-52.3%   0.106     🚩-50.5%   🚩 -50.5%
+                Relevance       0.828       0.771     🚩-6.9%    0.734     🚩-11.4%   0.758     🚩-8.5%    🚩 -8.5%
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+deepseek        Accuracy        0.800       0.950     ✅+18.7%   0.850     ✅+6.2%    0.950     ✅+18.7%   ✅ +18.7%
+                BLEU            0.293       0.313     ✅+6.8%    0.293     +0.0%     0.129     🚩-56.0%   🚩 -56.0%
+                Completeness    0.600       0.600     +0.0%     0.500     🚩-16.7%   0.800     ✅+33.3%   ✅ +33.3%
+                Groundedness    0.200       0.200     +0.0%     0.200     +0.0%     0.200     +0.0%     +0.0%
+                Overall         0.524       0.566     ✅+8.0%    0.523     🚩-0.2%    0.575     ✅+9.7%    ✅ +9.7%
+                ROUGE           0.080       0.089     ✅+11.2%   0.085     ✅+6.3%    0.084     ✅+5.0%    ✅ +5.0%
+                Relevance       0.785       0.792     ✅+0.9%    0.791     ✅+0.8%    0.780     🚩-0.6%    🚩 -0.6%
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+llama           Accuracy        0.950       0.900     🚩-5.3%    0.500     🚩-47.4%   0.950     +0.0%     +0.0%
+                BLEU            0.203       0.735     ✅+262.1%  1.000     ✅+392.6%  1.000     ✅+392.6%  ✅ +392.6%
+                Completeness    0.800       1.000     ✅+25.0%   0.500     🚩-37.5%   1.000     ✅+25.0%   ✅ +25.0%
+                Groundedness    0.600       1.000     ✅+66.7%   0.500     🚩-16.7%   1.000     ✅+66.7%   ✅ +66.7%
+                Overall         0.685       0.911     ✅+33.0%   0.683     🚩-0.3%    0.973     ✅+42.0%   ✅ +42.0%
+                ROUGE           0.232       0.682     ✅+194.0%  0.846     ✅+264.7%  0.860     ✅+270.7%  ✅ +270.7%
+                Relevance       0.819       0.974     ✅+18.9%   0.993     ✅+21.2%   0.998     ✅+21.9%   ✅ +21.9%
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+mixtral         Accuracy        0.950       0.950     +0.0%     0.500     🚩-47.4%   0.950     +0.0%     +0.0%
+                BLEU            0.134       0.807     ✅+502.2%  0.807     ✅+502.2%  0.515     ✅+284.3%  ✅ +284.3%
+                Completeness    0.800       0.900     ✅+12.5%   0.500     🚩-37.5%   0.900     ✅+12.5%   ✅ +12.5%
+                Groundedness    0.800       1.000     ✅+25.0%   0.500     🚩-37.5%   0.800     +0.0%     +0.0%
+                Overall         0.738       0.934     ✅+26.6%   0.661     🚩-10.4%   0.815     ✅+10.4%   ✅ +10.4%
+                ROUGE           0.250       0.825     ✅+230.0%  0.825     ✅+230.0%  0.443     ✅+77.2%   ✅ +77.2%
+                Relevance       0.909       0.991     ✅+9.0%    0.991     ✅+9.0%    0.932     ✅+2.5%    ✅ +2.5%
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+🏆 BEST ITERATION: Iteration 1 with average gain of 59.1%
+    Success rate: 75.0% of metrics improved
+    Recommended prompt set: prompts/improved_prompts_*_iteration_1.json
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Press Enter to continue...
