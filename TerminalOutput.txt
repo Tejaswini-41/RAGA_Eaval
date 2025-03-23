@@ -1,402 +1,109 @@
+(nice_env) T:\RAGA_Eaval>python -u "t:\RAGA_Eaval\RAGBasedAgent\main.py"   
+🚀 Starting RAG-based review for PR #244354 in microsoft/vscode
+
+📦 Step 1-2: Fetching pull requests data...
+Connected to repository: microsoft/vscode
+Fetching closed pull requests...
+Checking Pull Request #244354 - Go back to original edits mode in unified view with all models
+File: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
+File: src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts
+File: src/vs/workbench/contrib/chat/browser/chatInputPart.ts
+File: src/vs/workbench/contrib/chat/common/constants.ts
+Checking Pull Request #244352 - Render breaks in request messages in the way that users expect
+File: src/vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownContentPart.ts
+File: src/vs/workbench/contrib/chat/common/chatServiceImpl.ts        
+Checking Pull Request #244351 - Fix bad chat input layout after adding context that wraps
+File: src/vs/workbench/contrib/chat/browser/chatInputPart.ts
+Checking Pull Request #244350 - Align editing session creation with ChatModel
+File: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
+File: src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts
+File: src/vs/workbench/contrib/chat/browser/actions/chatTitleActions.ts
+File: src/vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownContentPart.ts
+File: src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingActions.ts
+File: src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingServiceImpl.ts
+File: src/vs/workbench/contrib/chat/browser/chatWidget.ts
+File: src/vs/workbench/contrib/chat/browser/contrib/chatInputCompletions.ts
+File: src/vs/workbench/contrib/chat/common/chatEditingService.ts     
+File: src/vs/workbench/contrib/chat/common/chatModel.ts
+File: src/vs/workbench/contrib/chat/common/tools/editFileTool.ts     
+File: src/vs/workbench/contrib/chat/test/browser/chatEditingService.test.ts
+File: src/vs/workbench/contrib/chat/test/common/chatModel.test.ts    
+File: src/vs/workbench/contrib/inlineChat/browser/inlineChatController.ts
+File: src/vs/workbench/contrib/inlineChat/browser/inlineChatSessionServiceImpl.ts
+Checking Pull Request #244340 - Git - try a different separator in the ref picker
+File: extensions/git/src/commands.ts
+Checking Pull Request #244339 - Handle disabled chat agent in unified chat view properly
+File: src/vs/workbench/contrib/chat/browser/chat.contribution.ts
+File: src/vs/workbench/contrib/chat/browser/chatInputPart.ts
+File: src/vs/workbench/contrib/chat/browser/chatSetup.ts
+File: src/vs/workbench/contrib/chat/common/chatAgents.ts
+File: src/vs/workbench/contrib/chat/common/constants.ts
+Checking Pull Request #244333 - move to desktop contributions        
+File: src/vs/workbench/electron-sandbox/desktop.contribution.ts
+File: src/vs/workbench/electron-sandbox/desktop.main.ts
+Checking Pull Request #244327 - Fix some attachment styling issues   
+File: src/vs/workbench/contrib/chat/browser/chatInputPart.ts
+File: src/vs/workbench/contrib/chat/browser/media/chat.css
+Checking Pull Request #244326 - Fix codeblock rendering after reload 
+File: src/vs/workbench/contrib/chat/browser/chat.ts
+File: src/vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownContentPart.ts
+File: src/vs/workbench/contrib/chat/browser/chatEditor.ts
+File: src/vs/workbench/contrib/chat/browser/chatListRenderer.ts      
+File: src/vs/workbench/contrib/chat/browser/chatViewPane.ts
+File: src/vs/workbench/contrib/inlineChat/browser/inlineChatController.ts
+Checking Pull Request #244323 - Pass model to tools
+File: src/vs/workbench/api/common/extHost.api.impl.ts
+File: src/vs/workbench/api/common/extHostLanguageModelTools.ts       
+File: src/vs/workbench/contrib/chat/browser/languageModelToolsService.ts
+File: src/vs/workbench/contrib/chat/common/chatModel.ts
+File: src/vs/workbench/contrib/chat/common/chatServiceImpl.ts        
+File: src/vs/workbench/contrib/chat/common/languageModelToolsService.ts
+File: src/vs/workbench/contrib/chat/test/common/chatModel.test.ts    
+File: src/vscode-dts/vscode.proposed.chatParticipantAdditions.d.ts   
+
+=== List of Changed Files ===
+['src/vs/workbench/contrib/chat/browser/actions/chatActions.ts, src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts, src/vs/workbench/contrib/chat/browser/chatInputPart.ts, src/vs/workbench/contrib/chat/common/constants.ts', 'src/vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownContentPart.ts, src/vs/workbench/contrib/chat/common/chatServiceImpl.ts', 'src/vs/workbench/contrib/chat/browser/chatInputPart.ts', 'src/vs/workbench/contrib/chat/browser/actions/chatActions.ts, src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts, src/vs/workbench/contrib/chat/browser/actions/chatTitleActions.ts, src/vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownContentPart.ts, src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingActions.ts, src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingServiceImpl.ts, src/vs/workbench/contrib/chat/browser/chatWidget.ts, src/vs/workbench/contrib/chat/browser/contrib/chatInputCompletions.ts, src/vs/workbench/contrib/chat/common/chatEditingService.ts, src/vs/workbench/contrib/chat/common/chatModel.ts, src/vs/workbench/contrib/chat/common/tools/editFileTool.ts, src/vs/workbench/contrib/chat/test/browser/chatEditingService.test.ts, src/vs/workbench/contrib/chat/test/common/chatModel.test.ts, src/vs/workbench/contrib/inlineChat/browser/inlineChatController.ts, src/vs/workbench/contrib/inlineChat/browser/inlineChatSessionServiceImpl.ts', 'extensions/git/src/commands.ts', 'src/vs/workbench/contrib/chat/browser/chat.contribution.ts, src/vs/workbench/contrib/chat/browser/chatInputPart.ts, src/vs/workbench/contrib/chat/browser/chatSetup.ts, src/vs/workbench/contrib/chat/common/chatAgents.ts, src/vs/workbench/contrib/chat/common/constants.ts', 'src/vs/workbench/electron-sandbox/desktop.contribution.ts, src/vs/workbench/electron-sandbox/desktop.main.ts', 'src/vs/workbench/contrib/chat/browser/chatInputPart.ts, src/vs/workbench/contrib/chat/browser/media/chat.css', 'src/vs/workbench/contrib/chat/browser/chat.ts, src/vs/workbench/contrib/chat/browser/chatContentParts/chatMarkdownContentPart.ts, src/vs/workbench/contrib/chat/browser/chatEditor.ts, src/vs/workbench/contrib/chat/browser/chatListRenderer.ts, src/vs/workbench/contrib/chat/browser/chatViewPane.ts, src/vs/workbench/contrib/inlineChat/browser/inlineChatController.ts', 'src/vs/workbench/api/common/extHost.api.impl.ts, src/vs/workbench/api/common/extHostLanguageModelTools.ts, src/vs/workbench/contrib/chat/browser/languageModelToolsService.ts, src/vs/workbench/contrib/chat/common/chatModel.ts, src/vs/workbench/contrib/chat/common/chatServiceImpl.ts, src/vs/workbench/contrib/chat/common/languageModelToolsService.ts, src/vs/workbench/contrib/chat/test/common/chatModel.test.ts, src/vscode-dts/vscode.proposed.chatParticipantAdditions.d.ts']
+
+=== List of Pull Requests ===
+[244354, 244352, 244351, 244350, 244340, 244339, 244333, 244327, 244326, 244323]
+
+📊 Step 3: Creating embeddings and storing in ChromaDB...
+✅ ChromaDB initialized with collection '9beaaac1-a901-4fd0-af6b-743d60b9314f' and 10 embeddings stored
+
+🔍 Step 4: Finding similar PRs to PR #244354...
+Files in PR #244354: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts, src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts, src/vs/workbench/contrib/chat/browser/chatInputPart.ts, src/vs/workbench/contrib/chat/common/constants.ts
+🔍 Found similar pull request:
+PR #244354
+
+📈 Step 5: Comparing changes between PR #244354 and similar PR #244354...
+
+🔍 Changes in Current PR:
+
+File: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts   
+Before:
+                                message: phrase + ' ' + localize('chat.startEditing.confirmation.pending.message.2', "Do you want to accept pending edit...
+
+🔍 Changes in Similar PR:
+
+File: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts   
+Before:
+                                message: phrase + ' ' + localize('chat.startEditing.confirmation.pending.message.2', "Do you want to accept pending edit...
+
+🤖 Step 6: Generating AI-based review...
+
+🤖 Generating review with Gemini model...
+
+✅ Generated AI Review:
+## Code Review: Pull Request for Chat Mode Switching and Edit Handling
+
+This pull request introduces significant changes to the chat mode switching logic andtching logic and how pending edits are handled.  Let's break down the changes, potential issues, and improvements.
+
+**1. Summary of Changes:**
 
-🤖 Welcome to the Interactive Model Evaluator
-
-==================================================
-MAIN MENU
-==================================================
-
-What would you like to do?
-1. Enter your own question
-2. Choose from sample questions
-3. Set reference model
-4. Exit
-
-Enter your choice (number): 2
-
-Choose a question:
-1. What are the best strategies for overcoming impostor syndrome?
-2. How can someone find their true passion in life?
-3. What are some unconventional ways to boost creativity?
-4. How should one balance ambition and contentment?
-5. How can one develop a growth mindset for lifelong learning?
-6. Is it ever justified to break the law for a greater good?
-7. What does it mean to live a meaningful life?
-8. Should artificial intelligence have rights?
-9. Is free will an illusion?
-10. What if humans could communicate with animals and how would society adapt?
-
-Enter your choice (number): 8
-
-📝 Evaluating question: Should artificial intelligence have rights?
-Generating response from gemini...
-Generating response from deepseek...
-Generating response from llama...
-Generating response from alibaba...
-Generating response from mixtral...
-Evaluating deepseek...
-Generating prompt improvements for deepseek...
-Evaluating llama...
-Generating prompt improvements for llama...
-Evaluating alibaba...
-Generating prompt improvements for alibaba...
-Evaluating mixtral...
-Generating prompt improvements for mixtral...
-Responses saved to responses/question_3286.json
-
-════════════════════════════════════════════════════════════════════════════════════════════════════
-📊  EVALUATION RESULTS: "Should artificial intelligence have rights?"
-════════════════════════════════════════════════════════════════════════════════════════════════════
-
-🏆  RANKINGS (Reference: GEMINI)
-──────────────────────────────────────────────────
-
-  1. MIXTRAL - Overall Score: 0.738
-     Relevance: 0.909         BLEU: 0.134
-     Accuracy: 0.950          ROUGE: 0.250
-     Groundedness: 0.800
-     Completeness: 0.800
-
-  2. LLAMA - Overall Score: 0.685
-     Relevance: 0.819         BLEU: 0.203
-     Accuracy: 0.950          ROUGE: 0.232
-     Groundedness: 0.600
-     Completeness: 0.800
-
-  3. ALIBABA - Overall Score: 0.531
-     Relevance: 0.828         BLEU: 0.043
-     Accuracy: 0.900          ROUGE: 0.214
-     Groundedness: 0.200
-     Completeness: 0.500
-
-  4. DEEPSEEK - Overall Score: 0.524
-     Relevance: 0.785         BLEU: 0.293
-     Accuracy: 0.800          ROUGE: 0.080
-     Groundedness: 0.200
-     Completeness: 0.600
-
-════════════════════════════════════════════════════════════════════════════════════════════════════
-💡  PROMPT IMPROVEMENT RECOMMENDATIONS
-════════════════════════════════════════════════════════════════════════════════════════════════════
-
-📈  DEEPSEEK
-──────────────────────────────────────────────────
-
-  🔍 KEY ISSUES SUMMARY:
-  • Instruction to avoid speculation is ignored.  The model provides a personal opinion instead of a neutral summary of the debate.
-  • The prompt lacks instruction on handling complex, multifaceted questions with no single definitive answer.
-  • The prompt encourages brevity which inhibits the model's ability to fully address the complexities of the question.
-
-  📌 TARGET METRICS: Accuracy, Completeness, Groundness, Relevance
-  📈 POTENTIAL GAINS: Accuracy: +15%, Completeness: +15%, Groundness: +20%, Relevance: +5%        
-
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-  🔄 PROMPT COMPARISON
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-
-  📝 CURRENT PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
-  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
-  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │
-  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
-  │ acknowledge limitations - Maintain professional tone                                     │    
-  └──────────────────────────────────────────────────────────────────────────────────────────┘    
-
-  ✨ IMPROVED PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
-  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
-  │ accurate answers - Focus on factual information - Use clear and simple language -        │    
-  │ Summarize the main arguments and perspectives on the topic, acknowledging that there is  │    
-  │ no single consensus. - If unsure about specific details, acknowledge limitations -       │    
-  │ Maintain a professional and neutral tone. - Provide a concise yet comprehensive summary  │    
-  │ of the ongoing debate surrounding the question.  Do not offer your own opinion or        │    
-  │ conclusion.                                                                              │    
-  └──────────────────────────────────────────────────────────────────────────────────────────┘    
-
-Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
-
-  🚀 Estimated overall improvement: +15-20%
-
-📈  LLAMA
-──────────────────────────────────────────────────
-
-  🔍 KEY ISSUES SUMMARY:
-  • Lack of explicit instruction to prioritize brevity and style matching the reference response. 
-  • Absence of guidance on focusing on the core philosophical and legal debate aspects.
-  • Overemphasis on factual information without considering stylistic alignment.
-
-  📌 TARGET METRICS: BLEU, Completeness, Groundedness, ROUGE, Relevance
-  📈 POTENTIAL GAINS: BLEU: +10%, Completeness: +3%, Groundedness: +15%, ROUGE: +10%, Relevance: +5%
-
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-  🔄 PROMPT COMPARISON
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-
-  📝 CURRENT PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
-  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
-  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │    
-  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
-  │ acknowledge limitations - Maintain professional tone                                     │    
-  └──────────────────────────────────────────────────────────────────────────────────────────┘    
-
-  ✨ IMPROVED PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
-  │ You are a helpful AI assistant.  Your task is to answer the following question concisely │    
-  │ and accurately, mirroring the style and structure of the provided reference response.    │
-  │ Focus on the philosophical and legal debate surrounding the question, emphasizing the    │    
-  │ lack of consensus and the complexities involved in defining "intelligence," "rights,"    │    
-  │ and the capabilities of future AI systems. Avoid unnecessary details or tangential       │    
-  │ information. Prioritize brevity and clarity.  The reference response is provided below   │    
-  │ for stylistic guidance.                                                                  │    
-  │                                                                                          │    
-  │ QUESTION: Should artificial intelligence have rights?                                    │    
-  │                                                                                          │    
-  │ REFERENCE RESPONSE: There is no consensus on whether artificial intelligence should have │    
-  │ rights.  The question is complex and depends on definitions of "intelligence," "rights," │    
-  │ and the capabilities of future AI systems.  It is currently a topic of philosophical and │    
-  │ legal debate, not a settled matter.                                                      │    
-  └──────────────────────────────────────────────────────────────────────────────────────────┘    
-
-Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
-
-  🚀 An overall improvement of approximately 10-15% in the RAGAS score is expected.
-
-📈  ALIBABA
-──────────────────────────────────────────────────
-
-  🔍 KEY ISSUES SUMMARY:
-  • Overemphasis on factual certainty and avoidance of speculation.
-  • Lack of instruction to consider multiple perspectives.
-  • Instruction to keep responses brief might hinder completeness.
-
-  📌 TARGET METRICS: Completeness, Groundedness, Relevance
-  📈 POTENTIAL GAINS: Completeness: +20%, Groundedness: +30%, Relevance: +10%
-
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-  🔄 PROMPT COMPARISON
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-
-  📝 CURRENT PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
-  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
-  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │    
-  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
-  │ acknowledge limitations - Maintain professional tone                                     │    
-  └──────────────────────────────────────────────────────────────────────────────────────────┘
-
-  ✨ IMPROVED PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
-  │ You are a helpful AI assistant providing nuanced responses to complex questions.  For    │    
-  │ the following question, consider the lack of a definitive answer and the ongoing debate  │    
-  │ surrounding the topic.  Explore the different perspectives and arguments for and against │    
-  │ the proposition, addressing the ethical, legal, and philosophical dimensions involved.   │    
-  │ Provide a comprehensive yet concise answer, acknowledging the uncertainties and ongoing  │    
-  │ discussions.  Prioritize accuracy and completeness while maintaining a professional      │    
-  │ tone.  Do not simply state your own opinion, instead summarize the different views and   │    
-  │ their supporting rationales.  Focus on presenting a balanced and informed overview of    │    
-  │ the current state of the debate.  Question: Should artificial intelligence have rights?  │    
-  └──────────────────────────────────────────────────────────────────────────────────────────┘    
-
-Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
-
-  🚀 Estimated overall improvement: +20%
-
-📈  MIXTRAL
-──────────────────────────────────────────────────
-
-  🔍 KEY ISSUES SUMMARY:
-  • Overly comprehensive response generation; lacks focus on mirroring the reference response's brevity and style.
-  • Lack of emphasis on addressing the definitional complexities inherent in the question.        
-  • Focus on factual information overshadows stylistic and structural mirroring.
-
-  📌 TARGET METRICS: Accuracy, BLEU, Completeness, Groundedness, Overall, ROUGE, Relevance        
-  📈 POTENTIAL GAINS: Accuracy: +2%, BLEU: +10%, Completeness: +5%, Groundedness: +5%, Overall: +3%, ROUGE: +15%, Relevance: +3%
-
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-  🔄 PROMPT COMPARISON
-┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-
-  📝 CURRENT PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
-  │ You are a helpful AI assistant. Please follow these guidelines: - Provide concise and    │    
-  │ accurate answers - Focus on factual information - Use clear and simple language - Avoid  │    
-  │ speculation or uncertain statements - Keep responses brief but complete - If unsure,     │    
-  │ acknowledge limitations - Maintain professional tone                                     │    
-  └──────────────────────────────────────────────────────────────────────────────────────────┘    
-
-  ✨ IMPROVED PROMPT:
-  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    
-  │ You are a helpful AI assistant. Your task is to answer the following question concisely  │    
-  │ and accurately, mirroring the style and structure of the provided reference response.    │    
-  │ Prioritize brevity and directness.  Explicitly acknowledge the dependence of the answer  │    
-  │ on the definitions of 'intelligence,' 'rights,' and the capabilities of future AI        │    
-  │ systems.                                                                                 │    
-  │                                                                                          │    
-  │ QUESTION: Should artificial intelligence have rights?                                    │    
-  │                                                                                          │    
-  │ REFERENCE RESPONSE: There is no consensus on whether artificial intelligence should have │    
-  │ rights.  The question is complex and depends on definitions of "intelligence," "rights," │    
-  │ and the capabilities of future AI systems.  It is currently a topic of philosophical and │    
-  │ legal debate, not a settled matter.                                                      │    
-  │                                                                                          │    
-  │ Provide your answer below:                                                               │    
-  └──────────────────────────────────────────────────────────────────────────────────────────┘    
-
-Improved prompt saved to: prompts/improved_prompts_20250316_154907_6714.json
-
-  🚀 Estimated overall improvement: +10%
-
-════════════════════════════════════════════════════════════════════════════════════════════════════
-
-Press Enter to continue...
-
-==================================================
-MAIN MENU
-==================================================
-
-What would you like to do?
-1. Enter your own question
-2. Choose from sample questions
-3. Set reference model
-4. Evaluate previous question with improved prompts: 'Should artificial intelligence have rights?'
-5. Exit
-
-Enter your choice (number): 4
-
-📝 Re-evaluating: Should artificial intelligence have rights?
-
-📝 Evaluating question with iterative prompt improvements: Should artificial intelligence have rights?
-
-══════════════════════════════════════════════════
-ITERATION 1
-══════════════════════════════════════════════════
-
-⚡ Generating improved response for DEEPSEEK
-
-⚡ Generating improved response for LLAMA
-
-⚡ Generating improved response for ALIBABA
-
-⚡ Generating improved response for MIXTRAL
-Evaluating deepseek...
-Generating prompt improvements for deepseek...
-Evaluating llama...
-Generating prompt improvements for llama...
-Evaluating alibaba...
-Generating prompt improvements for alibaba...
-Evaluating mixtral...
-Generating prompt improvements for mixtral...
-
-Iteration 1 data saved to improved_responses/comparison_20250316_155109_6714_iteration_1.json     
-
-══════════════════════════════════════════════════
-ITERATION 2
-══════════════════════════════════════════════════
-
-⏱️ Adding 10 second delay before iteration 2 to avoid API rate limits...
-Continuing with evaluation...
-
-⚡ Generating improved response for DEEPSEEK
-
-⚡ Generating improved response for LLAMA
-
-⚡ Generating improved response for ALIBABA
-
-⚡ Generating improved response for MIXTRAL
-Evaluating deepseek...
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
-Generating prompt improvements for deepseek...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
-Evaluating llama...
-Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
-Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
-Generating prompt improvements for llama...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
-Evaluating alibaba...
-Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
-Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
-Generating prompt improvements for alibaba...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
-Evaluating mixtral...
-Error computing accuracy: 429 Resource has been exhausted (e.g. check quota).
-Error computing groundedness: 429 Resource has been exhausted (e.g. check quota).
-Error computing completeness: 429 Resource has been exhausted (e.g. check quota).
-Generating prompt improvements for mixtral...
-Error generating prompt improvements: 429 Resource has been exhausted (e.g. check quota).
-
-Iteration 2 data saved to improved_responses/comparison_20250316_155133_6714_iteration_2.json     
-
-══════════════════════════════════════════════════
-ITERATION 3
-══════════════════════════════════════════════════
-
-⏱️ Adding 20 second delay before iteration 3 to avoid API rate limits...
-Continuing with evaluation...
-
-⚡ Generating improved response for DEEPSEEK
-
-⚡ Generating improved response for LLAMA
-
-⚡ Generating improved response for ALIBABA
-
-⚡ Generating improved response for MIXTRAL
-Evaluating deepseek...
-Generating prompt improvements for deepseek...
-Evaluating llama...
-Generating prompt improvements for llama...
-Evaluating alibaba...
-Generating prompt improvements for alibaba...
-Evaluating mixtral...
-Generating prompt improvements for mixtral...
-
-Iteration 3 data saved to improved_responses/comparison_20250316_155228_6714_iteration_3.json     
-
-════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-📊 MULTI-ITERATION METRICS COMPARISON TABLE
-════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Model           Metric          Original    Iter 1     Gain 1%   Iter 2     Gain 2%   Iter 3     Gain 3%   Total Gain
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-alibaba         Accuracy        0.900       0.950     ✅+5.6%    0.500     🚩-44.4%   0.950     ✅+5.6%    ✅ +5.6%
-                BLEU            0.043       0.126     ✅+193.0%  0.128     ✅+197.7%  0.137     ✅+218.6%  ✅ +218.6%
-                Completeness    0.500       0.800     ✅+60.0%   0.500     +0.0%     0.800     ✅+60.0%   ✅ +60.0%
-                Groundedness    0.200       0.200     +0.0%     0.500     ✅+150.0%  0.200     +0.0%     +0.0%
-                Overall         0.531       0.575     ✅+8.3%    0.470     🚩-11.5%   0.573     ✅+7.9%    ✅ +7.9%
-                ROUGE           0.214       0.107     🚩-50.0%   0.102     🚩-52.3%   0.106     🚩-50.5%   🚩 -50.5%
-                Relevance       0.828       0.771     🚩-6.9%    0.734     🚩-11.4%   0.758     🚩-8.5%    🚩 -8.5%
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-deepseek        Accuracy        0.800       0.950     ✅+18.7%   0.850     ✅+6.2%    0.950     ✅+18.7%   ✅ +18.7%
-                BLEU            0.293       0.313     ✅+6.8%    0.293     +0.0%     0.129     🚩-56.0%   🚩 -56.0%
-                Completeness    0.600       0.600     +0.0%     0.500     🚩-16.7%   0.800     ✅+33.3%   ✅ +33.3%
-                Groundedness    0.200       0.200     +0.0%     0.200     +0.0%     0.200     +0.0%     +0.0%
-                Overall         0.524       0.566     ✅+8.0%    0.523     🚩-0.2%    0.575     ✅+9.7%    ✅ +9.7%
-                ROUGE           0.080       0.089     ✅+11.2%   0.085     ✅+6.3%    0.084     ✅+5.0%    ✅ +5.0%
-                Relevance       0.785       0.792     ✅+0.9%    0.791     ✅+0.8%    0.780     🚩-0.6%    🚩 -0.6%
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-llama           Accuracy        0.950       0.900     🚩-5.3%    0.500     🚩-47.4%   0.950     +0.0%     +0.0%
-                BLEU            0.203       0.735     ✅+262.1%  1.000     ✅+392.6%  1.000     ✅+392.6%  ✅ +392.6%
-                Completeness    0.800       1.000     ✅+25.0%   0.500     🚩-37.5%   1.000     ✅+25.0%   ✅ +25.0%
-                Groundedness    0.600       1.000     ✅+66.7%   0.500     🚩-16.7%   1.000     ✅+66.7%   ✅ +66.7%
-                Overall         0.685       0.911     ✅+33.0%   0.683     🚩-0.3%    0.973     ✅+42.0%   ✅ +42.0%
-                ROUGE           0.232       0.682     ✅+194.0%  0.846     ✅+264.7%  0.860     ✅+270.7%  ✅ +270.7%
-                Relevance       0.819       0.974     ✅+18.9%   0.993     ✅+21.2%   0.998     ✅+21.9%   ✅ +21.9%
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-mixtral         Accuracy        0.950       0.950     +0.0%     0.500     🚩-47.4%   0.950     +0.0%     +0.0%
-                BLEU            0.134       0.807     ✅+502.2%  0.807     ✅+502.2%  0.515     ✅+284.3%  ✅ +284.3%
-                Completeness    0.800       0.900     ✅+12.5%   0.500     🚩-37.5%   0.900     ✅+12.5%   ✅ +12.5%
-                Groundedness    0.800       1.000     ✅+25.0%   0.500     🚩-37.5%   0.800     +0.0%     +0.0%
-                Overall         0.738       0.934     ✅+26.6%   0.661     🚩-10.4%   0.815     ✅+10.4%   ✅ +10.4%
-                ROUGE           0.250       0.825     ✅+230.0%  0.825     ✅+230.0%  0.443     ✅+77.2%   ✅ +77.2%
-                Relevance       0.909       0.991     ✅+9.0%    0.991     ✅+9.0%    0.932     ✅+2.5%    ✅ +2.5%
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-🏆 BEST ITERATION: Iteration 1 with average gain of 59.1%
-    Success rate: 75.0% of metrics improved
-    Recommended prompt set: prompts/improved_prompts_*_iteration_1.json
-════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
-Press Enter to continue...
+The core change is a refactoring to improve the handling of chat mode switching (between Agent, Edit, and Ask modes) and the management of pending edits in the editing session.  The key modifications are:
+
+* **Intro...
+
+✅ RAG-based review process completed successfully!
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1742732353.310595    8272 init.cc:232] grpc_wait_for_shutdown_with_timeout() timed out.

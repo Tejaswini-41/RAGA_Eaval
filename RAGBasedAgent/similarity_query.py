@@ -68,22 +68,55 @@ def query_similar_prs(pr_number, repo_owner, repo_name, collection):
         filenames = ", ".join([file.filename for file in files])
         print(f"Files in PR #{pull_request.number}: {filenames}")
         
-        # Create embedding using TF-IDF
+        # Create embedding
         vector = text_embedding(filenames)
         
-        # Query collection
-        query_results = collection.query(
-            query_embeddings=[vector],
-            n_results=1
-        )
+        # Get all results first
+        all_results = collection.get()
         
-        print("🔍 Found similar pull request:")
-        if query_results and len(query_results["metadatas"]) > 0:
-            similar_pr = query_results["metadatas"][0][0]["pr_number"]
-            print(f"PR #{similar_pr}")
+        # Manually filter out the current PR
+        filtered_indices = []
+        filtered_distances = []
+        
+        # Calculate similarity to each PR
+        for i, meta in enumerate(all_results["metadatas"]):
+            # Skip if this is the current PR
+            if meta["pr_number"] == pr_number:
+                continue
+                
+            # Otherwise calculate similarity and add to list
+            doc_vector = text_embedding(all_results["documents"][i])
+            similarity = calculate_cosine_similarity(vector, doc_vector)
+            filtered_indices.append(i)
+            filtered_distances.append(similarity)
+        
+        if not filtered_indices:
+            print("⚠️ No other PRs found to compare. Using a random PR instead.")
+            # Pick any PR that isn't the current one
+            for meta in all_results["metadatas"]:
+                if meta["pr_number"] != pr_number:
+                    similar_pr = meta["pr_number"]
+                    break
+        else:
+            # Find the most similar PR (highest similarity)
+            best_index = filtered_indices[filtered_distances.index(max(filtered_distances))]
+            similar_pr = all_results["metadatas"][best_index]["pr_number"]
+        
+        print(f"🔍 Found similar pull request: PR #{similar_pr}")
+        
+        # Format results to match expected structure
+        query_results = {"metadatas": [[{"pr_number": similar_pr}]]}
         
         return query_results, files
         
     except Exception as e:
         print(f"Error querying similar PRs: {e}")
         return None, None
+
+def calculate_cosine_similarity(vec1, vec2):
+    """Calculate cosine similarity between two vectors"""
+    import numpy as np
+    dot = np.dot(vec1, vec2)
+    norm1 = np.linalg.norm(vec1)
+    norm2 = np.linalg.norm(vec2)
+    return dot / (norm1 * norm2) if norm1 * norm2 != 0 else 0
