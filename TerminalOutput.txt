@@ -106,4 +106,4 @@ The core change is a refactoring to improve the handling of chat mode switching 
 
 ✅ RAG-based review process completed successfully!
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
-E0000 00:00:1742732353.310595    8272 init.cc:232] grpc_wait_for_shutdown_with_timeout() timed out.
+E0000 00:00:1742732353.310595    8272 init.cc:232 grpc_wait_for_shutdown_with_timeout() timed out.

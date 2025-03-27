@@ -56,9 +56,19 @@ def run_rag_review(repo_owner, repo_name, pr_number):
         print("❌ Failed to compare PR changes")
         return
     
-    # Step 6: Generate AI review
+    # Extract file paths from PR files
+    file_paths = [file.filename for file in pr_files] if pr_files else []
+    current_pr_file = ", ".join(file_paths) if file_paths else None
+    
+    # Step 6: Generate AI review with ALL parameters
     print("\n🤖 Step 6: Generating AI-based review...")
-    review = generate_review(current_pr_changes, similar_pr_changes)
+    review = generate_review(
+        current_pr_changes, 
+        similar_pr_changes,
+        pr_number=pr_number,
+        similar_pr_number=similar_pr_number,
+        current_pr_file=current_pr_file
+    )
     
     if not review:
         print("❌ Failed to generate review")
@@ -75,7 +85,7 @@ if __name__ == "__main__":
     # Repository and PR settings
     repo_owner = 'microsoft'
     repo_name = 'vscode'
-    pr_number = 244354 
+    pr_number = 244815 
     
     # Run RAG-based review process
     run_rag_review(repo_owner, repo_name, pr_number)
