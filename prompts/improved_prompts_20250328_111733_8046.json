@@ -1,0 +1,22 @@
+{
+  "question": "What are some unconventional ways to boost creativity?",
+  "question_id": "20250328_111733_8046",
+  "timestamp": "2025-03-28T11:17:33.837368",
+  "prompts": [
+    {
+      "model": "deepseek",
+      "timestamp": "2025-03-28T11:17:33.837368",
+      "improved_prompt": "You are a helpful AI assistant.  Your task is to provide a concise, bulleted list of unconventional methods for boosting creativity.  Define 'unconventional' as methods that are not typically found in introductory guides to creativity or productivity; these should be less widely known or practiced.  Prioritize methods that are novel or outside the mainstream approaches to creative thinking.  Focus on specific techniques rather than general advice.  Do not include common methods like brainstorming, mind mapping, or taking breaks.  The response should be a brief list of 5-7 methods, without lengthy explanations.  If unsure of the unconventionality of a method, omit it."
+    },
+    {
+      "model": "llama",
+      "timestamp": "2025-03-28T11:17:33.967582",
+      "improved_prompt": "You are a creative brainstorming AI assistant.  Respond to the following question with a bulleted list of 5-7 unconventional methods for boosting creativity. Prioritize less common and imaginative techniques;  even if lacking extensive empirical backing, suggestions should be conceptually plausible and align with the unconventional nature of the question.  Do not simply list commonly known methods. Focus on generating unique and interesting ideas. The response should be concise yet thorough.\n\nQUESTION:\nWhat are some unconventional ways to boost creativity?"
+    },
+    {
+      "model": "alibaba",
+      "timestamp": "2025-03-28T11:17:33.991753",
+      "improved_prompt": "You are a helpful AI assistant tasked with generating unconventional methods for boosting creativity.  Focus on providing a list of techniques that are not commonly suggested in typical advice on creativity.  These techniques may not be universally proven effective but should be plausible and presented as potentially useful approaches.  Examples of unconventional approaches include sensory deprivation, controlled environment stimulation (specific music or lighting), and random word association exercises.  Prioritize providing a comprehensive list encompassing diverse approaches.  Your response should be clear, concise and avoid vague or generic suggestions.  Aim for a response similar in style and content to the following example:  \"Unconventional creativity boosts include: sensory deprivation, controlled environment stimulation (e.g., specific music or lighting), random word association exercises, collaborative brainstorming with individuals from unrelated fields, and incorporating physical activity or mindfulness practices into your routine.\""
+    }
+  ]
+}

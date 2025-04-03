@@ -1,31 +1,25 @@
 from dotenv import load_dotenv
 import os
 import sys
-import csv
 from datetime import datetime
+import csv
 
 # Path to the models directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Import the Gemini model
-from models.gemini_model import GeminiModel
-
 def save_review_to_csv(pr_number, review_type, review_content, current_pr_file, similar_pr_number=None):
-    """Save the review to a CSV file"""
-    # Create directory if it doesn't exist
-    csv_dir = os.path.join(os.path.dirname(__file__), 'reviews')
-    os.makedirs(csv_dir, exist_ok=True)
+    """Save review to CSV file for analysis"""
+    # Create reviews directory if it doesn't exist
+    if not os.path.exists("reviews"):
+        os.makedirs("reviews")
     
-    # Define the CSV file path
-    csv_file = os.path.join(csv_dir, 'pr_reviews.csv')
-    
-    # Check if file exists to determine if we need to write headers
+    csv_file = "reviews/pr_reviews.csv"
     file_exists = os.path.isfile(csv_file)
     
-    # Get current timestamp
+    # Current timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    # Extract sections from review content for better CSV structure
+    # Extract sections from review
     sections = {
         "Summary": [],
         "Issues": [],
@@ -33,13 +27,12 @@ def save_review_to_csv(pr_number, review_type, review_content, current_pr_file, 
         "Comparison": []
     }
     
-    # More robust extraction based on both # headers and **numbered sections**
     current_section = "Summary"
     
     for line in review_content.split('\n'):
-        lower_line = line.lower().strip()
+        lower_line = line.lower()
         
-        # Check for various section header formats (both # and **)
+        # Check if this line is a section header
         if lower_line.startswith('#') or ('**' in lower_line and any(x in lower_line for x in ['1.', '2.', '3.', '4.', 'summary', 'issue', 'bug', 'suggest', 'improvement', 'compar'])):
             
             if any(term in lower_line for term in ["summary", "overview", "changes", "1."]):
@@ -86,8 +79,8 @@ def save_review_to_csv(pr_number, review_type, review_content, current_pr_file, 
     
     print(f"\n💾 Review saved to CSV: {csv_file}")
 
-def generate_review(current_pr_changes, similar_pr_changes, pr_number=None, similar_pr_number=None, current_pr_file=None):
-    """Generate review suggestions based on PR changes using Gemini model"""
+def generate_review(current_pr_changes, similar_pr_changes, pr_number=None, similar_pr_number=None, current_pr_file=None, model_name="gemini"):
+    """Generate review suggestions based on PR changes using specified model"""
     # Load environment variables
     load_dotenv()
     
@@ -108,28 +101,36 @@ Please provide a detailed code review including:
 """
     
     try:
-        # Initialize Gemini model with system prompt
+        # Import model factory
+        from models.model_factory import ModelFactory
+        
+        # Custom system prompt for code review
         system_prompt = "You are an expert code reviewer. Analyze the pull request and provide detailed, constructive feedback."
-        gemini = GeminiModel(system_prompt=system_prompt)
         
-        print("\n🤖 Generating review with Gemini model...")
+        # Get model factory
+        model_factory = ModelFactory()
         
-        # Generate review using Gemini
-        review = gemini.generate_response(prompt)
+        print(f"Generating review with {model_name} model...")
+        
+        # Generate review using the specified model
+        review = model_factory.generate_response_with_prompt(
+            model_name, prompt, system_prompt
+        )
         
         print("\n✅ Generated AI Review:")
-        # print(review)  # Print the full review without truncation
+        print(review[:500] + "..." if len(review) > 500 else review)
         
-        # Save to CSV
-        save_review_to_csv(pr_number, "Gemini", review, current_pr_file, similar_pr_number)
+        # Save review to CSV if PR number is provided
+        if pr_number:
+            save_review_to_csv(pr_number, model_name, review, current_pr_file, similar_pr_number)
         
         return review
         
     except Exception as e:
-        print(f"Error using Gemini model: {e}")
+        print(f"Error using {model_name} model: {e}")
         print("Falling back to rule-based review generation...")
         
-        # Fallback: Create a simple review based on pattern matching
+        # Simple rule-based review generation as fallback
         review = "# Code Review Summary\n\n"
         
         # Count lines added/removed
@@ -157,13 +158,5 @@ Please provide a detailed code review including:
         # Compare with similar PR
         review += "\n## Comparison with Similar PR\n"
         review += "- Both PRs modify similar components\n"
-        if similar_pr_changes.lower().count("test") > current_pr_changes.lower().count("test"):
-            review += "- The similar PR had more test coverage, consider adding tests\n"
-        
-        print("\n✅ Generated fallback rule-based review:")
-        # print(review)
-        
-        # Save to CSV
-        save_review_to_csv(pr_number, "Fallback", review, current_pr_file, similar_pr_number)
         
         return review

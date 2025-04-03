@@ -47,13 +47,25 @@ class InteractiveEvaluator:
     async def evaluate_question(self, question):
         """Generate responses and evaluate for a single question"""
         print(f"\n📝 Evaluating question: {question}")
-    
+        
         # Get current system prompt
         system_prompt = self.model_factory.get_system_prompt()
-    
+        
         # Generate responses from all models
-        responses = self.model_factory.generate_all_responses(question)
-    
+        responses = {}
+        available_models = self.model_factory.get_model_names()
+        
+        for model_name in available_models:
+            try:
+                response = self.model_factory.generate_response(model_name, question)
+                responses[model_name] = response
+            except Exception as e:
+                print(f"⚠️ Skipping unavailable model {model_name}: {e}")
+        
+        if not responses:
+            print("❌ No models available to generate responses")
+            return None
+        
         # Run evaluation with question and system prompt
         results = await self.evaluator.evaluate_responses(
         self.reference_model, responses, question, system_prompt
@@ -73,15 +85,6 @@ class InteractiveEvaluator:
     
         return results
     
-    # def _save_responses(self, question, responses):
-    #     """Save responses to JSON file"""
-    #     filename = f"responses/question_{hash(question) % 10000}.json"
-    #     with open(filename, "w") as f:
-    #         json.dump({
-    #             "question": question,
-    #             "responses": responses
-    #         }, f, indent=2)
-    #     print(f"Responses saved to {filename}")
     def _save_responses(self, question, responses, metrics=None):
         """Save responses and metrics to JSON file"""
         filename = f"responses/question_{hash(question) % 10000}.json"
@@ -94,7 +97,7 @@ class InteractiveEvaluator:
             json.dump(data, f, indent=2)
         print(f"Responses saved to {filename}")
     
-    # Add this new method to the InteractiveEvaluator class
+    # Save improved prompts for each question in a unique file
     def _save_improved_prompts_collection(self, model_name, improved_prompt, question):
         """Save improved prompts for each question in a unique file"""
         # Generate unique ID for the question
@@ -191,100 +194,6 @@ class InteractiveEvaluator:
             print(f"Error loading original results: {e}")
             return None
 
-
-
-    # async def evaluate_with_improved_prompts(self, question):
-    #     """Generate and evaluate responses using latest improved prompts with 3 iterations"""
-    #     print(f"\n📝 Evaluating question with improved prompts (3 iterations): {question}")
-
-    #     # Load original Gemini response and original results
-    #     gemini_response = self._load_original_gemini_response(question)
-    #     if not gemini_response:
-    #         print("\n⚠️ Original Gemini response not found for this question.")
-    #         print("Please evaluate this question first with Gemini to create ground truth.")
-    #         return
-
-    #     # Load original evaluation results
-    #     original_results = self._load_original_results(question)
-    #     if not original_results:
-    #         print("\n⚠️ Original evaluation results not found.")
-    #         return
-
-    #     # Track metrics across iterations
-    #     iteration_metrics = {
-    #         "original": original_results["metrics"]
-    #     }
-    
-    #     current_responses = original_results["responses"]
-    
-    #     # Perform 3 iterations
-    #     for iteration in range(1, 4):
-    #         print(f"\n{'═' * 50}")
-    #         print(f"ITERATION {iteration}")
-    #         print(f"{'═' * 50}")
-
-    #         # Get latest improved prompts
-    #         latest_prompts = self._get_latest_improved_prompts(question)
-    #         improved_responses = {}
-        
-    #         for model_name, prompt_data in latest_prompts.items():
-    #             print(f"\n⚡ Generating improved response for {model_name.upper()}")
-    #             improved_prompt = prompt_data["improved_prompt"]
-    #             improved_response = self.model_factory.generate_response_with_prompt(
-    #                 model_name, question, improved_prompt
-    #             )
-    #             improved_responses[model_name] = improved_response
-
-    #         # Add Gemini response as ground truth
-    #         improved_responses["gemini"] = gemini_response
-
-    #         # Evaluate improved responses against Gemini ground truth
-    #         improved_results = await self.evaluator.evaluate_responses(
-    #             "gemini",
-    #             improved_responses,
-    #             question,
-    #             latest_prompts[next(iter(latest_prompts))]["improved_prompt"]
-    #         )
-
-    #         # Extract metrics from improved results
-    #         improved_metrics = {
-    #             model: scores 
-    #             for model, scores in improved_results["rankings"]
-    #         }
-
-    #         # Store metrics for this iteration
-    #         iteration_metrics[f"iteration_{iteration}"] = improved_metrics
-
-    #         # Save comparison data for this iteration
-    #         question_id = self._generate_question_id(question)
-    #         filename = f"improved_responses/comparison_{question_id}_iteration_{iteration}.json"
-        
-    #         comparison_data = {
-    #             "question": question,
-    #             "timestamp": datetime.datetime.now().isoformat(),
-    #             "iteration": iteration,
-    #             "ground_truth_model": "gemini",
-    #             "ground_truth_response": gemini_response,
-    #             "original_responses": original_results["responses"],
-    #             "previous_responses": current_responses,
-    #             "improved_responses": improved_responses,
-    #             "original_metrics": original_results["metrics"],
-    #             "improved_metrics": improved_metrics,
-    #             "prompts_used": latest_prompts
-    #         }
-
-    #         with open(filename, "w") as f:
-    #             json.dump(comparison_data, f, indent=2)
-    #         print(f"\nIteration {iteration} data saved to {filename}")
-
-    #         # Update current responses for next iteration
-    #         current_responses = improved_responses
-
-    #     # Display final comparison using original and all iteration metrics
-    #     self._display_multi_iteration_comparison(iteration_metrics)
-
-
-
     async def evaluate_with_improved_prompts(self, question):
         """Generate and evaluate responses using iteratively improved prompts"""
         print(f"\n📝 Evaluating question with iterative prompt improvements: {question}")
@@ -318,7 +227,7 @@ class InteractiveEvaluator:
             # Add progressive delay before iterations 2 and 3
             if iteration > 1:
                 # Progressive delay: 10 seconds for iteration 2, 20 seconds for iteration 3
-                delay_seconds = (iteration - 1) * 14
+                delay_seconds = (iteration - 1) * 30  
                 print(f"\n⏱️ Adding {delay_seconds} second delay before iteration {iteration} to avoid API rate limits...")
                 await asyncio.sleep(delay_seconds)
                 print("Continuing with evaluation...")
@@ -685,78 +594,6 @@ class InteractiveEvaluator:
                 suggestions.extend(improvement_templates.get(metric, []))
         
         return suggestions
-
-
-
-
-
-
-
-
-
-
-    # def _display_multi_iteration_comparison(self, iteration_metrics):
-    #     """Display comparison table of original and all iteration metrics"""
-    #     print("\n" + "═" * 120)
-    #     print("📊 MULTI-ITERATION METRICS COMPARISON TABLE")
-    #     print("═" * 120)
-
-    #     # Header
-    #     print("\n" + "─" * 120)
-    #     header = f"{'Model':<15} {'Metric':<15} {'Original':<12}"
-    #     for i in range(1, 4):
-    #         header += f"{'Iter '+str(i):<12}"
-    #     header += f"{'Total Gain':<12}"
-    #     print(header)
-    #     print("─" * 120)
-
-    #     # Get all models from all results (excluding reference model)
-    #     all_models = set()
-    #     all_metrics = set()
-    #     for metrics in iteration_metrics.values():
-    #         for model, scores in metrics.items():
-    #             if model != "gemini":
-    #                 all_models.add(model)
-    #                 all_metrics.update(scores.keys())
-
-    #     for model_name in sorted(all_models):
-    #         first_line = True
-    #         for metric in sorted(all_metrics):
-    #             # Get values across iterations
-    #             orig_val = iteration_metrics["original"].get(model_name, {}).get(metric, 0.0)
-    #             iter_vals = []
-    #             for i in range(1, 4):
-    #                 iter_val = iteration_metrics.get(f"iteration_{i}", {}).get(model_name, {}).get(metric, 0.0)
-    #                 iter_vals.append(iter_val)
-            
-    #             # Calculate total improvement
-    #             final_val = iter_vals[-1]
-    #             total_change_pct = ((final_val - orig_val) / orig_val * 100) if orig_val != 0 else 0.0
-            
-    #             # Format the line
-    #             model_col = f"{model_name:<15}" if first_line else " " * 15
-    #             line = f"{model_col} {metric:<15} {orig_val:<12.3f}"
-            
-    #             # Add iteration values
-    #             for val in iter_vals:
-    #                 line += f"{val:<12.3f}"
-            
-    #             # Add total change with indicator
-    #             change_str = f"{total_change_pct:+.1f}%"
-    #             if total_change_pct > 0:
-    #                 change_str = f"✅ {change_str}"
-    #             elif total_change_pct < 0:
-    #                 change_str = f"🚩 {change_str}"
-    #             line += f"{change_str:<12}"
-            
-    #             print(line)
-    #             first_line = False
-        
-    #         print("─" * 120)
-
-    #     print("\n" + "═" * 120)
-
-
 
 
     def _display_multi_iteration_comparison(self, iteration_metrics):

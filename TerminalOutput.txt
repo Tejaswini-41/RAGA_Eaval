@@ -75,7 +75,7 @@ Files in PR #244354: src/vs/workbench/contrib/chat/browser/actions/chatActions.t
 🔍 Found similar pull request:
 PR #244354
 
-📈 Step 5: Comparing changes between PR #244354 and similar PR #244354...
+📈 Step 5: Comparing changes between PR #244354 and similar PR #244809...
 
 🔍 Changes in Current PR:
 

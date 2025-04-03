@@ -19,11 +19,11 @@ MODEL_CONFIGS = {
     "alibaba": {
         "groq_id": "qwen-2.5-32b",
         "display_name": "Alibaba Qwen"
-    },
-    "mixtral": {
-        "groq_id": "mixtral-8x7b-32768",
-        "display_name": "Mixtral"
     }
+    # "mixtral": {
+    #     "groq_id": "mixtral-8x7b-32768",
+    #     "display_name": "Mixtral"
+    # }
 }
 
 class GroqModel:

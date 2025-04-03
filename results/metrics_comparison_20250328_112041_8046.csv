@@ -1,0 +1,39 @@
+Model Performance Analysis
+Question:,What are some unconventional ways to boost creativity?
+Generated:,2025-03-28 11:20:41
+
+MODEL: ALIBABA
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.800,0.800,+0.0%,0.800,+0.0%,0.800,+0.0%,+0.0%
+BLEU,0.000,0.002,+0.0%,0.009,+0.0%,0.004,+0.0%,+0.0%
+Completeness,0.600,0.600,+0.0%,0.800,+33.3%,0.800,+33.3%,+33.3%
+Groundedness,0.600,0.300,-50.0%,0.600,+0.0%,0.400,-33.3%,-33.3%
+Overall,0.557,0.515,-7.5%,0.606,+8.8%,0.566,+1.6%,+1.6%
+ROUGE,0.082,0.081,-1.2%,0.117,+42.7%,0.078,-4.9%,-4.9%
+Relevance,0.693,0.786,+13.4%,0.769,+11.0%,0.787,+13.6%,+13.6%
+
+MODEL: DEEPSEEK
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.900,0.900,+0.0%,0.700,-22.2%,0.700,-22.2%,-22.2%
+BLEU,0.005,0.004,-20.0%,0.006,+20.0%,0.004,-20.0%,-20.0%
+Completeness,0.700,0.200,-71.4%,0.200,-71.4%,0.000,-100.0%,-100.0%
+Groundedness,0.600,0.000,-100.0%,0.000,-100.0%,0.000,-100.0%,-100.0%
+Overall,0.606,0.396,-34.7%,0.348,-42.6%,0.327,-46.0%,-46.0%
+ROUGE,0.051,0.052,+2.0%,0.035,-31.4%,0.051,+0.0%,+0.0%
+Relevance,0.752,0.676,-10.1%,0.696,-7.4%,0.734,-2.4%,-2.4%
+
+MODEL: LLAMA
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.800,0.600,-25.0%,0.700,-12.5%,0.600,-25.0%,-25.0%
+BLEU,0.001,0.020,+1900.0%,0.016,+1500.0%,0.023,+2200.0%,+2200.0%
+Completeness,0.000,0.400,+0.0%,0.200,+0.0%,0.600,+0.0%,+0.0%
+Groundedness,0.000,0.200,+0.0%,0.200,+0.0%,0.200,+0.0%,+0.0%
+Overall,0.353,0.400,+13.3%,0.388,+9.9%,0.439,+24.4%,+24.4%
+ROUGE,0.073,0.075,+2.7%,0.059,-19.2%,0.066,-9.6%,-9.6%
+Relevance,0.730,0.702,-3.8%,0.679,-7.0%,0.749,+2.6%,+2.6%
+
+PERFORMANCE SUMMARY
+Model,Initial Overall,Final Overall,Change,Best Score,Best Iteration
+alibaba,0.557,0.566,+1.6%,0.606,Iteration 2
+deepseek,0.606,0.327,-46.0%,0.606,Original
+llama,0.353,0.439,+24.4%,0.439,Iteration 3
