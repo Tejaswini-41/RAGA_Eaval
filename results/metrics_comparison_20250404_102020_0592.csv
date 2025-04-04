@@ -1,0 +1,39 @@
+Model Performance Analysis
+Question:,How can someone find their true passion in life?
+Generated:,2025-04-04 10:20:20
+
+MODEL: ALIBABA
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.800,0.950,+18.7%,0.950,+18.7%,0.950,+18.7%,+18.7%
+BLEU,0.106,0.137,+29.2%,0.068,-35.8%,0.052,-50.9%,-50.9%
+Completeness,0.800,1.000,+25.0%,0.800,+0.0%,1.000,+25.0%,+25.0%
+Groundedness,0.800,0.800,+0.0%,0.800,+0.0%,0.800,+0.0%,+0.0%
+Overall,0.694,0.727,+4.8%,0.691,-0.4%,0.714,+2.9%,+2.9%
+ROUGE,0.173,0.112,-35.3%,0.065,-62.4%,0.065,-62.4%,-62.4%
+Relevance,0.930,0.773,-16.9%,0.802,-13.8%,0.773,-16.9%,-16.9%
+
+MODEL: DEEPSEEK
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.900,0.900,+0.0%,0.800,-11.1%,1.000,+11.1%,+11.1%
+BLEU,0.048,0.046,-4.2%,0.046,-4.2%,0.068,+41.7%,+41.7%
+Completeness,0.800,0.800,+0.0%,0.800,+0.0%,0.800,+0.0%,+0.0%
+Groundedness,0.800,0.800,+0.0%,0.800,+0.0%,0.600,-25.0%,-25.0%
+Overall,0.675,0.651,-3.6%,0.641,-5.0%,0.640,-5.2%,-5.2%
+ROUGE,0.062,0.055,-11.3%,0.067,+8.1%,0.090,+45.2%,+45.2%
+Relevance,0.793,0.679,-14.4%,0.746,-5.9%,0.671,-15.4%,-15.4%
+
+MODEL: LLAMA
+Metric,Original,Iteration 1,Gain 1,Iteration 2,Gain 2,Iteration 3,Gain 3,Total Gain
+Accuracy,0.950,0.900,-5.3%,0.900,-5.3%,0.900,-5.3%,-5.3%
+BLEU,0.124,0.349,+181.5%,0.124,+0.0%,0.125,+0.8%,+0.8%
+Completeness,0.800,0.900,+12.5%,1.000,+25.0%,1.000,+25.0%,+25.0%
+Groundedness,0.600,1.000,+66.7%,1.000,+66.7%,1.000,+66.7%,+66.7%
+Overall,0.674,0.815,+20.9%,0.789,+17.1%,0.791,+17.4%,+17.4%
+ROUGE,0.155,0.512,+230.3%,0.253,+63.2%,0.240,+54.8%,+54.8%
+Relevance,0.844,0.846,+0.2%,0.884,+4.7%,0.897,+6.3%,+6.3%
+
+PERFORMANCE SUMMARY
+Model,Initial Overall,Final Overall,Change,Best Score,Best Iteration
+alibaba,0.694,0.714,+2.9%,0.727,Iteration 1
+deepseek,0.675,0.640,-5.2%,0.675,Original
+llama,0.674,0.791,+17.4%,0.815,Iteration 1
