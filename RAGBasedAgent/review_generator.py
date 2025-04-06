@@ -34,8 +34,7 @@ def save_review_to_csv(pr_number, review_type, review_content, current_pr_file, 
         'Conflict_Predictions': clean_text_field(sections["Conflict_Predictions"]),
         'Breakage_Risks': clean_text_field(sections["Breakage_Risks"]),
         'Test_Coverage': clean_text_field(sections["Test_Coverage"]),
-        'Code_Quality': clean_text_field(sections["Code_Quality"])
-        # Store full changes and review in separate files to keep CSV clean
+        # 'Code_Quality': clean_text_field(sections["Code_Quality"])  # Keep this commented out
     }
     
     # Write to CSV
@@ -66,16 +65,26 @@ def save_review_to_csv(pr_number, review_type, review_content, current_pr_file, 
     print(f"\n💾 Review saved to CSV: {csv_file}")
     print(f"📄 Full PR data saved to {pr_data_dir}/PR_{pr_number}_*.txt")
 
-def generate_review(current_pr_changes, similar_pr_changes, pr_number=None, similar_pr_number=None, current_pr_file=None, model_name="gemini"):
+def generate_review(current_pr_changes, similar_prs_changes, pr_number=None, similar_pr_number=None, current_pr_file=None, model_name="gemini"):
     """Generate review suggestions based on PR changes using specified model"""
     # Load environment variables
     load_dotenv()
     
-    # Updated prompt with more specific sections
+    # Create combined similar PR changes for context
+    combined_similar_changes = ""
+    for i, pr_data in enumerate(similar_prs_changes):
+        combined_similar_changes += f"\n--- Similar PR #{pr_data['pr_number']} ---\n"
+        combined_similar_changes += pr_data['changes']
+    
+    # If empty, handle gracefully
+    if not combined_similar_changes:
+        combined_similar_changes = "No similar PR changes available."
+    
+    # Updated prompt with more specific sections and multiple PR context
     prompt = f"""Compare these pull requests:
     
-Similar PR:
-{similar_pr_changes}
+Similar PRs:
+{combined_similar_changes}
 
 Current PR:
 {current_pr_changes}
@@ -114,7 +123,9 @@ Be specific with file names, function names, and line numbers when possible.
         
         # Save review to CSV if PR number is provided
         if pr_number:
-            save_review_to_csv(pr_number, model_name, review, current_pr_file, similar_pr_number, current_pr_changes, similar_pr_changes)
+            # Use the most similar PR number for the CSV (first one)
+            most_similar_pr = similar_prs_changes[0]['pr_number'] if similar_prs_changes else similar_pr_number
+            save_review_to_csv(pr_number, model_name, review, current_pr_file, most_similar_pr, current_pr_changes, combined_similar_changes)
         
         return review
         
@@ -156,14 +167,14 @@ Be specific with file names, function names, and line numbers when possible.
 # Add these helper functions
 
 def extract_review_sections(review_content):
-    """Extract review sections into a structured dictionary"""
+    # Fix section extraction for Code Quality
     sections = {
         "Summary": "",
         "File_Suggestions": "",
         "Conflict_Predictions": "",
         "Breakage_Risks": "",
         "Test_Coverage": "",
-        "Code_Quality": ""
+        "Code_Quality": ""  # Uncomment this line
     }
     
     current_section = "Summary"
@@ -172,8 +183,11 @@ def extract_review_sections(review_content):
     for line in review_content.split('\n'):
         lower_line = line.lower()
         
-        # Check for section headers using the 6-section structure
-        if lower_line.startswith('#') or ('**' in lower_line):
+        # Improved section detection
+        if lower_line.startswith('#') or ('**' in lower_line) or any(f"{i}." in lower_line for i in range(1, 7)):
+            # Add a debug print to see what sections are being detected
+            # print(f"Detected potential section header: {line}")
+            
             if any(term in lower_line for term in ["summary", "overview", "changes", "1."]):
                 if section_content:
                     sections[current_section] = "\n".join(section_content)
@@ -199,7 +213,7 @@ def extract_review_sections(review_content):
                     sections[current_section] = "\n".join(section_content)
                 current_section = "Test_Coverage"
                 section_content = []
-            elif any(term in lower_line for term in ["code", "quality", "smell", "6."]):
+            elif any(term in lower_line for term in ["quality", "smell", "duplication", "6."]):
                 if section_content:
                     sections[current_section] = "\n".join(section_content)
                 current_section = "Code_Quality"
@@ -209,9 +223,13 @@ def extract_review_sections(review_content):
             if line.strip():
                 section_content.append(line.strip())
     
-    # Add the last section content
+    # Make sure the last section is added
     if section_content:
         sections[current_section] = "\n".join(section_content)
+    
+    # DEBUG: If Code_Quality is empty, check if it might be in other sections
+    if not sections["Code_Quality"] and "quality" in review_content.lower():
+        print("Warning: Code Quality section not detected but quality-related content exists")
     
     return sections
 

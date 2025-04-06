@@ -33,33 +33,42 @@ def get_file_changes(files):
     
     return final_changes
 
-def compare_pr_changes(pr_files, similar_pr_number, repo_owner, repo_name):
-    """Compare changes between PR files and a similar PR"""
+def compare_pr_changes(pr_files, similar_pr_numbers, repo_owner, repo_name):
+    """Compare changes between PR files and multiple similar PRs"""
     try:
         # Import directly from GithubAuth to avoid the missing module error
         from GithubAuth import get_pull_request
         
-        similar_pr = get_pull_request(similar_pr_number, repo_owner, repo_name)
-        if not similar_pr:
-            print(f"Error: Could not find PR #{similar_pr_number}")
-            return None, None
-            
-        similar_files = similar_pr.get_files()
-        
-        # Get complete changes for current PR
         current_pr_changes = get_file_changes(pr_files)
+        all_similar_pr_changes = []
         
-        # Get complete changes for similar PR
-        similar_pr_changes = get_file_changes(similar_files)
+        # Process each similar PR
+        for similar_pr_number in similar_pr_numbers:
+            similar_pr = get_pull_request(similar_pr_number, repo_owner, repo_name)
+            if not similar_pr:
+                print(f"Error: Could not find PR #{similar_pr_number}")
+                continue
+                
+            similar_files = similar_pr.get_files()
+            
+            # Get complete changes for similar PR
+            similar_pr_changes = get_file_changes(similar_files)
+            
+            # Store changes along with PR number
+            all_similar_pr_changes.append({
+                'pr_number': similar_pr_number,
+                'changes': similar_pr_changes
+            })
+            
+            # Display comparison for this PR
+            print(f"\n🔍 Changes in Similar PR #{similar_pr_number}:")
+            print(similar_pr_changes)
         
-        # Display complete comparisons
+        # Display changes in current PR
         print("\n🔍 Changes in Current PR:")
         print(current_pr_changes)
         
-        print("\n🔍 Changes in Similar PR:")
-        print(similar_pr_changes)
-        
-        return current_pr_changes, similar_pr_changes
+        return current_pr_changes, all_similar_pr_changes
         
     except Exception as e:
         print(f"Error comparing PR changes: {e}")

@@ -1,3 +1,5 @@
+
+--- Similar PR #245689 ---
 File: src/vs/workbench/contrib/chat/browser/chatInputPart.ts
 Before:
 			attachmentsHeight: this.attachmentsContainer.offsetHeight + (this.attachmentsContainer.checkVisibility() ? 6 : 0),
@@ -43,4 +45,22 @@ After:
 		this.welcomeMessageContainer.style.height = `${contentHeight - welcomeOffset}px`;
 		this.welcomeMessageContainer.style.paddingBottom = `${welcomeOffset}px`;
 		this.listContainer.style.height = `${contentHeight}px`;
+
+
+--- Similar PR #245738 ---
+File: src/vs/workbench/contrib/chat/browser/chatInputPart.ts
+Before:
+		this._register(this.historyService.onDidClearHistory(() => this.history = new HistoryNavigator2([{ text: '' }], ChatInputHistoryMaxEntries, historyKeyFn)));
+			history.push({ text: '' });
+After:
+		this._register(this.historyService.onDidClearHistory(() => this.history = new HistoryNavigator2<IChatHistoryEntry>([{ text: '', state: this.getInputState() }], ChatInputHistoryMaxEntries, historyKeyFn)));
+			history.push({ text: '', state: this.getInputState() });
+
+
+--- Similar PR #245789 ---
+File: src/vs/workbench/contrib/chat/browser/actions/chatContextActions.ts
+Before:
+		title: localize2('workbench.action.chat.attachContext.label.2', "Add Context"),
+After:
+		title: localize2('workbench.action.chat.attachContext.label.2', "Add Context..."),
 

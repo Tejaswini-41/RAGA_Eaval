@@ -21,7 +21,7 @@ def text_embedding(text):
     vector = vectorizer.transform([text]).toarray()[0]
     return vector.tolist()
 
-def query_similar_prs(pr_number, repo_owner, repo_name, collection):
+def query_similar_prs(pr_number, repo_owner, repo_name, collection, num_similar=3):
     """Find PRs similar to the specified PR"""
     try:
         # Get PR files
@@ -48,69 +48,39 @@ def query_similar_prs(pr_number, repo_owner, repo_name, collection):
             # Create embedding using TF-IDF
             vector = text_embedding(filenames)
             
-            # Query collection
-            query_results = collection.query(
+            # Query collection - get top 3 similar PRs
+            results = collection.query(
                 query_embeddings=[vector],
-                n_results=1
+                n_results=num_similar + 1  # +1 because current PR might be included
             )
             
-            print("🔍 Found similar pull request (sample data):")
-            if query_results and len(query_results["metadatas"]) > 0:
-                similar_pr = query_results["metadatas"][0][0]["pr_number"]
-                print(f"PR #{similar_pr}")
+            return results, sample_files
             
-            return query_results, sample_files
-            
-        # Normal flow if PR exists
+        # Get files from the PR
         files = pull_request.get_files()
         
-        # Extract file names
+        # Extract filenames
         filenames = ", ".join([file.filename for file in files])
-        print(f"Files in PR #{pull_request.number}: {filenames}")
         
-        # Create embedding
+        # Create embedding using TF-IDF
         vector = text_embedding(filenames)
         
-        # Get all results first
-        all_results = collection.get()
+        print(f"Querying for PRs similar to PR #{pr_number} with files: {filenames[:100]}...")
         
-        # Manually filter out the current PR
-        filtered_indices = []
-        filtered_distances = []
+        # Query collection - get top 3 similar PRs
+        results = collection.query(
+            query_embeddings=[vector],
+            n_results=num_similar + 1  # +1 because current PR might be included
+        )
         
-        # Calculate similarity to each PR
-        for i, meta in enumerate(all_results["metadatas"]):
-            # Skip if this is the current PR
-            if meta["pr_number"] == pr_number:
-                continue
-                
-            # Otherwise calculate similarity and add to list
-            doc_vector = text_embedding(all_results["documents"][i])
-            similarity = calculate_cosine_similarity(vector, doc_vector)
-            filtered_indices.append(i)
-            filtered_distances.append(similarity)
+        print(f"Found {len(results['ids'][0])} similar PRs")
         
-        if not filtered_indices:
-            print("⚠️ No other PRs found to compare. Using a random PR instead.")
-            # Pick any PR that isn't the current one
-            for meta in all_results["metadatas"]:
-                if meta["pr_number"] != pr_number:
-                    similar_pr = meta["pr_number"]
-                    break
-        else:
-            # Find the most similar PR (highest similarity)
-            best_index = filtered_indices[filtered_distances.index(max(filtered_distances))]
-            similar_pr = all_results["metadatas"][best_index]["pr_number"]
-        
-        print(f"🔍 Found similar pull request: PR #{similar_pr}")
-        
-        # Format results to match expected structure
-        query_results = {"metadatas": [[{"pr_number": similar_pr}]]}
-        
-        return query_results, files
+        return results, list(files)
         
     except Exception as e:
         print(f"Error querying similar PRs: {e}")
+        import traceback
+        print(traceback.format_exc())
         return None, None
 
 def calculate_cosine_similarity(vec1, vec2):

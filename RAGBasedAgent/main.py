@@ -40,32 +40,43 @@ async def run_rag_review(repo_owner, repo_name, pr_number):
     
     # Step 4: Query similar PRs
     print(f"\n🔍 Step 4: Finding similar PRs to PR #{pr_number}...")
-    query_results, pr_files = query_similar_prs(pr_number, repo_owner, repo_name, collection)
+    query_results, pr_files = query_similar_prs(pr_number, repo_owner, repo_name, collection, num_similar=3)
     
     if not query_results or not pr_files:
         print("❌ Failed to find similar PRs")
         return
     
-    # Get similar PR number from results
-    similar_pr_number = query_results["metadatas"][0][0]["pr_number"]
-    
-    if similar_pr_number == pr_number:
-        print(f"⚠️ Warning: Most similar PR is the same PR (#{pr_number}). Using next best match.")
-        # Try to get next best match if available
-        if len(query_results["metadatas"][0]) > 1:
-            similar_pr_number = query_results["metadatas"][0][1]["pr_number"]
-        else:
-            # Fallback to first PR in the list that isn't the current PR
-            for pr in pull_requests:
-                if pr != pr_number:
-                    similar_pr_number = pr
+    # Get top 3 similar PR numbers from results
+    similar_pr_numbers = []
+    for i in range(min(3, len(query_results["metadatas"][0]))):
+        similar_pr = query_results["metadatas"][0][i]["pr_number"]
+        
+        # Don't include the same PR
+        if similar_pr != pr_number:
+            similar_pr_numbers.append(similar_pr)
+            
+    if not similar_pr_numbers:
+        # Fallback to first PR in the list that isn't the current PR
+        for pr in pull_requests:
+            if pr != pr_number:
+                similar_pr_numbers.append(pr)
+                if len(similar_pr_numbers) >= 3:
                     break
+
+    # Display the list of similar PRs clearly
+    print("\n📋 Top Similar PRs:")
+    for i, pr in enumerate(similar_pr_numbers):
+        print(f"  {i+1}. PR #{pr}")
+    
+    # For display purposes, show the most similar PR
+    most_similar_pr = similar_pr_numbers[0] if similar_pr_numbers else None
     
     # Step 5: Compare changes
-    print(f"\n📈 Step 5: Comparing changes between PR #{pr_number} and similar PR #{similar_pr_number}...")
-    current_pr_changes, similar_pr_changes = compare_pr_changes(pr_files, similar_pr_number, repo_owner, repo_name)
+    print(f"\n📈 Step 5: Comparing changes between PR #{pr_number} and {len(similar_pr_numbers)} similar PRs...")
+    print(f"Most similar PR: #{most_similar_pr}")
+    current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, repo_owner, repo_name)
     
-    if not current_pr_changes or not similar_pr_changes:
+    if not current_pr_changes or not similar_prs_changes:
         print("❌ Failed to compare PR changes")
         return
     
@@ -81,16 +92,16 @@ async def run_rag_review(repo_owner, repo_name, pr_number):
     evaluator = ReviewEvaluator()
     best_model, model_metrics = await evaluator.evaluate_models(
         current_pr_changes, 
-        similar_pr_changes
+        similar_prs_changes
     )
     
     # Step 7: Generate AI review using best model
     print(f"\n🤖 Step 7: Generating AI-based review using {best_model}...")
     review = generate_review(
         current_pr_changes, 
-        similar_pr_changes,
+        similar_prs_changes,
         pr_number=pr_number,
-        similar_pr_number=similar_pr_number,
+        similar_pr_number=most_similar_pr,  # Still pass most similar for backwards compatibility
         current_pr_file=current_pr_file,
         model_name=best_model
     )
