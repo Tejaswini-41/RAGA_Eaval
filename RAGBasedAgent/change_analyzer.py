@@ -27,16 +27,19 @@ def compare_pr_changes(pr_files, similar_pr_number, repo_owner, repo_name):
             
         similar_files = similar_pr.get_files()
         
-        # Get changes for current PR
+        # Get changes for current PR - without truncation
         current_pr_changes = get_file_changes(pr_files)
         
-        # Get changes for similar PR
+        # Get changes for similar PR - without truncation
         similar_pr_changes = get_file_changes(similar_files)
         
         print("\n🔍 Changes in Current PR:")
-        print(current_pr_changes[:200] + "..." if len(current_pr_changes) > 200 else current_pr_changes)
+        # Display full content instead of truncating
+        print(current_pr_changes)
+        
         print("\n🔍 Changes in Similar PR:")
-        print(similar_pr_changes[:200] + "..." if len(similar_pr_changes) > 200 else similar_pr_changes)
+        # Display full content instead of truncating
+        print(similar_pr_changes)
         
         return current_pr_changes, similar_pr_changes
         
