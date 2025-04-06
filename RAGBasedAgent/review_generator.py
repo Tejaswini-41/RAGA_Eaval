@@ -7,8 +7,8 @@ import csv
 # Path to the models directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-def save_review_to_csv(pr_number, review_type, review_content, current_pr_file, similar_pr_number=None):
-    """Save review to CSV file for analysis"""
+def save_review_to_csv(pr_number, review_type, review_content, current_pr_file, similar_pr_number=None, current_pr_changes=None, similar_pr_changes=None):
+    """Save review to CSV file for analysis with complete PR comparison data"""
     # Create reviews directory if it doesn't exist
     if not os.path.exists("reviews"):
         os.makedirs("reviews")
@@ -19,52 +19,23 @@ def save_review_to_csv(pr_number, review_type, review_content, current_pr_file, 
     # Current timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    # Extract sections from review
-    sections = {
-        "Summary": [],
-        "Issues": [],
-        "Suggestions": [],
-        "Comparison": []
-    }
+    # Extract sections from review using the 6-section structure from the prompt
+    sections = extract_review_sections(review_content)
     
-    current_section = "Summary"
-    
-    for line in review_content.split('\n'):
-        lower_line = line.lower()
-        
-        # Check if this line is a section header
-        if lower_line.startswith('#') or ('**' in lower_line and any(x in lower_line for x in ['1.', '2.', '3.', '4.', 'summary', 'issue', 'bug', 'suggest', 'improvement', 'compar'])):
-            
-            if any(term in lower_line for term in ["summary", "overview", "changes", "1."]):
-                current_section = "Summary"
-            elif any(term in lower_line for term in ["issue", "bug", "problem", "error", "2."]):
-                current_section = "Issues"
-            elif any(term in lower_line for term in ["suggest", "improvement", "recommend", "enhance", "3."]):
-                current_section = "Suggestions"
-            elif any(term in lower_line for term in ["compar", "similar", "relation", "pattern", "4."]):
-                current_section = "Comparison"
-        else:
-            # Add non-empty lines to current section content
-            if line.strip():
-                sections[current_section].append(line.strip())
-    
-    # Join each section with line breaks to preserve formatting
-    formatted_sections = {
-        key: "\n".join(value) for key, value in sections.items()
-    }
-    
-    # Prepare the row data
+    # Prepare the row data with clean, structured fields
     row_data = {
-        'PR Number': pr_number,
+        'PR_Number': str(pr_number),
         'Timestamp': timestamp,
-        'Review Type': review_type,
-        'File Modified': current_pr_file,
-        'Similar PR': similar_pr_number,
-        'Summary': formatted_sections["Summary"],
-        'Issues': formatted_sections["Issues"],
-        'Suggestions': formatted_sections["Suggestions"],
-        'Comparison': formatted_sections["Comparison"],
-        'Full Review': review_content
+        'Model': review_type,
+        'Files_Modified': clean_text_field(current_pr_file),
+        'Similar_PR': str(similar_pr_number) if similar_pr_number else "",
+        'Summary': clean_text_field(sections["Summary"]),
+        'File_Suggestions': clean_text_field(sections["File_Suggestions"]),
+        'Conflict_Predictions': clean_text_field(sections["Conflict_Predictions"]),
+        'Breakage_Risks': clean_text_field(sections["Breakage_Risks"]),
+        'Test_Coverage': clean_text_field(sections["Test_Coverage"]),
+        'Code_Quality': clean_text_field(sections["Code_Quality"])
+        # Store full changes and review in separate files to keep CSV clean
     }
     
     # Write to CSV
@@ -77,14 +48,30 @@ def save_review_to_csv(pr_number, review_type, review_content, current_pr_file, 
         
         writer.writerow(row_data)
     
+    # Store full PR changes and review in separate files for reference
+    pr_data_dir = "reviews/pr_data"
+    if not os.path.exists(pr_data_dir):
+        os.makedirs(pr_data_dir)
+        
+    # Write full PR changes and review to separate files
+    with open(f"{pr_data_dir}/PR_{pr_number}_current_changes.txt", "w", encoding="utf-8") as f:
+        f.write(current_pr_changes or "")
+        
+    with open(f"{pr_data_dir}/PR_{pr_number}_similar_changes.txt", "w", encoding="utf-8") as f:
+        f.write(similar_pr_changes or "")
+        
+    with open(f"{pr_data_dir}/PR_{pr_number}_review.txt", "w", encoding="utf-8") as f:
+        f.write(review_content)
+    
     print(f"\n💾 Review saved to CSV: {csv_file}")
+    print(f"📄 Full PR data saved to {pr_data_dir}/PR_{pr_number}_*.txt")
 
 def generate_review(current_pr_changes, similar_pr_changes, pr_number=None, similar_pr_number=None, current_pr_file=None, model_name="gemini"):
     """Generate review suggestions based on PR changes using specified model"""
     # Load environment variables
     load_dotenv()
     
-    # Build prompt
+    # Updated prompt with more specific sections
     prompt = f"""Compare these pull requests:
     
 Similar PR:
@@ -95,9 +82,13 @@ Current PR:
 
 Please provide a detailed code review including:
 1. Summary of the changes
-2. Potential issues or bugs
-3. Suggestions for improvement
-4. Any patterns you notice from the similar PR that could be applied here
+2. File Change Suggestions - Identify files that might get affected based on changes
+3. Conflict Prediction - Flag files changed in multiple PRs that could cause conflicts
+4. Breakage Risk Warning - Note which changes might break existing functionality
+5. Test Coverage Advice - Recommend test files that should be updated
+6. Code Quality Suggestions - Point out potential code smells or duplication
+
+Be specific with file names, function names, and line numbers when possible.
 """
     
     try:
@@ -118,11 +109,12 @@ Please provide a detailed code review including:
         )
         
         print("\n✅ Generated AI Review:")
-        print(review[:500] + "..." if len(review) > 500 else review)
+        # Display full review instead of truncating
+        print(review)
         
         # Save review to CSV if PR number is provided
         if pr_number:
-            save_review_to_csv(pr_number, model_name, review, current_pr_file, similar_pr_number)
+            save_review_to_csv(pr_number, model_name, review, current_pr_file, similar_pr_number, current_pr_changes, similar_pr_changes)
         
         return review
         
@@ -160,3 +152,80 @@ Please provide a detailed code review including:
         review += "- Both PRs modify similar components\n"
         
         return review
+
+# Add these helper functions
+
+def extract_review_sections(review_content):
+    """Extract review sections into a structured dictionary"""
+    sections = {
+        "Summary": "",
+        "File_Suggestions": "",
+        "Conflict_Predictions": "",
+        "Breakage_Risks": "",
+        "Test_Coverage": "",
+        "Code_Quality": ""
+    }
+    
+    current_section = "Summary"
+    section_content = []
+    
+    for line in review_content.split('\n'):
+        lower_line = line.lower()
+        
+        # Check for section headers using the 6-section structure
+        if lower_line.startswith('#') or ('**' in lower_line):
+            if any(term in lower_line for term in ["summary", "overview", "changes", "1."]):
+                if section_content:
+                    sections[current_section] = "\n".join(section_content)
+                current_section = "Summary"
+                section_content = []
+            elif any(term in lower_line for term in ["file", "suggest", "affect", "2."]):
+                if section_content:
+                    sections[current_section] = "\n".join(section_content)
+                current_section = "File_Suggestions"
+                section_content = []
+            elif any(term in lower_line for term in ["conflict", "prediction", "3."]):
+                if section_content:
+                    sections[current_section] = "\n".join(section_content)
+                current_section = "Conflict_Predictions"
+                section_content = []
+            elif any(term in lower_line for term in ["break", "risk", "warning", "4."]):
+                if section_content:
+                    sections[current_section] = "\n".join(section_content)
+                current_section = "Breakage_Risks"
+                section_content = []
+            elif any(term in lower_line for term in ["test", "coverage", "5."]):
+                if section_content:
+                    sections[current_section] = "\n".join(section_content)
+                current_section = "Test_Coverage"
+                section_content = []
+            elif any(term in lower_line for term in ["code", "quality", "smell", "6."]):
+                if section_content:
+                    sections[current_section] = "\n".join(section_content)
+                current_section = "Code_Quality"
+                section_content = []
+        else:
+            # Add non-empty lines to current section content
+            if line.strip():
+                section_content.append(line.strip())
+    
+    # Add the last section content
+    if section_content:
+        sections[current_section] = "\n".join(section_content)
+    
+    return sections
+
+def clean_text_field(text):
+    """Clean text for CSV storage by removing problematic characters"""
+    if not text:
+        return ""
+    
+    # Replace newlines with space and escape quotes
+    cleaned = text.replace("\n", " ").replace("\r", " ")
+    cleaned = cleaned.replace('"', '""')  # CSV escape for quotes
+    
+    # Truncate if too long (prevent CSV errors)
+    if len(cleaned) > 32000:  # Excel has column limits
+        cleaned = cleaned[:32000] + "... [truncated]"
+        
+    return cleaned

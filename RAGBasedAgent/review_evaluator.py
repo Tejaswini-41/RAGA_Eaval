@@ -44,24 +44,24 @@ class ReviewEvaluator:
         if not models:
             models = self.model_factory.get_model_names()
             
-        # Create a shortened version of PR changes for quick evaluation
-        shortened_current = self._shorten_content(current_pr_changes, test_prompt_size)
-        shortened_similar = self._shorten_content(similar_pr_changes, test_prompt_size)
-        
-        # Build prompt template for evaluation
-        prompt = f"""Compare these pull requests and provide a detailed code review:
-        
+        # Build comprehensive prompt template for evaluation - using FULL content
+        prompt = f"""Compare these pull requests:
+    
 Similar PR:
-{shortened_similar}
+{similar_pr_changes}
 
 Current PR:
-{shortened_current}
+{current_pr_changes}
 
-Provide a focused code review that includes:
-1. Summary of changes
-2. Potential issues or bugs 
-3. Improvement suggestions
-4. Patterns from similar PR that could apply
+Please provide a detailed code review including:
+1. Summary of the changes
+2. File Change Suggestions - Identify files that might get affected based on changes
+3. Conflict Prediction - Flag files changed in multiple PRs that could cause conflicts
+4. Breakage Risk Warning - Note which changes might break existing functionality
+5. Test Coverage Advice - Recommend test files that should be updated
+6. Code Quality Suggestions - Point out potential code smells or duplication
+
+Be specific with file names, function names, and line numbers when possible.
 """
         
         print("\n🔍 Evaluating models to select best one for PR review...")
@@ -72,7 +72,7 @@ Provide a focused code review that includes:
         reference_review = self.model_factory.generate_response_with_prompt(
             reference_model, 
             prompt, 
-            "You are an expert code reviewer. Be concise, technical and specific."
+            "You are an expert code reviewer. Focus on practical, specific suggestions. Mention specific files, functions, and line numbers when relevant."
         )
         
         # Generate and evaluate reviews from other models
@@ -90,7 +90,7 @@ Provide a focused code review that includes:
                 test_review = self.model_factory.generate_response_with_prompt(
                     model_name, 
                     prompt, 
-                    "You are an expert code reviewer. Be concise, technical and specific."
+                    "You are an expert code reviewer. Focus on practical, specific suggestions. Mention specific files, functions, and line numbers when relevant."
                 )
                 all_reviews[model_name] = test_review
                 
@@ -114,6 +114,62 @@ Provide a focused code review that includes:
         else:
             print(f"\n⚠️ No models successfully evaluated. Using {reference_model} as default.")
             return reference_model, {}
+    
+    async def generate_detailed_pr_review(self, current_pr_data, similar_prs_data, model_name=None):
+        """
+        Generate detailed PR review with specific suggestions based on PR comparison
+        
+        Args:
+            current_pr_data: Dict with current PR info (changes, files, PR number)
+            similar_prs_data: List of dicts with similar PR info
+            model_name: Name of model to use (uses best model if None)
+            
+        Returns:
+            Dict with detailed review sections
+        """
+        if not model_name:
+            # Use best model from evaluation or default to gemini
+            model_name = "gemini"
+        
+        # Extract key information
+        current_files = current_pr_data.get('changed_files', [])
+        current_changes = current_pr_data.get('changes', '')
+        
+        # Build context from similar PRs
+        similar_prs_context = self._build_similar_prs_context(similar_prs_data)
+        
+        prompt = f"""As an expert code reviewer, analyze this PR and provide specific suggestions:
+
+CURRENT PR DETAILS:
+PR #{current_pr_data.get('number', 'Unknown')}
+Changed Files: {', '.join(current_files)}
+
+CODE CHANGES:
+{current_changes}
+
+SIMILAR PRS HISTORY:
+{similar_prs_context}
+
+PROVIDE THE FOLLOWING SECTIONS:
+1. Summary of Changes - Brief overview of what this PR does
+2. File Change Suggestions - Identify additional files that might need changes based on modified files
+3. Conflict Prediction - Flag files with high change frequency that could cause conflicts
+4. Breakage Risk Warning - Note which changes might break existing functionality
+5. Test Coverage Advice - Recommend test files that should be updated
+6. Code Quality Suggestions - Point out potential code smells or duplication
+
+Be specific with file names, function names, and line numbers when possible.
+"""
+        
+        print("\n🔍 Generating detailed PR review...")
+        
+        detailed_review = self.model_factory.generate_response_with_prompt(
+            model_name, 
+            prompt, 
+            "You are an expert code reviewer. Focus on practical, specific suggestions. Mention specific files, functions, and line numbers when relevant."
+        )
+        
+        return detailed_review
     
     async def _calculate_metrics(self, reference, response):
         """Calculate all metrics for a model response compared to reference"""
@@ -156,15 +212,15 @@ Provide a focused code review that includes:
                 row += f"{scores[metric]:<12.3f}"
             print(row)
     
-    def _shorten_content(self, content, ratio=0.3):
-        """Shorten content for quick evaluation while preserving structure"""
-        lines = content.split('\n')
-        sample_size = max(5, int(len(lines) * ratio))
+    # def _shorten_content(self, content, ratio=0.3):
+    #     """Shorten content for quick evaluation while preserving structure"""
+    #     lines = content.split('\n')
+    #     sample_size = max(5, int(len(lines) * ratio))
         
-        # Take some lines from beginning, middle and end
-        beginning = lines[:sample_size // 3]
-        middle_start = len(lines) // 2 - sample_size // 6
-        middle = lines[middle_start:middle_start + sample_size // 3]
-        end = lines[-(sample_size // 3):]
+    #     # Take some lines from beginning, middle and end
+    #     beginning = lines[:sample_size // 3]
+    #     middle_start = len(lines) // 2 - sample_size // 6
+    #     middle = lines[middle_start:middle_start + sample_size // 3]
+    #     end = lines[-(sample_size // 3):]
         
-        return '\n'.join(beginning + ['...'] + middle + ['...'] + end)
+    #     return '\n'.join(beginning + ['...'] + middle + ['...'] + end)

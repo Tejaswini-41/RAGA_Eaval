@@ -1,0 +1,111 @@
+File: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
+Before:
+				message: phrase + ' ' + localize('chat.startEditing.confirmation.pending.message.2', "Do you want to accept pending edits to {0} files?", undecidedEdits.length),
+						label: localize('chat.startEditing.confirmation.acceptEdits', "Accept & Continue"),
+						label: localize('chat.startEditing.confirmation.discardEdits', "Discard & Continue"),
+After:
+				message: phrase + ' ' + localize('chat.startEditing.confirmation.pending.message.2', "Do you want to keep pending edits to {0} files?", undecidedEdits.length),
+						label: localize('chat.startEditing.confirmation.acceptEdits', "Keep & Continue"),
+						label: localize('chat.startEditing.confirmation.discardEdits', "Undo & Continue"),
+
+File: src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts
+Before:
+import { ChatAgentLocation, ChatMode } from '../../common/constants.js';
+import { discardAllEditsWithConfirmation, getEditingSessionContext } from '../chatEditing/chatEditingActions.js';
+import { CHAT_CATEGORY } from './chatActions.js';
+		if (arg?.mode === context.chatWidget.input.currentMode) {
+		if (!chatService.unifiedViewEnabled) {
+			// TODO will not require discarding the session when we are able to switch modes mid-session
+			const entries = context.editingSession?.entries.get();
+			if (context.editingSession && entries && entries.length > 0 && entries.some(entry => entry.state.get() === WorkingSetEntryState.Modified)) {
+				if (!await discardAllEditsWithConfirmation(accessor, context.editingSession)) {
+					// User cancelled
+				const chatSession = context.chatWidget.viewModel?.model;
+				if (chatSession?.getRequests().length) {
+					const confirmation = await dialogService.confirm({
+						title: localize('agent.newSession', "Start new session?"),
+						message: localize('agent.newSessionMessage', "Changing the chat mode will start a new session. Would you like to continue?"),
+						primaryButton: localize('agent.newSession.confirm', "Yes"),
+						type: 'info'
+					});
+					if (!confirmation.confirmed) {
+						return;
+					}
+		if (arg?.mode) {
+			context.chatWidget.input.setChatMode(arg.mode);
+		} else {
+			const modes = [ChatMode.Agent, ChatMode.Edit];
+			if (context.chatWidget.location === ChatAgentLocation.Panel) {
+				modes.push(ChatMode.Ask);
+			}
+			const modeIndex = modes.indexOf(context.chatWidget.input.currentMode);
+			const newMode = modes[(modeIndex + 1) % modes.length];
+			context.chatWidget.input.setChatMode(newMode);
+		}
+
+		if (!chatService.unifiedViewEnabled && context.chatWidget.viewModel?.model.getRequests().length) {
+After:
+import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
+import { ChatAgentLocation, ChatConfiguration, ChatMode } from '../../common/constants.js';
+import { getEditingSessionContext } from '../chatEditing/chatEditingActions.js';
+import { CHAT_CATEGORY, handleCurrentEditingSession } from './chatActions.js';
+		const configurationService = accessor.get(IConfigurationService);
+		const chatSession = context.chatWidget.viewModel?.model;
+		const requestCount = chatSession?.getRequests().length ?? 0;
+		const switchToMode = arg?.mode ?? this.getNextMode(context.chatWidget, requestCount, configurationService);
+		const needToClearEdits = (!chatService.unifiedViewEnabled || (!configurationService.getValue(ChatConfiguration.Edits2Enabled) && (context.chatWidget.input.currentMode === ChatMode.Edit || switchToMode === ChatMode.Edit))) && requestCount > 0;
+
+		if (switchToMode === context.chatWidget.input.currentMode) {
+		if (needToClearEdits) {
+			// If not in unified view, or not using edits2 and switching into or out of edit mode, ask to discard the session
+			const phrase = localize('switchMode.confirmPhrase', "Switching chat modes will end your current edit session.");
+			if (!context.editingSession) {
+				return;
+			}
+
+			const currentEdits = context.editingSession.entries.get();
+			const undecidedEdits = currentEdits.filter((edit) => edit.state.get() === WorkingSetEntryState.Modified);
+			if (undecidedEdits.length > 0) {
+				if (!await handleCurrentEditingSession(context.editingSession, phrase, dialogService)) {
+				const confirmation = await dialogService.confirm({
+					title: localize('agent.newSession', "Start new session?"),
+					message: localize('agent.newSessionMessage', "Changing the chat mode will end your current edit session. Would you like to continue?"),
+					primaryButton: localize('agent.newSession.confirm', "Yes"),
+					type: 'info'
+				});
+				if (!confirmation.confirmed) {
+					return;
+		context.chatWidget.input.setChatMode(switchToMode);
+		if (needToClearEdits) {
+
+	private getNextMode(chatWidget: IChatWidget, requestCount: number, configurationService: IConfigurationService): ChatMode {
+		const modes = [ChatMode.Agent];
+		if (configurationService.getValue(ChatConfiguration.Edits2Enabled) || requestCount === 0) {
+			modes.push(ChatMode.Edit);
+		}
+		if (chatWidget.location === ChatAgentLocation.Panel) {
+			modes.push(ChatMode.Ask);
+		}
+
+		const modeIndex = modes.indexOf(chatWidget.input.currentMode);
+		const newMode = modes[(modeIndex + 1) % modes.length];
+		return newMode;
+	}
+
+File: src/vs/workbench/contrib/chat/browser/chatInputPart.ts
+Before:
+import { ChatAgentLocation, ChatMode } from '../common/constants.js';
+		if (this.currentMode === ChatMode.Agent || (this.currentMode === ChatMode.Edit && this.chatService.unifiedViewEnabled)) {
+After:
+import { ChatAgentLocation, ChatConfiguration, ChatMode } from '../common/constants.js';
+		this._register(this.configurationService.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration(ChatConfiguration.Edits2Enabled)) {
+				this.checkModelSupported();
+			}
+		}));
+		if (this.currentMode === ChatMode.Agent || (this.currentMode === ChatMode.Edit && this.configurationService.getValue(ChatConfiguration.Edits2Enabled))) {
+
+File: src/vs/workbench/contrib/chat/common/constants.ts
+After:
+	Edits2Enabled = 'chat.edits2.enabled',
+
