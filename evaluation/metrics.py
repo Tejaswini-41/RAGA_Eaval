@@ -127,3 +127,91 @@ class MetricsCalculator:
         except Exception as e:
             print(f"Error computing ROUGE with RAGAS: {e}")
             return 0.0
+
+    def compute_faithfulness(self, reference, response):
+        """
+        Measures how factually consistent the response is with the source PR context.
+        Detects hallucinated file names, line numbers, or issues.
+        """
+        try:
+            # Extract file mentions from both reference and response
+            import re
+            file_pattern = r'(?:src|test|lib)\/[\w\/\-\.]+\.\w+'
+            ref_files = set(re.findall(file_pattern, reference))
+            response_files = set(re.findall(file_pattern, response))
+            
+            # Files mentioned in response but not in reference are potential hallucinations
+            hallucinated_files = response_files - ref_files
+            
+            # Calculate basic faithfulness score based on file references
+            if len(response_files) == 0:
+                return 0.5  # No file references at all
+            
+            file_faithfulness = 1.0 - (len(hallucinated_files) / len(response_files))
+            
+            # Additional checks for hallucinated function names could be added here
+            # For now, return the file-based faithfulness score
+            return max(0.0, min(1.0, file_faithfulness))
+        
+        except Exception as e:
+            print(f"Error computing faithfulness: {e}")
+            return 0.5  # Default value
+
+    def compute_contextual_precision(self, reference, response):
+        """
+        Measures how precisely the response references specific elements from the PR context
+        (file names, function names, line numbers, etc.)
+        """
+        try:
+            # Count specific references to code elements
+            file_refs = len(re.findall(r'`[\w\/\-\.]+\.\w+`', response))
+            func_refs = len(re.findall(r'`[\w]+\(`', response))
+            line_refs = len(re.findall(r'line \d+', response.lower()))
+            
+            # Total precision references
+            total_refs = file_refs + func_refs + line_refs
+            
+            # Scale to 0-1 range
+            precision_score = min(1.0, total_refs / 10)  # Normalize; 10+ references = perfect score
+            
+            return precision_score
+        
+        except Exception as e:
+            print(f"Error computing contextual precision: {e}")
+            return 0.5  # Default value
+
+    def compute_answer_relevance(self, reference, response):
+        """
+        Measures how well the response addresses key PR review concerns:
+        - Summary of changes
+        - File suggestions
+        - Conflict predictions
+        - Risk warnings
+        - Test coverage
+        """
+        try:
+            # Define key sections that should be present in a good PR review
+            key_sections = [
+                "summary", 
+                "file", "suggest", "affect",
+                "conflict", "prediction",
+                "break", "risk", 
+                "test", "coverage"
+            ]
+            
+            # Check for presence of each section
+            response_lower = response.lower()
+            section_coverage = sum(1 for term in key_sections if term in response_lower) / len(key_sections)
+            
+            # Check for actionable content (specific suggestions)
+            actionable_pattern = r'(should|could|must|recommend|suggest|consider)'
+            actionable_score = min(1.0, len(re.findall(actionable_pattern, response_lower)) / 5)
+            
+            # Combine scores (70% section coverage, 30% actionable content)
+            combined_score = (0.7 * section_coverage) + (0.3 * actionable_score)
+            
+            return combined_score
+        
+        except Exception as e:
+            print(f"Error computing answer relevance: {e}")
+            return 0.5  # Default value

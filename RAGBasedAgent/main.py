@@ -121,7 +121,7 @@ if __name__ == "__main__":
     # Repository and PR settings
     repo_owner = 'microsoft'
     repo_name = 'vscode'
-    pr_number = 244354  # Use a PR number that exists
+    pr_number = 246149  # Use a PR number that exists
     
     # Run RAG-based review process using asyncio
     import asyncio
