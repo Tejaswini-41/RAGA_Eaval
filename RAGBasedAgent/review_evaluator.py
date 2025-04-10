@@ -16,13 +16,23 @@ class ReviewEvaluator:
     def __init__(self):
         self.metrics_calculator = MetricsCalculator()
         self.model_factory = ModelFactory()
+        
+        # Updated weights with enhanced RAGA metrics
         self.weights = {
-            "Relevance": 0.20,
-            "Accuracy": 0.25,
-            "Groundedness": 0.20,
-            "Completeness": 0.15,
-            "BLEU": 0.10,
-            "ROUGE": 0.10
+            # Original metrics with adjusted weights
+            "Relevance": 0.15,
+            "Accuracy": 0.15,
+            "Groundedness": 0.15,
+            "Completeness": 0.10,
+            
+            # New RAGA metrics
+            "Faithfulness": 0.20,     # How well the response avoids hallucinations
+            "ContextualPrecision": 0.15,  # How precisely the review references specific PR elements
+            "AnswerRelevance": 0.05,   # How well the review addresses PR-specific issues
+            
+            # Existing metrics with reduced weights
+            "BLEU": 0.025,
+            "ROUGE": 0.025
         }
     
     async def evaluate_models(self, current_pr_changes, similar_pr_changes, 
@@ -175,13 +185,18 @@ Be specific with file names, function names, and line numbers when possible.
         """Calculate all metrics for a model response compared to reference"""
         metrics = {}
         
-        # Calculate individual metrics (similar to interactive_eval.py)
+        # Original metrics
         metrics["Relevance"] = self.metrics_calculator.compute_relevance(reference, response)
         metrics["Accuracy"] = self.metrics_calculator.compute_accuracy(response)
         metrics["Groundedness"] = self.metrics_calculator.compute_groundedness(reference, response)
         metrics["Completeness"] = self.metrics_calculator.compute_completeness(reference, response)
         
-        # Calculate BLEU and ROUGE using existing metrics calculator
+        # New RAGA metrics
+        metrics["Faithfulness"] = self.metrics_calculator.compute_faithfulness(reference, response)
+        metrics["ContextualPrecision"] = self.metrics_calculator.compute_contextual_precision(reference, response)
+        metrics["AnswerRelevance"] = self.metrics_calculator.compute_answer_relevance(reference, response)
+        
+        # Standard NLP metrics
         metrics["BLEU"] = await self.metrics_calculator.compute_bleu_ragas(reference, response)
         metrics["ROUGE"] = await self.metrics_calculator.compute_rouge_ragas(reference, response)
         
@@ -192,35 +207,50 @@ Be specific with file names, function names, and line numbers when possible.
         return metrics
     
     def _display_comparison_table(self, reference_model, model_metrics):
-        """Display comparison table of model metrics"""
+        """Display comparison table of model metrics with improved terminal readability"""
         print("\n" + "═" * 80)
         print(f"📊 MODEL COMPARISON (Reference: {reference_model.upper()})")
         print("═" * 80)
         
-        # Header
-        header = f"{'Model':<15} {'Overall':<10}"
-        metrics = ["Relevance", "Accuracy", "Groundedness", "Completeness", "BLEU", "ROUGE"]
-        for metric in metrics:
-            header += f"{metric:<12}"
+        # Use more compact header names with better spacing
+        header = f"{'Model':<12} | {'Overall':<7} |"
+        
+        # Short forms for metrics to improve terminal display
+        metric_labels = {
+            "Relevance": "Relev", 
+            "Accuracy": "Accur", 
+            "Groundedness": "Grnd",  # Fixed typo: was Groundness
+            "Completeness": "Comp",
+            "Faithfulness": "Faith",
+            "ContextualPrecision": "Ctx",
+            "AnswerRelevance": "Answ", 
+            "BLEU": "BLEU",
+            "ROUGE": "ROUG"
+        }
+        
+        # Use correct metric keys from the weights dictionary
+        metrics_to_display = [
+            "Relevance", "Accuracy", "Groundedness", "Completeness", 
+            "Faithfulness", "ContextualPrecision", "AnswerRelevance",
+            "BLEU", "ROUGE"
+        ]
+        
+        # Add metrics with clear column separation
+        for metric in metrics_to_display:
+            header += f" {metric_labels[metric]:<5} |"
+        
         print(header)
         print("─" * 80)
         
-        # Print each model's metrics
+        # Print each model's metrics with clear column separation
         for model_name, scores in sorted(model_metrics.items(), key=lambda x: x[1]["Overall"], reverse=True):
-            row = f"{model_name:<15} {scores['Overall']:<10.3f}"
-            for metric in metrics:
-                row += f"{scores[metric]:<12.3f}"
+            row = f"{model_name:<12} | {scores['Overall']:<7.3f} |"
+            
+            for metric in metrics_to_display:
+                # Handle metrics that might not be available
+                value = scores.get(metric, 0)
+                row += f" {value:<5.2f} |"  # Use .2f for more compact display
+            
             print(row)
-    
-    # def _shorten_content(self, content, ratio=0.3):
-    #     """Shorten content for quick evaluation while preserving structure"""
-    #     lines = content.split('\n')
-    #     sample_size = max(5, int(len(lines) * ratio))
         
-    #     # Take some lines from beginning, middle and end
-    #     beginning = lines[:sample_size // 3]
-    #     middle_start = len(lines) // 2 - sample_size // 6
-    #     middle = lines[middle_start:middle_start + sample_size // 3]
-    #     end = lines[-(sample_size // 3):]
-        
-    #     return '\n'.join(beginning + ['...'] + middle + ['...'] + end)
+        print("─" * 80)
