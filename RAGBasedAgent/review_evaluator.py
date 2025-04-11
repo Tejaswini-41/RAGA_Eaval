@@ -50,6 +50,25 @@ class ReviewEvaluator:
             best_model: Name of the best performing model
             all_metrics: Dict of metrics for all models
         """
+        # Truncate PR content to avoid token limit errors
+        max_tokens = 4000  # Set a reasonable token limit
+        
+        # Truncate PR content
+        if len(current_pr_changes) > max_tokens:
+            current_pr_changes = current_pr_changes[:max_tokens] + "...[truncated]"
+        
+        # Truncate similar PR content
+        if isinstance(similar_pr_changes, list):
+            truncated_similar = []
+            for pr in similar_pr_changes:
+                if len(pr['changes']) > max_tokens//2:
+                    pr['changes'] = pr['changes'][:max_tokens//2] + "...[truncated]"
+                truncated_similar.append(pr)
+            similar_pr_changes = truncated_similar
+        else:
+            if len(similar_pr_changes) > max_tokens:
+                similar_pr_changes = similar_pr_changes[:max_tokens] + "...[truncated]"
+        
         # Get available models if not specified
         if not models:
             models = self.model_factory.get_model_names()

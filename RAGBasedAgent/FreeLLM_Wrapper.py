@@ -31,10 +31,10 @@ class FreeLLMWrapper:
         
         # Model mappings
         self.models = {
-            "claude": "claude-3-haiku-20240307",
-            "llama": "llama-3-8b-8192",
-            "gpt4": "gpt-4o",
-            "mixtral": "mixtral-8x7b-32768"
+            "claude": "claude-instant-1.2",  # Try smaller Claude model
+            "llama": "llama-2-7b-chat",       # Try smaller Llama model
+            "gpt4": "gpt-3.5-turbo",         # Use GPT-3.5 instead of GPT-4
+            "mixtral": "mixtral-8x7b"        # Use shorter context Mixtral
         }
 
     async def generate(self, prompts: List[str], **kwargs) -> List[str]:
@@ -82,8 +82,22 @@ class FreeLLMWrapper:
             )
             data = response.json()
             
-            # Extract content from Claude response format
-            return data["content"][0]["text"]
+            # Improved error handling for Claude response format
+            if "content" in data:
+                if isinstance(data["content"], list) and len(data["content"]) > 0:
+                    if "text" in data["content"][0]:
+                        return data["content"][0]["text"]
+            
+            # If we can't extract using the expected format, look for alternatives
+            if "completion" in data:
+                return data["completion"]
+            elif "choices" in data and len(data["choices"]) > 0:
+                if "message" in data["choices"][0]:
+                    return data["choices"][0]["message"]["content"]
+            
+            # Return raw response for debugging
+            print(f"Claude API response structure: {list(data.keys())}")
+            return str(data)[:1000]  # Return part of raw response for debugging
             
         except Exception as e:
             print(f"Error with Claude API: {e}")

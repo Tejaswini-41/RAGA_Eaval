@@ -35,6 +35,17 @@ class MetricsCalculator:
         self.gemini_model = genai.GenerativeModel("gemini-1.5-flash")
         self.free_llm = FreeLLMWrapper(model_type="claude")  # Default to Claude
         self.faithfulness_metric = None  # Will initialize lazily
+        self.free_llm_available = False  # Default to False
+        
+        # Try to import and initialize free LLM
+        try:
+            from RAGBasedAgent.FreeLLM_Wrapper import FreeLLMWrapper
+            self.free_llm = FreeLLMWrapper(model_type="gpt4")  # Or whichever model works best
+            self.free_llm_available = True
+            print("Free LLM API integration available for metrics")
+        except Exception as e:
+            print(f"Free LLM API not available: {e}")
+            self.free_llm_available = False
         
     def compute_relevance(self, reference, response):
         """Compute relevance using SBERT embeddings"""
@@ -230,30 +241,41 @@ class MetricsCalculator:
             print(f"Error computing answer relevance: {e}")
             return 0.5  # Default value
 
-    # Add this method to get the RAGAS Faithfulness metric
-    async def get_ragas_faithfulness(self, reference, response, use_custom=False):
-        """Get faithfulness score using RAGAS (with free API) or custom implementation"""
-        if use_custom:
-            # Use your existing custom implementation
-            return self.compute_faithfulness(reference, response)
-        
-        # Use RAGAS with free LLM API
-        if not self.faithfulness_metric:
-            from ragas.metrics import Faithfulness
-            self.faithfulness_metric = Faithfulness(llm=self.free_llm)
-        
-        # Create sample format expected by RAGAS
-        sample = SingleTurnSample(
-            user_input="Review this PR",
-            response=response,
-            retrieved_contexts=[reference]
-        )
-        
-        # Get faithfulness score
+    # Use a custom wrapper for RAGAS that handles errors better
+    async def get_ragas_faithfulness(self, reference, response, use_custom=True):
+        """Get faithfulness score using RAGAS or custom implementation with fallback"""
+        # Always default to custom implementation if there are issues with RAGAS
         try:
-            score = await self.faithfulness_metric.single_turn_ascore(sample)
+            if use_custom or not self.free_llm_available:
+                return self.compute_faithfulness(reference, response)
+            
+            # Truncate if too long to avoid token limits
+            max_length = 4000
+            if len(reference) > max_length:
+                reference = reference[:max_length] + "...[truncated]"
+            if len(response) > max_length:
+                response = response[:max_length] + "...[truncated]"
+            
+            # Try RAGAS faithfulness with free LLM API
+            from ragas.metrics import Faithfulness
+            from RAGBasedAgent.FreeLLM_Wrapper import FreeLLMWrapper
+            
+            # Use a more reliable model type
+            free_llm = FreeLLMWrapper(model_type="gpt4")  # Try with GPT4 proxy
+            faithfulness_metric = Faithfulness(llm=free_llm)
+            
+            # Create sample format expected by RAGAS
+            from ragas.dataset_schema import SingleTurnSample
+            sample = SingleTurnSample(
+                user_input="Review this PR",
+                response=response,
+                retrieved_contexts=[reference]
+            )
+            
+            # Get faithfulness score
+            score = await faithfulness_metric.single_turn_ascore(sample)
             return score
         except Exception as e:
             print(f"Error with RAGAS faithfulness: {e}")
-            # Fallback to custom implementation
+            # Fall back to custom implementation
             return self.compute_faithfulness(reference, response)

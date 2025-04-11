@@ -1,1 +1,41 @@
-Error: Error code: 413 - {'error': {'message': 'Request too large for model `deepseek-r1-distill-qwen-32b` in organization `org_01jj6463r1erbb3e6xpwtyqqyg` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 9817, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+Here is a detailed code review of the pull request:
+
+**Summary of the changes**
+
+The pull request updates several files in the VSCode repository, primarily related to the chat functionality. The changes include:
+
+* Renaming `attachPrompts` to `attachPrompt` and updating the function signature and behavior
+* Introducing a new `detachPrompt` function and related types
+* Updating code that calls these functions to adapt to the new API
+* Minor refactoring and code organization changes
+
+**File Change Suggestions**
+
+Based on the changes, the following files might be affected and should be reviewed for potential updates:
+
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts` (potential updates to `attachPrompt` calls)
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts` (potential updates to `attachPrompt` and `detachPrompt` calls)
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts` (potential updates to `attachPrompt` calls)
+* `src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts` (potential updates to `add` method behavior)
+
+**Conflict Prediction**
+
+The following files have been changed in multiple PRs and may cause conflicts:
+
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts` (changed in PR #246224 and this PR)
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts` (changed in PR #246224 and this PR)
+* `src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts` (changed in PR #246211 and this PR)
+
+**Breakage Risk Warning**
+
+The following changes may break existing functionality:
+
+* The renaming of `attachPrompts` to `attachPrompt` and the changes to its behavior may require updates to calling code to avoid errors.
+* The introduction of the `detachPrompt` function and related types may require updates to calling code to ensure correct usage.
+
+**Test Coverage Advice**
+
+The following test files should be updated to cover the changes:
+
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.test.ts`
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePrompt
