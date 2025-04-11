@@ -185,18 +185,28 @@ Be specific with file names, function names, and line numbers when possible.
         """Calculate all metrics for a model response compared to reference"""
         metrics = {}
         
-        # Original metrics
+        # Calculate original metrics
         metrics["Relevance"] = self.metrics_calculator.compute_relevance(reference, response)
         metrics["Accuracy"] = self.metrics_calculator.compute_accuracy(response)
         metrics["Groundedness"] = self.metrics_calculator.compute_groundedness(reference, response)
         metrics["Completeness"] = self.metrics_calculator.compute_completeness(reference, response)
         
-        # New RAGA metrics
-        metrics["Faithfulness"] = self.metrics_calculator.compute_faithfulness(reference, response)
+        # Use RAGAS faithfulness with free LLM if available (with fallback)
+        try:
+            # Use RAGAS with free LLM
+            metrics["Faithfulness"] = await self.metrics_calculator.get_ragas_faithfulness(
+                reference, response, use_custom=False
+            )
+        except Exception as e:
+            print(f"Error using RAGAS faithfulness: {e}")
+            # Fallback to custom implementation
+            metrics["Faithfulness"] = self.metrics_calculator.compute_faithfulness(reference, response)
+        
+        # Calculate other custom metrics
         metrics["ContextualPrecision"] = self.metrics_calculator.compute_contextual_precision(reference, response)
         metrics["AnswerRelevance"] = self.metrics_calculator.compute_answer_relevance(reference, response)
         
-        # Standard NLP metrics
+        # Calculate BLEU and ROUGE
         metrics["BLEU"] = await self.metrics_calculator.compute_bleu_ragas(reference, response)
         metrics["ROUGE"] = await self.metrics_calculator.compute_rouge_ragas(reference, response)
         

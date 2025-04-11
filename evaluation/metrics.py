@@ -6,6 +6,18 @@ from ragas.metrics import BleuScore, RougeScore
 from ragas.dataset_schema import SingleTurnSample
 from dotenv import load_dotenv
 import os
+import sys
+import importlib.util
+
+# Direct import using full path
+sys.path.append('T:\\RAGA_Eaval')  # Add root directory to path
+
+# Dynamically import the FreeLLM_Wrapper module
+wrapper_path = os.path.join('T:\\RAGA_Eaval\\RAGBasedAgent', 'FreeLLM_Wrapper.py')
+spec = importlib.util.spec_from_file_location("FreeLLM_Wrapper", wrapper_path)
+wrapper_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(wrapper_module)
+FreeLLMWrapper = wrapper_module.FreeLLMWrapper
 
 # Load environment variables
 load_dotenv()
@@ -21,6 +33,8 @@ class MetricsCalculator:
     def __init__(self):
         self.embedder = embedder
         self.gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+        self.free_llm = FreeLLMWrapper(model_type="claude")  # Default to Claude
+        self.faithfulness_metric = None  # Will initialize lazily
         
     def compute_relevance(self, reference, response):
         """Compute relevance using SBERT embeddings"""
@@ -215,3 +229,31 @@ class MetricsCalculator:
         except Exception as e:
             print(f"Error computing answer relevance: {e}")
             return 0.5  # Default value
+
+    # Add this method to get the RAGAS Faithfulness metric
+    async def get_ragas_faithfulness(self, reference, response, use_custom=False):
+        """Get faithfulness score using RAGAS (with free API) or custom implementation"""
+        if use_custom:
+            # Use your existing custom implementation
+            return self.compute_faithfulness(reference, response)
+        
+        # Use RAGAS with free LLM API
+        if not self.faithfulness_metric:
+            from ragas.metrics import Faithfulness
+            self.faithfulness_metric = Faithfulness(llm=self.free_llm)
+        
+        # Create sample format expected by RAGAS
+        sample = SingleTurnSample(
+            user_input="Review this PR",
+            response=response,
+            retrieved_contexts=[reference]
+        )
+        
+        # Get faithfulness score
+        try:
+            score = await self.faithfulness_metric.single_turn_ascore(sample)
+            return score
+        except Exception as e:
+            print(f"Error with RAGAS faithfulness: {e}")
+            # Fallback to custom implementation
+            return self.compute_faithfulness(reference, response)

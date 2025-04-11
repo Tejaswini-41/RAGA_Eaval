@@ -1,15 +1,1 @@
-### Summary of the Changes
-The current Pull Request (PR) focuses on modifying and refactoring the `attachPrompts()` and `attachPrompt()` methods, along with introducing a new `detachPrompt()` method in the chat functionality. It also changes how attachment models manage URIs, updating from a generic add method to a method that returns a boolean indicating whether the attachment already exists. Changes were made across multiple files to accommodate these changes, with updates in file paths like `chatAttachPromptAction.ts`, `chatRunPromptAction.ts`, `askToSelectPrompt.ts`, and `chatPromptAttachmentsCollection.ts`.
-
-### File Change Suggestions
-1. **`src/vs/workbench/contrib/chat/browser/chatInputPart.ts`**: This file might need updates to handle the new `IAttachResult` type returned by `attachPrompt()`, ensuring it still works with the new addition in `chatRunPromptAction.ts`.
-2. **`src/vs/workbench/contrib/chat/browser/chatWidget.ts`**: Ensure that the widget's interactions with the new `setExpModelOrWait()` method do not cause conflicts as experiment logic is evolving.
-3. **`src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompts.ts`**: This file has been renamed to `attachPrompt.ts` and the function signature has changed. Ensure that all calls to these functions are updated to match the new signature and return type.
-
-### Conflict Prediction
-- **`src/vs/workbench/contrib/chat/browser/chatInputPart.ts` and `src/vs/workbench/contrib/chat/browser/chatWidget.ts`**: Both PRs #246150 and #246151 made changes to these files, particularly in the `initForNewChatModel` method. The introduction of `modelIsEmpty` alongside the refactoring in the current PR might need careful integration to avoid conflicts.
-  
-### Breakage Risk Warning
-- **Renaming of `attachPrompts` to `attachPrompt`**: Ensure that all references to `attachPrompts` are updated accordingly. This change alters the functionality, and any unchanged calls elsewhere might break. 
-- **Changing `chatPromptAttachmentsCollection.ts`**: The addition of a return type to `add(uri)` can cause issues if any other parts of the code rely on the old return behavior, assuming previous implementations treated return as `void` and not `boolean`.
-
+Error: Error code: 413 - {'error': {'message': 'Request too large for model `deepseek-r1-distill-qwen-32b` in organization `org_01jj6463r1erbb3e6xpwtyqqyg` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 9817, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
