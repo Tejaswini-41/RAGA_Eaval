@@ -1,5 +1,20 @@
+# EmpowerHer - Women's Technology Platform
 
+<div align="center"> 
+  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" /> 
+  <img src="https://img.shields.io/badge/node-18.x-green.svg" /> 
+  <img src="https://img.shields.io/badge/react-19.0.0-blue.svg" /> 
+  <img src="https://img.shields.io/badge/mongodb-atlas-green.svg" /> 
+  <img src="https://img.shields.io/badge/license-MIT-yellow.svg" /> 
+</div> 
 
+<p align="center"> 
+  <img width="180" src="https://i.imgur.com/pSOxq3J.png" alt="EmpowerHer Logo"/> 
+</p> 
+
+<p align="center"> 
+  🚀 A platform dedicated to empowering women in technology through education, mentorship, and community support. 
+</p>
 ## 📋 Overview
 
 RAGA\_EVAL is an advanced tool designed to evaluate and optimize responses from Large Language Models (LLMs) through iterative prompt improvement. It generates ground truth responses using Gemini and compares them with responses from models such as Mixtral, Llama, Qwen, and DeepSeek. The evaluation uses multiple metrics, including Relevance, Accuracy, Groundedness, Completeness, BLEU, and ROUGE.
