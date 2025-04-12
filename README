@@ -1,202 +1,188 @@
-# EmpowerHer - Women's Technology Platform
 
-<div align="center"> 
-  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" /> 
-  <img src="https://img.shields.io/badge/node-18.x-green.svg" /> 
-  <img src="https://img.shields.io/badge/react-19.0.0-blue.svg" /> 
-  <img src="https://img.shields.io/badge/mongodb-atlas-green.svg" /> 
-  <img src="https://img.shields.io/badge/license-MIT-yellow.svg" /> 
-</div> 
+# 🌟 Develop a sophisticated evaluation tool for assessing the quality of RAG-based
+Agent Copilot utilizing the Retrieval-Augmented Generation (RAG) Assessment
+Framework.
 
-<p align="center"> 
-  <img width="180" src="https://i.imgur.com/pSOxq3J.png" alt="EmpowerHer Logo"/> 
-</p> 
+<div align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" />
+  <img src="https://img.shields.io/badge/node-18.x-green.svg" />
+  <img src="https://img.shields.io/badge/react-19.0.0-blue.svg" />
+  <img src="https://img.shields.io/badge/mongodb-atlas-green.svg" />
+  <img src="https://img.shields.io/badge/license-MIT-yellow.svg" />
+</div>
 
-<p align="center"> 
-  🚀 A platform dedicated to empowering women in technology through education, mentorship, and community support. 
+<p align="center">
+  <img width="180" src="https://i.imgur.com/pSOxq3J.png" alt="EmpowerHer Logo" />
 </p>
-## 📋 Overview
 
-RAGA\_EVAL is an advanced tool designed to evaluate and optimize responses from Large Language Models (LLMs) through iterative prompt improvement. It generates ground truth responses using Gemini and compares them with responses from models such as Mixtral, Llama, Qwen, and DeepSeek. The evaluation uses multiple metrics, including Relevance, Accuracy, Groundedness, Completeness, BLEU, and ROUGE.
+<p align="center"><strong>A platform empowering women in tech through education, mentorship, and community support.</strong></p>
 
-## ✨ Key Innovations
+---
 
-- 🔄 **Iterative Prompt Improvement**: Automatically optimizes prompts across 3 iterations.
-- 📊 **Comprehensive Metrics**: Multiple evaluation dimensions for thorough analysis.
-- ⏳ **API Rate Limit Handling**: Intelligent backoff strategies to prevent quota exhaustion.
-- 📈 **Performance Visualization**: Clear gain/loss tracking between iterations.
+## 📋 Project Overview
 
-## 🔍 Features
+**RAGA_EVAL** is a cutting-edge evaluation tool that enhances and assesses responses from Large Language Models (LLMs) using smart, iterative prompt optimization. By leveraging multiple evaluation dimensions, RAGA_EVAL provides deep insights into model behavior and output quality.
 
-- 🧠 **Ground Truth Generation**: Uses Gemini to generate reference responses.
-- 🤖 **Multi-Model Evaluation**: Tests Mixtral, Llama, Qwen, and DeepSeek via Groq API.
-- 📊 **Comprehensive Metrics**: Evaluates using Relevance, Accuracy, Groundedness, Completeness, BLEU, and ROUGE.
-- 🔄 **Iteration Tracking**: Shows performance changes across multiple prompt iterations.
-- 💡 **Smart Prompt Enhancement**: Automatically identifies weak areas and improves prompts.
-- 📁 **Results Export**: Saves detailed performance data in organized CSV reports.
+---
 
-## 📂 Folder Structure
+## ✨ Key Features
 
-```
+- 🔄 **Iterative Prompt Optimization** – Improve prompt quality through 3 automatic feedback loops  
+- 📊 **Comprehensive Metrics** – Evaluate outputs with Relevance, Accuracy, BLEU, ROUGE, and more  
+- 🚦 **Rate Limiting Handling** – Smart retry and backoff to manage API quotas  
+- 📈 **Performance Visualization** – Track model improvements across iterations  
+- 💡 **Ground Truth Generation** – Reference answers from Gemini for comparison  
+- 📁 **Results Export** – Organized outputs in CSV format for easy access  
+
+---
+
+## 🧠 Models & Metrics
+
+### 💬 **Models Evaluated**
+- **Ground Truth:** Gemini  
+- **Evaluation Models:** Mixtral, Llama, Qwen, DeepSeek (via Groq API)  
+
+### 📏 **Evaluation Metrics**
+| Metric         | Description                          |
+|----------------|--------------------------------------|
+| ✅ Relevance    | Response relevance to the query      |
+| 🎯 Accuracy     | Factual correctness                 |
+| 📚 Groundedness | Rooted in reference material         |
+| 📖 Completeness | Information coverage                 |
+| 🧠 Faithfulness | Logical consistency                  |
+| 🧾 BLEU/ROUGE   | Text similarity & fluency checks     |
+
+---
+
+## 🗂 Folder Structure
+
+```bash
 📁 RAGA_EVAL/
-├── 📄 .gitignore
-├── 🛠️ .env
-├── 📖 README.md
-├── 📦 requirements.txt
-├── 📝 interactive_eval.py       # Main evaluation interface
-├── 📜 questions.json            # Input questions for evaluation
-├── 📂 evaluation/               # Evaluation logic
-│   ├── 📊 dynamic_recom.py      # Dynamic recommendations based on metrics
-│   ├── 🧪 evaluator.py          # Core evaluation functionality
-│   ├── 📏 metrics.py            # Metrics computation
-│   ├── 🤖 prompt_improver.py    # Improves prompts based on feedback
-│   └── 📝 recommendation.py     # Generates recommendations using Gemini
-├── 📂 models/                   # Model interfaces
-│   ├── 🧠 gemini_model.py       # Gemini for ground truth and recommendations
-│   ├── 🤖 groq_models.py        # Groq-based models
-│   └── 🔧 model_factory.py      # Model initialization and selection
-|── 📂 RAGA_Eaval/
-├── RAGBasedAgent/
-│   ├── __init__.py
-│   ├── change_analyzer.py     # PR code change analysis
-│   ├── embedding_store.py     # ChromaDB vector storage
-│   ├── FreeLLM_Wrapper.py     # Free LLM API integration
-│   ├── GithubAuth.py          # GitHub API interactions
-│   ├── main.py
-|   |── RAGBasedAgent.py             # Main entry point
-│   ├── review_evaluator.py    # Model evaluation with metrics
-│   ├── review_generator.py    # Review generation & formatting
-│   └── similarity_query.py    # Similar PR search
-|
-├── 📂 responses/                # Stores generated responses
-├── 📂 improved_responses/       # Stores responses from improved prompts
-├── 📂 prompts/                  # Stores improved prompt versions
-└── 📂 results/                  # CSV exports of evaluation metrics
+├── interactive_eval.py       # Evaluation CLI interface
+├── questions.json            # Evaluation input prompts
+├── evaluation/               # Evaluation logic & metrics
+│   ├── evaluator.py
+│   ├── metrics.py
+│   ├── prompt_improver.py
+│   └── recommendation.py
+├── models/                   # Model wrappers & config
+│   ├── gemini_model.py
+│   ├── groq_models.py
+│   └── model_factory.py
+├── RAGA_Eaval/               # RAG agent backend
+│   └── RAGBasedAgent/
+│       ├── main.py
+│       ├── GithubAuth.py
+│       ├── review_generator.py
+│       └── similarity_query.py
+├── responses/                # Raw model outputs
+├── improved_responses/       # Responses after enhancement
+├── prompts/                  # Updated prompts by iteration
+└── results/                  # CSV summary of metrics
 ```
 
-## 🛠️ Technology Stack
+---
 
-- **🐍 Programming**: Python 3.8+
-- **🧠 LLMs Used**:
-  - 📖 Ground Truth: Gemini
-  - 🤖 Response Generation: Mixtral, Llama, Qwen, DeepSeek (via Groq API)
-- **📊 Evaluation Metrics**:
-  - ✅ **Relevance**: Response pertinence to question
-  - 🎯 **Accuracy**: Factual correctness
-  - 📚 **Groundedness**: Based on reference material
-  - 📖 **Completeness**: Coverage of required information
-  - 🔡 **BLEU/ROUGE**: Text similarity metrics
-- **💾 Data Storage**: JSON and CSV for structured output
+## 🛠️ Installation & Setup
 
-## 📥 Installation
-
-### 🔽 Clone the repository:
-
+### 🔽 Clone Repository
 ```bash
 git clone https://github.com/Tejaswini-41/RAGA_Eaval.git
 cd RAGA_Eval
 ```
 
-### 🛠️ Create a virtual environment:
-
+### 🧪 Set Up Virtual Environment
 ```bash
 python -m venv venv
-source venv/bin/activate  # On macOS/Linux
-venv\Scripts\activate    # On Windows
+source venv/bin/activate        # macOS/Linux
+venv\Scripts\activate           # Windows
 ```
 
-### 📦 Install dependencies:
-
+### 📦 Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 🔑 Set up environment variables:
+### 🔑 Configure Environment Variables
 
-Create a `.env` file and add your API keys:
+Create a `.env` file:
 
-```bash
-# Required API keys
+```env
 GITHUB_ACCESS_TOKEN=your_github_token
 GEMINI_API_KEY=your_gemini_api_key
-
-# Optional API keys for additional models
 GROQ_API_KEY=your_groq_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
 ```
 
-## 🚦 Usage
+---
 
-1. **Prepare questions**: Update or create questions in `questions.json`
-2. **Run the evaluation script**:
+## 🚀 How to Use
 
-```bash
-python interactive_eval.py
-```
+1. 📝 **Update `questions.json`** with your queries  
+2. 🔧 **Run evaluation script**:
+   ```bash
+   python interactive_eval.py
+   ```
 
-3. **Interactive menu options**:
-   - 📌 Evaluate single question
-   - 🔄 Evaluate with iterative improvement (3 iterations)
-   - 📜 View all available questions
-   - ❌ Quit
-4. **Review results**:
-   - 📊 Terminal output shows metrics comparison
-   - 📂 CSV exports in `results/` directory
-   - 📜 Improved prompts stored in `prompts/`
+3. 📋 **Choose from interactive menu**:
+   - Evaluate single question
+   - Iterative evaluation (3 rounds)
+   - List available questions
+   - Exit  
 
-## 🔄 Current Development Status
+4. 📊 **Review output**:
+   - Terminal comparison view
+   - CSV exports (`results/`)
+   - Enhanced prompts (`prompts/`)
 
-✅ Core evaluation framework complete
-✅ Multi-model comparison working
-✅ Iterative prompt improvement implemented
-✅ API rate limiting and backoff strategies added
-✅ CSV export functionality added
-✅ Performance summary with best iteration identification
-🔜 Integration with RAG-based agent (next phase)
+---
 
-## 📊 Sample Results
-
-The system generates comprehensive metrics tables showing performance across iterations:
+## 📊 Sample Output
 
 ```
-🧪 Step 6: Evaluating AI models for review quality...
-• Generating reference review with gemini...
-• Testing deepseek model...
-  - Overall score: 0.589
-• Testing llama model...
-  - Overall score: 0.625
-• Testing alibaba model...
-  - Overall score: 0.485
-
 ✅ Best model for PR review: llama (Score: 0.625)
 
-════════════════════════════════════════════════════════════════════════════════
 📊 MODEL COMPARISON (Reference: GEMINI)
-════════════════════════════════════════════════════════════════════════════════
-Model        | Overall | Relev | Accur | Grnd  | Comp  | Faith | Ctx   | Answ  | BLEU  | ROUG  |
-────────────────────────────────────────────────────────────────────────────────
-llama        | 0.625   | 0.74  | 0.85  | 0.80  | 0.20  | 0.14  | 0.80  | 0.88  | 0.18  | 0.20  |
-deepseek     | 0.589   | 0.77  | 0.90  | 0.60  | 0.20  | 0.50  | 0.00  | 0.86  | 0.04  | 0.17  |
-alibaba      | 0.485   | 0.80  | 0.80  | 0.80  | 0.20  | 0.00  | 0.00  | 0.00  | 0.11  | 0.19  |
+────────────────────────────────────────────────────────────
+Model     | Overall | Relev | Accur | Grnd | Comp | BLEU | ROUGE
+llama     | 0.625   | 0.74  | 0.85  | 0.80 | 0.20 | 0.18 | 0.20
+deepseek  | 0.589   | 0.77  | 0.90  | 0.60 | 0.20 | 0.04 | 0.17
+alibaba   | 0.485   | 0.80  | 0.80  | 0.80 | 0.20 | 0.11 | 0.19
 ```
 
-## 🔮 Future Enhancements
+---
 
-- 🔍 Integration with RAG-based agent for code review
-- 📈 Enhanced visualization of metrics using charts
-- 🧪 Support for additional evaluation dimensions
-- 🔄 Parallel processing for faster evaluation
-- 🌐 Web interface for easier interaction
+## 🚧 Development Status
+
+| Feature                                      | Status |
+|---------------------------------------------|--------|
+| Core Evaluation Engine                      | ✅     |
+| Multi-Model Support                         | ✅     |
+| Iterative Prompt Enhancement                | ✅     |
+| Rate Limiting & Retry Logic                 | ✅     |
+| CSV Export of Results                       | ✅     |
+| RAG Agent Integration                       | 🔜     |
+
+---
+
+## 🔮 Roadmap
+
+- 📦 Integration with RAG-Based Agents  
+- 📉 Interactive Web Dashboard  
+- 🧠 Support for Semantic Evaluation Metrics  
+- ⚙️ Parallel Processing for Large-Scale Runs  
+
+---
 
 ## 👥 Contributors
 
-- 👩‍💻 **Tejaswini Durge**
+- 👩‍💻 **Tejaswini Durge**  
 - 👩‍💻 **Dipali Gangarde**
+
+---
 
 ## 📄 License
 
-📜 This project is licensed under the MIT License.
+Licensed under the [MIT License](LICENSE).
 
 🕒 *Last updated: March 16, 2025*
-
-Last updated: March 16, 2025                
