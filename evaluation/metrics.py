@@ -13,11 +13,20 @@ import importlib.util
 sys.path.append('T:\\RAGA_Eaval')  # Add root directory to path
 
 # Dynamically import the FreeLLM_Wrapper module
-wrapper_path = os.path.join('T:\\RAGA_Eaval\\RAGBasedAgent', 'FreeLLM_Wrapper.py')
-spec = importlib.util.spec_from_file_location("FreeLLM_Wrapper", wrapper_path)
-wrapper_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(wrapper_module)
-FreeLLMWrapper = wrapper_module.FreeLLMWrapper
+try:
+    wrapper_path = os.path.join('T:\\RAGA_Eaval\\RAGBasedAgent', 'FreeLLM_Wrapper.py')
+    spec = importlib.util.spec_from_file_location("FreeLLM_Wrapper", wrapper_path)
+    wrapper_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(wrapper_module)
+    FreeLLMWrapper = wrapper_module.FreeLLMWrapper
+except Exception as e:
+    print(f"Could not import FreeLLM_Wrapper: {e}")
+    # Create dummy class as fallback
+    class FreeLLMWrapper:
+        def __init__(self):
+            pass
+        async def generate(self, prompts):
+            return ["API not available"] * len(prompts)
 
 # Load environment variables
 load_dotenv()
@@ -33,19 +42,17 @@ class MetricsCalculator:
     def __init__(self):
         self.embedder = embedder
         self.gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-        self.free_llm = FreeLLMWrapper(model_type="claude")  # Default to Claude
-        self.faithfulness_metric = None  # Will initialize lazily
-        self.free_llm_available = False  # Default to False
         
-        # Try to import and initialize free LLM
+        # SIMPLER APPROACH: Only initialize one LLM wrapper
         try:
-            from RAGBasedAgent.FreeLLM_Wrapper import FreeLLMWrapper
-            self.free_llm = FreeLLMWrapper(model_type="gpt4")  # Or whichever model works best
+            # Use direct import rather than dynamic import
+            self.free_llm = FreeLLMWrapper()  # No model type needed now
             self.free_llm_available = True
-            print("Free LLM API integration available for metrics")
+            print("Free LLM API (GPT-3.5-turbo) integration available")
         except Exception as e:
             print(f"Free LLM API not available: {e}")
             self.free_llm_available = False
+            self.free_llm = None
         
     def compute_relevance(self, reference, response):
         """Compute relevance using SBERT embeddings"""
@@ -241,30 +248,30 @@ class MetricsCalculator:
             print(f"Error computing answer relevance: {e}")
             return 0.5  # Default value
 
-    # Use a custom wrapper for RAGAS that handles errors better
+    # Simplify the RAGAS faithfulness method
     async def get_ragas_faithfulness(self, reference, response, use_custom=True):
-        """Get faithfulness score using RAGAS or custom implementation with fallback"""
-        # Always default to custom implementation if there are issues with RAGAS
+        """Simplified RAGAS faithfulness using GPT-3.5-turbo"""
+        # Default to custom implementation for reliability
+        if use_custom or not self.free_llm_available:
+            return self.compute_faithfulness(reference, response)
+        
+        # Safety check to prevent token limit errors
+        max_length = 4000  # Keep well under token limits
+        if len(reference) > max_length or len(response) > max_length:
+            print("Content too long for RAGAS faithfulness, using custom implementation")
+            return self.compute_faithfulness(reference, response)
+        
         try:
-            if use_custom or not self.free_llm_available:
+            # Try RAGAS faithfulness with simplified approach
+            from ragas.metrics import Faithfulness
+            
+            if not self.faithfulness_metric and self.free_llm:
+                self.faithfulness_metric = Faithfulness(llm=self.free_llm)
+            
+            if not self.faithfulness_metric:
                 return self.compute_faithfulness(reference, response)
             
-            # Truncate if too long to avoid token limits
-            max_length = 4000
-            if len(reference) > max_length:
-                reference = reference[:max_length] + "...[truncated]"
-            if len(response) > max_length:
-                response = response[:max_length] + "...[truncated]"
-            
-            # Try RAGAS faithfulness with free LLM API
-            from ragas.metrics import Faithfulness
-            from RAGBasedAgent.FreeLLM_Wrapper import FreeLLMWrapper
-            
-            # Use a more reliable model type
-            free_llm = FreeLLMWrapper(model_type="gpt4")  # Try with GPT4 proxy
-            faithfulness_metric = Faithfulness(llm=free_llm)
-            
-            # Create sample format expected by RAGAS
+            # Create sample for RAGAS
             from ragas.dataset_schema import SingleTurnSample
             sample = SingleTurnSample(
                 user_input="Review this PR",
@@ -272,10 +279,71 @@ class MetricsCalculator:
                 retrieved_contexts=[reference]
             )
             
-            # Get faithfulness score
-            score = await faithfulness_metric.single_turn_ascore(sample)
+            # Get score with timeout
+            score = await asyncio.wait_for(
+                self.faithfulness_metric.single_turn_ascore(sample),
+                timeout=30  # Timeout after 30 seconds
+            )
             return score
+            
         except Exception as e:
             print(f"Error with RAGAS faithfulness: {e}")
-            # Fall back to custom implementation
             return self.compute_faithfulness(reference, response)
+
+    def extract_relevant_pr_content(self, content, max_length=4000):
+        """Extract the most relevant parts of PR content for evaluation"""
+        if len(content) <= max_length:
+            return content
+            
+        # Split content into chunks
+        lines = content.split('\n')
+        
+        # 1. Extract file paths (critical for faithfulness evaluation)
+        file_pattern = r'(?:src|test|lib)\/[\w\/\-\.]+\.\w+'
+        file_matches = re.findall(file_pattern, content)
+        file_section = "IMPORTANT FILES:\n" + "\n".join(set(file_matches)) + "\n\n"
+        
+        # 2. Extract code blocks (most relevant for review)
+        code_blocks = []
+        in_block = False
+        current_block = []
+        
+        for line in lines:
+            if line.strip().startswith('```') or line.strip().startswith('~~~'):
+                if in_block:
+                    # End of block
+                    current_block.append(line)
+                    code_blocks.append('\n'.join(current_block))
+                    current_block = []
+                    in_block = False
+                else:
+                    # Start of block
+                    in_block = True
+                    current_block = [line]
+            elif in_block:
+                current_block.append(line)
+                
+        code_section = "CODE BLOCKS:\n" + "\n\n".join(code_blocks[:3]) + "\n\n"  # Keep top 3 code blocks
+        
+        # 3. Extract PR summary (usually at beginning)
+        summary_length = min(1000, max_length // 4)
+        summary = '\n'.join(lines[:20])[:summary_length]
+        summary_section = "PR SUMMARY:\n" + summary + "\n\n"
+        
+        # 4. Add key lines with functions, classes, etc.
+        function_pattern = r'(def|class|function|method) [\w\d_]+'
+        function_matches = []
+        for line in lines:
+            if re.search(function_pattern, line):
+                function_matches.append(line.strip())
+        
+        function_section = "KEY FUNCTIONS/CLASSES:\n" + "\n".join(function_matches[:10]) + "\n\n"
+        
+        # Combine sections within max_length constraint
+        combined = summary_section + file_section + function_section + code_section
+        
+        # Final truncation if still too long
+        if len(combined) > max_length:
+            return combined[:max_length] + "\n...[content intelligently truncated]"
+        
+        return combined

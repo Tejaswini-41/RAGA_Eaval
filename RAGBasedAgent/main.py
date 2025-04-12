@@ -76,6 +76,20 @@ async def run_rag_review(repo_owner, repo_name, pr_number):
     print(f"Most similar PR: #{most_similar_pr}")
     current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, repo_owner, repo_name)
     
+    # Add content truncation here to avoid token limits
+    max_tokens = 4000
+    if current_pr_changes and len(current_pr_changes) > max_tokens:
+        from evaluation.metrics import MetricsCalculator
+        metrics_calculator = MetricsCalculator()
+        original_length = len(current_pr_changes)
+        current_pr_changes = metrics_calculator.extract_relevant_pr_content(current_pr_changes, max_tokens)
+        print(f"⚠️ Intelligently extracted PR content from {original_length} chars to {len(current_pr_changes)}")
+
+    if similar_prs_changes:
+        for i, pr_data in enumerate(similar_prs_changes):
+            if len(pr_data['changes']) > (max_tokens//2):
+                similar_prs_changes[i]['changes'] = pr_data['changes'][:(max_tokens//2)] + "\n...[content truncated]"
+
     if not current_pr_changes or not similar_prs_changes:
         print("❌ Failed to compare PR changes")
         return
@@ -101,7 +115,7 @@ async def run_rag_review(repo_owner, repo_name, pr_number):
         current_pr_changes, 
         similar_prs_changes,
         pr_number=pr_number,
-        similar_pr_number=most_similar_pr,  # Still pass most similar for backwards compatibility
+        similar_pr_number=most_similar_pr,  
         current_pr_file=current_pr_file,
         model_name=best_model
     )

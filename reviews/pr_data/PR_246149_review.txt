@@ -1,41 +1,38 @@
-Here is a detailed code review of the pull request:
+Here is a detailed code review of the provided pull request:
 
-**Summary of the changes**
+**Summary of Changes**
 
-The pull request updates several files in the VSCode repository, primarily related to the chat functionality. The changes include:
+The pull request appears to be refactoring the chat prompt attachment functionality in the VSCode workbench. The main changes involve:
 
-* Renaming `attachPrompts` to `attachPrompt` and updating the function signature and behavior
-* Introducing a new `detachPrompt` function and related types
-* Updating code that calls these functions to adapt to the new API
-* Minor refactoring and code organization changes
+* Renaming `attachPrompts` to `attachPrompt` in `chatAttachPromptAction.ts` and updating the corresponding imports.
+* Introducing a new option `skipIfImplicitlyAttached` in `attachPrompt.ts` to skip attaching a prompt if it is already attached as an implicit "current file" context.
+* Updating the `isAttachedAsCurrentPrompt` function in `attachPrompt.ts` to check if a prompt is already attached as an implicit "current file" context.
+* Refactoring the `chatInputPart.ts` file to use the new `skipIfImplicitlyAttached` option.
 
 **File Change Suggestions**
 
-Based on the changes, the following files might be affected and should be reviewed for potential updates:
+Based on the changes, the following files might get affected:
 
-* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts` (potential updates to `attachPrompt` calls)
-* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts` (potential updates to `attachPrompt` and `detachPrompt` calls)
-* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts` (potential updates to `attachPrompt` calls)
-* `src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts` (potential updates to `add` method behavior)
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts`: This file might need to be updated to use the new `attachPrompt` function.
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts`: This file might need to be updated to use the new `skipIfImplicitlyAttached` option.
+* `src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts`: This file might need to be updated to use the new `attachPrompt` function.
 
 **Conflict Prediction**
 
-The following files have been changed in multiple PRs and may cause conflicts:
+The following files have been changed in multiple PRs and could cause conflicts:
 
-* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts` (changed in PR #246224 and this PR)
-* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts` (changed in PR #246224 and this PR)
-* `src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts` (changed in PR #246211 and this PR)
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts` (changed in PR #246364 and this PR)
+* `src/vs/workbench/contrib/chat/browser/chatInputPart.ts` (changed in PR #246364 and this PR)
 
 **Breakage Risk Warning**
 
-The following changes may break existing functionality:
+The changes to the `attachPrompt` function and the introduction of the `skipIfImplicitlyAttached` option might break existing functionality if not properly tested. Specifically:
 
-* The renaming of `attachPrompts` to `attachPrompt` and the changes to its behavior may require updates to calling code to avoid errors.
-* The introduction of the `detachPrompt` function and related types may require updates to calling code to ensure correct usage.
+* The `attachPrompt` function has been renamed, which could break existing calls to this function.
+* The `skipIfImplicitlyAttached` option might change the behavior of the prompt attachment functionality, which could break existing workflows.
 
 **Test Coverage Advice**
 
-The following test files should be updated to cover the changes:
+The following test files should be updated to ensure proper test coverage:
 
-* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.test.ts`
-* `src/vs/workbench/contrib/chat/browser/actions/reusablePrompt
+* `src

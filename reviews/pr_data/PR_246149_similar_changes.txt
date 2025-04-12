@@ -1,147 +1,117 @@
 
---- Similar PR #246224 ---
-File: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
-Before:
-				menu: {
-				}
+--- Similar PR #246364 ---
+File: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts
 After:
-import { ctxHasRequestInProgress, ctxIsGlobalEditingSession } from '../chatEditing/chatEditingEditorContextKeys.js';
-				menu: [{
-				}, {
-					id: MenuId.ChatEditingEditorContent,
-					when: ContextKeyExpr.and(ctxHasRequestInProgress, ctxIsGlobalEditingSession),
-					group: 'navigate',
-					order: 4,
-				}]
+				skipIfImplicitlyAttached: true,
 
-File: src/vs/workbench/contrib/chat/browser/chatEditing/chatEditingEditorOverlay.ts
-Before:
-	// private readonly _progressNode: HTMLElement;
-				if (action.id === 'inlineChat2.reveal' || action.id === 'workbench.action.chat.openEditSession') {
-
-						protected override getTooltip(): string | undefined {
-							return this._requestMessage.get()?.message || super.getTooltip();
-						}
+File: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts
 After:
-import { CHAT_OPEN_ACTION_ID } from '../actions/chatActions.js';
-				if (action.id === 'inlineChat2.reveal' || action.id === CHAT_OPEN_ACTION_ID) {
+import { extUri } from '../../../../../../../../../base/common/resources.js';
+	/**
+	 * Whether to skip attaching provided prompt if it is
+	 * already attached as an implicit  "current file" context.
+	 */
+	readonly skipIfImplicitlyAttached?: boolean;
 
-File: src/vs/workbench/contrib/inlineChat/browser/inlineChat.contribution.ts
-After:
-registerAction2(InlineChatActions.CancelRequestAction);
-
-File: src/vs/workbench/contrib/inlineChat/browser/inlineChatActions.ts
-Before:
-import { ctxIsGlobalEditingSession, ctxRequestCount } from '../../chat/browser/chatEditing/chatEditingEditorContextKeys.js';
-After:
-import { ctxHasRequestInProgress, ctxIsGlobalEditingSession, ctxRequestCount } from '../../chat/browser/chatEditing/chatEditingEditorContextKeys.js';
-
-export class CancelRequestAction extends AbstractInline2ChatAction {
-	constructor() {
-		super({
-			id: 'inlineChat2.cancelRequest',
-			title: localize2('cancel', "Cancel Request"),
-			f1: true,
-			icon: Codicon.stopCircle,
-			precondition: ContextKeyExpr.and(ctxIsGlobalEditingSession.negate(), ctxHasRequestInProgress),
-			toggled: CTX_INLINE_CHAT_VISIBLE,
-			menu: {
-				id: MenuId.ChatEditingEditorContent,
-				when: ContextKeyExpr.and(
-					ctxHasRequestInProgress,
-					ctxIsGlobalEditingSession.negate(),
-				),
-				group: 'navigate',
-			...[truncated]
---- Similar PR #246215 ---
-File: src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
-Before:
-import { timeout } from '../../../../../base/common/async.js';
-import { Command, isLocation, SymbolKinds } from '../../../../../editor/common/languages.js';
-import { ITextModelService } from '../../../../../editor/common/services/resolverService.js';
-import { ISymbolQuickPickItem } from '../../../search/browser/symbolsQuickAccess.js';
-export class SelectAndInsertFileAction extends Action2 {
-	static readonly Name = 'files';
-	static readonly Item = {
-		label: localize('allFiles', 'All Files'),
-		description: localize('allFilesDescription', 'Search for relevant files in the workspace and provide context from them'),
-	};
-	static readonly ID = 'workbench.action.chat.selectAndInsertFile';
-
-	constructor() {
-		super({
-			id: SelectAndInsertFileAction.ID,
-			title: '' // not displayed
-		});
+/**
+ * Check if provided uri is already attached to chat
+ * input as an implicit  "current file" context.
+ */
+const isAttachedAsCurrentPrompt = (
+	promptUri: URI,
+	widget: IChatWidget,
+): boolean => {
+	const { implicitContext } = widget.input;
+	if (implicitContext === undefined) {
+		return false;
 	}
 
-	async run(accessor: ServicesAccessor, ...args: any[]) {
-		const textModelService = accessor.get(ITextModelService);
-		const logService = accessor.get(ILogService);
-		const quickInputService = accessor.get(IQuickInputService);
+	if (implicitContext.isPrompt === false) {
+		return false;
+	}
 
-		const context = args[0];
-		if (!isSelectAndInsertActionContext(context)) {
-			return;
+	if (implicitContext.enabled === false) {
+		return false;
+	}
+
+	assertDefined(
+		implicitContext.value,
+		'Prompt value must always be defined.',
+	);
+
+	const uri = URI.isUri(implicitContext.value)
+		? implicitContext.value
+		: implicitContext.value.uri;
+
+	return extUri.isEqual(promptUri, uri);
+};
+
+	const { skipIfImplicitlyAttached } = options;
+
+	if (skipIfImplicitlyAttached && isAttachedAsCurrentPrompt(file, widget)) {
+		return { widget, wasAlreadyAttached: true };
+	}
+
+
+File: src/vs/workbench/contrib/chat/browser/chatInputPart.ts
+Before:
+		return !this.instructionAttachmentsPart.empty;
+	// A funtion that filters out specifically the `value` property of the attachment.
+		const hasAttachments = Boolean(attachments.length) || Boolean(this.implicitContext?.value) || !this.instructionAttachmentsPart.empty;
+		this.promptInstructionsAttached.set(!this.instructionAttachmentsPart.empty);
+After:
+		// if prompt attached explicitly as a "prompt" attachment
+		if (this.instructionAttachmentsPart.empty === false) {
+			return true;
 		}
 
-		const doCleanup = () => {
-			// Failed, remove the dangling `file`
-			context.widget.inputEditor.executeEdits('chatInsertFile', [{ range: context.range, text: `` }]);
-		};
-
-		// TODO: have dedicated UX for this instead of using the quick access picker
-		await timeout(0); // https://github.com/microsoft/vscode/issues/243115
-		const picks = await quickInputService.quickAccess.pick('');
-		if (!picks?.length) {
-			logService.trace('SelectAndInsertFileAction: no file selected');
-			doCleanup();
-			return;
+		if (this.implicitContext === undefined) {
+			return false;
 		}
 
-		const editor = context.widget.inputEditor;
-		const range = context.range;
-
-		// Handle the special case of selecting all files
-		if (picks[0] === SelectAndInsertFileAction.Item) {
-			const text = `#${SelectAndInsertFileAction.Name}`;
-			const success = editor.executeEdits('chatInser...[truncated]
---- Similar PR #246211 ---
-File: src/vs/editor/browser/editorBrowser.ts
+		// if prom...[truncated]
+--- Similar PR #246349 ---
+File: src/vs/workbench/contrib/chat/browser/actions/chatContextActions.ts
 Before:
-	setDecorationsByType(description: string, decorationTypeKey: string, ranges: editorCommon.IDecorationOptions[]): void;
+			if (editorService.activeTextEditorControl && activeUri && [Schemas.file, Schemas.vscodeRemote, Schemas.untitled].includes(activeUri.scheme)) {
+				const selection = activeEditor?.getSelection();
+					(await showChatView(accessor.get(IViewsService)))?.focusInput();
 After:
-	setDecorationsByType(description: string, decorationTypeKey: string, ranges: editorCommon.IDecorationOptions[]): readonly string[];
+			if (activeEditor && activeUri && [Schemas.file, Schemas.vscodeRemote, Schemas.untitled].includes(activeUri.scheme)) {
+				const selection = activeEditor.getSelection();
+					widget.focusInput();
 
-File: src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts
+
+--- Similar PR #246350 ---
+File: src/vs/workbench/contrib/chat/browser/attachments/implicitContextAttachment.ts
 Before:
-	public setDecorationsByType(description: string, decorationTypeKey: string, decorationOptions: editorCommon.IDecorationOptions[]): void {
+		const ariaLabel = range ? localize('chat.fileAttachmentWithRange', "Attached file, {0}, line {1} to line {2}", friendlyName, range.startLineNumber, range.endLineNumber) : localize('chat.fileAttachment', "Attached file, {0}", friendlyName);
+		const currentFile = localize('openEditor', "Current file context");
+			title
+		const hintElement = dom.append(this.domNode, dom.$('span.chat-implicit-hint', undefined, 'Current file'));
+		const buttonMsg = this.attachment.enabled ? localize('disable', "Disable current file context") : localize('enable', "Enable current file context");
 After:
-	public setDecorationsByType(description: string, decorationTypeKey: string, decorationOptions: editorCommon.IDecorationOptions[]): readonly string[] {
-		return this._decorationTypeKeysToIds[decorationTypeKey] || [];
+import { ThemeIcon } from '../../../../../base/common/themables.js';
+		const attachmentTypeName = (this.attachment.isPrompt === false)
+			? localize('file.lowercase', "file")
+			: localize('prompt.lowercase', "prompt");
 
-File: src/vs/workbench/contrib/chat/browser/contrib/chatDynamicVariables.ts
+		const ariaLabel = range ? localize('chat.fileAttachmentWithRange', "Attached {0}, {1}, line {2} to line {3}", attachmentTypeName, friendlyName, range.startLineNumber, range.endLineNumber) : localize('chat.fileAttachment', "Attached {0}, {1}", attachmentTypeName, friendlyName);
+		const currentFile = localize('openEditor', "Current {0} context", attachmentTypeName);
+
+		const icon = (this.attachment.isPrompt)
+			? ThemeIcon.fromId(Codicon.bookmark.id)
+			: undefined;
+
+			title,
+			icon,
+
+		const hintLabel = localize('hint.label.current', "Current {0}", attachmentTypeName);
+		const hintElement = dom.append(this.domNode, dom.$('span.chat-implicit-hint', undefined, hintLabel));
+		const buttonMsg = this.attachment.enabled ? localize('disable', "Disable current {0} context", attachmentTypeName) : localize('enable', "Enable current {0} context", attachmentTypeName);
+
+File: src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts
 Before:
-import { Disposable, DisposableStore, isDisposable } from '../../../../../base/common/lifecycle.js';
-function changeIsBeforeVariable(changeRange: IRange, variableRange: IRange): boolean {
-	return (
-		changeRange.endLineNumber < variableRange.startLineNumber ||
-		(changeRange.endLineNumber === variableRange.startLineNumber && changeRange.endColumn <= variableRange.startColumn)
-	);
-}
-
-function changeIsAfterVariable(changeRange: IRange, variableRange: IRange): boolean {
-	return (
-		changeRange.startLineNumber > variableRange.endLineNumber ||
-		(changeRange.startLineNumber === variableRange.endLineNumber && changeRange.startColumn >= variableRange.endColumn)
-	);
-}
-
-			e.changes.forEach(c => {
-				// Don't mutate entries in _variables, since they will be returned from the getter
-				this._variables = coalesce(this._variables.map((ref): TDynamicVariable | null => {
-					const intersection = Range.intersectRanges(ref.range, c.range);
-					if (intersection && !intersection.isEmpty()) {
-						// The reference text was changed, it's broken.
-						// But if the whole reference range was deleted (eg history navigation) then don't try to change the editor.
-		...[truncated]
+	// for prompt files, we add a prefix to the `id`
+		// the default prefix that is used for all prompt files
+		let pref...[truncated]
