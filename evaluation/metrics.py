@@ -9,16 +9,27 @@ import os
 import sys
 import importlib.util
 
-# Direct import using full path
-sys.path.append('T:\\RAGA_Eaval')  # Add root directory to path
+# Determine file paths dynamically using os.path
+current_dir = os.path.dirname(os.path.abspath(__file__))  # metrics.py directory
+project_root = os.path.abspath(os.path.join(current_dir, '..'))  # Go up one level to project root
+sys.path.append(project_root)
 
-# Dynamically import the FreeLLM_Wrapper module
 try:
-    wrapper_path = os.path.join('T:\\RAGA_Eaval\\RAGBasedAgent', 'FreeLLM_Wrapper.py')
-    spec = importlib.util.spec_from_file_location("FreeLLM_Wrapper", wrapper_path)
-    wrapper_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(wrapper_module)
-    FreeLLMWrapper = wrapper_module.FreeLLMWrapper
+    # First try standard import (if package structure is correct)
+    try:
+        from RAGBasedAgent.FreeLLM_Wrapper import FreeLLMWrapper
+        # print("Successfully imported FreeLLMWrapper via standard import")
+    except ImportError:
+        # Fall back to dynamic import if standard import fails
+        wrapper_path = os.path.join(project_root, 'RAGBasedAgent', 'FreeLLM_Wrapper.py')
+        if not os.path.exists(wrapper_path):
+            raise ImportError(f"FreeLLM_Wrapper.py not found at {wrapper_path}")
+            
+        spec = importlib.util.spec_from_file_location("FreeLLM_Wrapper", wrapper_path)
+        wrapper_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(wrapper_module)
+        FreeLLMWrapper = wrapper_module.FreeLLMWrapper
+        print(f"Successfully imported FreeLLMWrapper via dynamic import from {wrapper_path}")
 except Exception as e:
     print(f"Could not import FreeLLM_Wrapper: {e}")
     # Create dummy class as fallback

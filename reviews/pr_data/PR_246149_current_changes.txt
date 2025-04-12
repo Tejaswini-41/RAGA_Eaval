@@ -21,12 +21,12 @@ import { runAttachPromptAction } from './chatAttachPromptAction.js';
 	): Promise<void> {
 
 IMPORTANT FILES:
-src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts
-src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts
-src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts
 src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts
-src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts
 src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts
+src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts
+src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts
+src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts
+src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts
 
 KEY FUNCTIONS/CLASSES:
 
