@@ -1,18 +1,18 @@
 <think>
-Okay, so I'm looking at this pull request and trying to figure out what changes were made. Let me start by reading through the summary provided. The PR seems to be about refactoring some prompt-related actions in the chat feature.
+Okay, I need to review this pull request and provide detailed feedback. Let me start by understanding what the PR is doing. It looks like the main changes are in two files: chatAttachPromptAction.ts and chatRunPromptAction.ts. 
 
-First, I see that in the file chatAttachPromptAction.ts, they changed the import from attachPrompts.js to attachPrompt.js. Also, the function call changed from attachPrompts to attachPrompt, and it now takes a single resource instead of an array. That makes sense if they're simplifying the function to handle one resource at a time.
+In chatAttachPromptAction.ts, the import is being changed from attachPrompts to attachPrompt, and the function call is being adjusted. Instead of passing an array of resources, it's now passing a single resource. That makes sense if attachPrompt is designed to handle one resource at a time.
 
-In chatRunPromptAction.ts, they removed a line that imported runAttachPromptAction and modified the options to include skipIfImplicitlyAttached: true. This might mean that they're adding a condition to skip attaching if it's already implicitly attached, perhaps to avoid duplicates or unnecessary actions.
+In chatRunPromptAction.ts, the import for runAttachPromptAction is being removed, and it's replaced with a direct import of attachPrompt. The function is then called with specific options. I notice that the options include skipIfImplicitlyAttached: true. I should check if this option is correctly handled in the attachPrompt function.
 
-Looking at the similar PRs, I notice that several files are involved, especially around handling implicit context and prompt attachments. For example, in attachPrompt.ts, they added a skipIfImplicitlyAttached option and a check to see if the prompt is already attached. This suggests that the new code is trying to prevent attaching the same prompt multiple times if it's already present as an implicit context.
+Now, looking at the similar PRs, I see that several files are involved, especially around handling implicit contexts and attachments. For example, in attachPrompt.ts, there's a check to skip attaching if it's already implicit. That seems related to the changes here.
 
-I should check if all these changes are properly covered by tests. The test files for chatInputPart and chatPromptAttachmentsCollection might need updates to reflect the new behavior, especially the skipping logic.
+I need to make sure that all these changes are consistent. One thing that stands out is the potential duplication in isAttachedAsCurrentPrompt. It's used in both attachPrompt.ts and chatInputPart.ts. Maybe there's a way to refactor this into a shared utility to avoid code duplication.
 
-Now, thinking about potential issues. The function attachPrompt now returns an object with widget and wasAlreadyAttached. If other parts of the code expect a widget but don't check wasAlreadyAttached, that could cause problems. So, any code calling attachPrompt should handle both cases.
+Also, the change from attachPrompts to attachPrompt might affect other parts of the code. I should check if any other files are using attachPrompts and whether they need to be updated. For example, if there are tests or other actions that rely on the old function, they might break.
 
-Also, the changes in chatInputPart.ts might have affected how the UI displays attachments. If the new logic for checking implicit context isn't handled correctly in the UI, users might see incorrect states, like a prompt being disabled when it shouldn't be.
+Another point is the test coverage. Since the attachPrompt function is now handling single resources, the tests should be updated to reflect this. I should suggest adding tests for both successful and failed attachment scenarios, especially focusing on the skipIfImplicitlyAttached option.
 
-I'm a bit concerned about the possibility of conflicts. Since multiple PRs are touching related files, especially around prompt attachments and implicit contexts, there's a risk that changes might interfere with each other. For example, if another PR modifies the isAttachedAsCurrentPrompt function, it could affect the behavior here.
+I'm also concerned about the skipIfImplicitlyAttached option. If it's not properly handled, it could cause prompts to be attached when they shouldn't be, or vice versa. I'll need to review the attachPrompt function to ensure this option is correctly implemented.
 
-Another thing is the code quality. There's a lot of repetition in the similar PRs, like checking the same conditions in different places. Maybe there's a way to
+Looking at the code quality, the new code seems cleaner, but I should check for any potential code smells, like unnecessary variables or unclear variable names. For example, in attachPrompt.ts, the variable names are descriptive

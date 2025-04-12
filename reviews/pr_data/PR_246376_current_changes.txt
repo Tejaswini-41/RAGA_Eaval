@@ -1,0 +1,12 @@
+File: src/vs/workbench/contrib/chat/browser/chatSetup.ts
+After:
+		if (setupStrategy === ChatSetupStrategy.DefaultSetup && this.controller.value.hasProviderConfigured()) {
+			setupStrategy = ChatSetupStrategy.SetupWithEnterpriseProvider; // users with a configured provider go through provider setup
+		}
+
+	hasProviderConfigured(): boolean {
+		const setting = this.configurationService.getValue<{ authProvider: string | undefined }>(defaultChat.completionsAdvancedSetting);
+		return typeof setting.authProvider === 'string';
+	}
+
+

@@ -283,3 +283,186 @@ Be specific with file names, function names, and line numbers when possible.
             print(row)
         
         print("─" * 80)
+
+    async def improve_review(self, current_pr_changes, similar_pr_changes, best_model, model_metrics):
+        """Handle menu-driven improvements for review generation"""
+        
+        while True:
+            print("\n Review Improvement Options:")
+            print("0. 🔄Run standard review (default)")
+            print("1. 🔍 Add confidence scores to review suggestions")
+            print("2. 📝 Use enhanced prompts for better specificity")
+            print("3. 📊 Implement improved DB chunking")
+            print("4. 💡 Add interactive feedback system for RAGAS improvement (Coming Soon)")
+            print("5. ❌ Exit")
+            
+            try:
+                choice = input("\nSelect improvement option (0-5): ")
+                
+                if choice == "0":
+                    return await self.generate_detailed_pr_review(
+                        {"changes": current_pr_changes},
+                        {"changes": similar_pr_changes},
+                        best_model
+                    )
+                    
+                elif choice == "1":
+                    return await self._generate_review_with_confidence(
+                        current_pr_changes, similar_pr_changes, best_model, model_metrics
+                    )
+                    
+                elif choice == "2":
+                    return await self._generate_review_with_enhanced_prompt(
+                        current_pr_changes, similar_pr_changes, best_model
+                    )
+                    
+                elif choice == "3":
+                    return await self._generate_review_with_chunking(
+                        current_pr_changes, similar_pr_changes, best_model
+                    )
+                    
+                elif choice == "4":
+                    print("\n⚠️ Interactive feedback system coming soon!")
+                    continue
+                    
+                elif choice == "5":
+                    print("\n👋 Exiting improvement menu...")
+                    return None
+                    
+                else:
+                    print("\n❌ Invalid choice! Please select 0-5")
+                    
+            except Exception as e:
+                print(f"\n❌ Error: {str(e)}")
+                continue
+
+    async def _generate_review_with_confidence(self, current_pr_changes, similar_pr_changes, model_name, metrics):
+        """Generate review with confidence scores for each suggestion"""
+        
+        base_review = await self.generate_detailed_pr_review(
+            {"changes": current_pr_changes},
+            {"changes": similar_pr_changes},
+            model_name
+        )
+        
+        # Add confidence scores based on metrics
+        confidence_scores = {
+            "File Changes": metrics[model_name]["ContextualPrecision"],
+            "Conflict Detection": metrics[model_name]["Accuracy"],
+            "Breaking Changes": metrics[model_name]["Faithfulness"],
+            "Test Coverage": metrics[model_name]["Completeness"],
+            "Code Quality": metrics[model_name]["AnswerRelevance"]
+        }
+        
+        enhanced_review = "# Review with Confidence Scores\n\n"
+        for section, confidence in confidence_scores.items():
+            enhanced_review += f"\n## {section} (Confidence: {confidence:.1%})\n"
+            section_content = self._extract_section(base_review, section)
+            enhanced_review += section_content if section_content else "No suggestions\n"
+        
+        return enhanced_review
+
+    async def _generate_review_with_enhanced_prompt(self, current_pr_changes, similar_pr_changes, model_name):
+        """Generate review using enhanced prompts for better specificity"""
+        
+        enhanced_prompt = f"""Analyze this PR as an expert code reviewer:
+
+CONTEXT:
+Current Changes: {current_pr_changes}
+Similar PR History: {similar_pr_changes}
+
+PROVIDE DETAILED ANALYSIS:
+1. Technical Implementation (Be specific)
+    - Core functionality changes
+    - Architecture impacts
+    - Performance implications
+    
+2. Quality & Safety
+    - Potential edge cases
+    - Error handling completeness
+    - Security considerations
+    
+3. Testing & Maintenance
+    - Required test coverage
+    - Documentation needs
+    - Future maintenance considerations
+
+Focus on specific files, line numbers, and code patterns.
+"""
+        return await self.generate_detailed_pr_review(
+            {"changes": current_pr_changes},
+            {"changes": similar_pr_changes},
+            model_name,
+            custom_prompt=enhanced_prompt
+        )
+
+    async def _generate_review_with_chunking(self, current_pr_changes, similar_pr_changes, model_name):
+        """Generate review with improved chunking strategy"""
+        
+        chunk_size = 1000
+        chunks = self._create_smart_chunks(current_pr_changes, chunk_size)
+        
+        reviews = []
+        for i, chunk in enumerate(chunks, 1):
+            print(f"\n📄 Processing chunk {i}/{len(chunks)}...")
+            chunk_review = await self.generate_detailed_pr_review(
+                {"changes": chunk},
+                {"changes": similar_pr_changes},
+                model_name
+            )
+            reviews.append(chunk_review)
+        
+        return self._merge_chunked_reviews(reviews)
+
+    def _create_smart_chunks(self, content, chunk_size):
+        """Create chunks intelligently preserving code block integrity"""
+        chunks = []
+        current_chunk = ""
+        
+        for line in content.split('\n'):
+            if len(current_chunk) + len(line) > chunk_size and current_chunk:
+                chunks.append(current_chunk)
+                current_chunk = line
+            else:
+                current_chunk += line + '\n'
+        
+        if current_chunk:
+            chunks.append(current_chunk)
+        
+        return chunks
+
+    def _merge_chunked_reviews(self, reviews):
+        """Merge chunked reviews intelligently"""
+        merged = "# Merged Chunked Review\n\n"
+        sections = ["Summary", "File Changes", "Conflicts", "Breaking Changes", 
+                    "Test Coverage", "Code Quality"]
+        
+        for section in sections:
+            merged += f"\n## {section}\n"
+            section_content = set()
+            
+            for review in reviews:
+                content = self._extract_section(review, section)
+                if content:
+                    section_content.update(content.split('\n'))
+            
+            merged += '\n'.join(sorted(section_content)) + '\n'
+        
+        return merged
+
+    def _extract_section(self, review, section_name):
+        """Extract content from a specific section of the review"""
+        lines = review.split('\n')
+        content = []
+        in_section = False
+        
+        for line in lines:
+            if line.startswith('##') and section_name.lower() in line.lower():
+                in_section = True
+                continue
+            elif line.startswith('##') and in_section:
+                break
+            elif in_section and line.strip():
+                content.append(line)
+        
+        return '\n'.join(content) if content else ""

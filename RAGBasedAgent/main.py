@@ -127,16 +127,48 @@ async def run_rag_review(repo_owner, repo_name, pr_number):
     print("\n✅ RAG-based review process completed successfully!")
     return review
 
+def display_menu():
+    """Display the options menu"""
+    print("\n" + "="*50)
+    print("🚀 RAG-BASED PR REVIEW SYSTEM")
+    print("="*50)
+    print("\nEnhancement Options:")
+    print("0. 🔄 Run standard review (default)")
+    print("1. 🔍 Add confidence scores to review suggestions")
+    print("2. 📝 Use enhanced prompts for better specificity")
+    print("3. 📊 Implement improved DB chunking")
+    print("4. 💡 Add interactive feedback system for RAGAS improvement")
+    print("5. ❌ Exit")
+    print("-"*50)
+    choice = input("\nSelect an option (0-5): ")
+    return choice
+
 if __name__ == "__main__":
     # Check environment setup
     if not setup_environment():
         exit(1)
     
-    # Repository and PR settings
-    repo_owner = 'microsoft'
-    repo_name = 'vscode'
-    pr_number = 246149  # Use a PR number that exists
-    
-    # Run RAG-based review process using asyncio
-    import asyncio
-    review = asyncio.run(run_rag_review(repo_owner, repo_name, pr_number))
+    while True:
+        choice = display_menu()
+        
+        if choice == "0":
+            # Repository and PR settings
+            repo_owner = 'microsoft'
+            repo_name = 'vscode'
+            pr_number = 246149  # Use a PR number that exists
+            
+            # Run RAG-based review process using asyncio
+            import asyncio
+            review = asyncio.run(run_rag_review(repo_owner, repo_name, pr_number))
+        
+        elif choice == "5":
+            print("\n👋 Exiting the program. Goodbye!")
+            exit(0)
+        
+        elif choice in ["1", "2", "3", "4"]:
+            print("\n🚧 COMING SOON! This feature is under development.")
+            input("\nPress Enter to continue...")
+        
+        else:
+            print("\n⚠️ Invalid option. Please try again.")
+            input("\nPress Enter to continue...")
