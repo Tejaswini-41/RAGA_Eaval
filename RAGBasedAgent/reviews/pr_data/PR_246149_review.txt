@@ -1,38 +1,39 @@
-## I. Technical Accuracy & Contextual Precision
+## Summary - Key Changes and Their Purpose
 
-### Summary - Key changes and their purpose
+The provided PR involves changes to the chat functionality in the VS Workbench, specifically focusing on how prompts are attached and run. The key changes include:
 
-The provided PR involves changes to the chat functionality in the VS Workbench, specifically related to attaching prompts and handling chat context actions. The primary modifications are:
+1. **Modifying Import Statements and Function Calls**:
+   - In `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts`, the import statement and function call for `attachPrompts` have been updated to `attachPrompt`. This suggests a shift towards a singular prompt attachment approach.
 
-1. **Renaming and Refactoring of Attach Prompt Functions**:
-   - The function `attachPrompts` has been renamed to `attachPrompt` and its import statement has been updated from `./dialogs/askToSelectPrompt/utils/attachPrompts.js` to `./dialogs/askToSelectPrompt/utils/attachPrompt.js`.
-   - This change seems to reflect a shift towards a singular prompt attachment approach.
+2. **Updating Function Parameters and Return Types**:
+   - The `attachPrompts` function, which previously accepted an array of values, has been replaced with `attachPrompt`, which seems to handle a single resource. This change is evident in `chatAttachPromptAction.ts`.
 
-2. **Update of `chatAttachPromptAction.ts`**:
-   - The import statement for `attachPrompts` and its usage have been modified to use `attachPrompt` instead.
+3. **Potential Refactoring in Related Files**:
+   - Other files like `chatRunPromptAction.ts`, `askToSelectPrompt.ts`, `attachPrompt.ts`, and `detachPrompt.ts` might be impacted or related to these changes, given their proximity in functionality and location.
 
-3. **Update of `chatRunPromptAction.ts`**:
-   - Although the exact changes are not detailed in the provided diff, it seems there might be related adjustments to accommodate the new `attachPrompt` function.
-
-### File Changes - Specific files needing updates
-
-Based on the provided information, the following files have been directly modified:
+## File Changes - Specific Files Needing Updates
 
 1. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts**:
-   - Before: `import { attachPrompts, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompts.js';`
-   - After: `import { attachPrompt, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompt.js';`
+   - **Before**: Imported `attachPrompts` and called it with an array of resources.
+   - **After**: Imports `attachPrompt` and calls it with a single resource.
 
 2. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts**:
-   - This file seems to have been updated to work with the new `attachPrompt` function, although the exact diff is not provided.
+   - Seems to be using the `runAttachPromptAction` which might need updates to align with the new `attachPrompt` functionality.
 
-### Conflicts - Files with high change frequency
+## Conflicts - Files with High Change Frequency
 
-The following files could potentially have high change frequencies or be impacted by these changes:
+Based on the provided similar PRs:
 
-1. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts**:
-   - As the source of the newly named function `attachPrompt`.
+1. **PR 246842**:
+   - Involves changes to `constants.ts` and `runPrompt.ts`, indicating ongoing adjustments to prompt handling and possibly related to the `attachPrompt` and `detachPrompt` utilities.
 
-2. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts**:
-   - Directly modified in this PR.
+2. **PR 246816**:
+   - Focuses on quota messages and UI updates, which might indirectly relate to how prompts and attachments are handled.
 
-3. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction
+3. **PR 246839**:
+   - Deals with tool context actions, which could intersect with how prompts are processed or presented.
+
+## Risks - Potential Breaking Changes with Evidence
+
+1. **Singular vs. Plural Prompt Handling**:
+   - The shift from `attachPrompts` (plural) to `attachPrompt

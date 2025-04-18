@@ -89,7 +89,7 @@ def fetch_pull_requests(repo_owner, repo_name, limit=20):
             ]
             Pull_Requests = [999, 998, 997, 996, 995]  # Dummy PR numbers
         
-        print("\n=== List of Changed Files ===")
+        # print("\n=== List of Changed Files ===")
         print(Changed_Files)
         print("\n=== List of Pull Requests ===")
         print(Pull_Requests)

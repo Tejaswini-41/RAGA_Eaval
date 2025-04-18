@@ -29,7 +29,7 @@ try:
         wrapper_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(wrapper_module)
         FreeLLMWrapper = wrapper_module.FreeLLMWrapper
-        print(f"Successfully imported FreeLLMWrapper via dynamic import from {wrapper_path}")
+        # print(f"Successfully imported FreeLLMWrapper via dynamic import from {wrapper_path}")
 except Exception as e:
     print(f"Could not import FreeLLM_Wrapper: {e}")
     # Create dummy class as fallback
@@ -59,7 +59,7 @@ class MetricsCalculator:
             # Use direct import rather than dynamic import
             self.free_llm = FreeLLMWrapper()  # No model type needed now
             self.free_llm_available = True
-            print("Free LLM API (GPT-3.5-turbo) integration available")
+            # print("Free LLM API (GPT-3.5-turbo) integration available")
         except Exception as e:
             print(f"Free LLM API not available: {e}")
             self.free_llm_available = False

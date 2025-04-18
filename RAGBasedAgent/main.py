@@ -15,6 +15,11 @@ from chunking_advice import ChunkingAdvisor  # Assuming this is the correct impo
 import uuid
 import time
 
+# Global constants for repository settings
+REPO_OWNER = 'microsoft'
+REPO_NAME = 'vscode'
+PR_NUMBER = 246149
+
 def generate_session_id():
     """Generate a unique session ID"""
     return f"session_{int(time.time())}_{str(uuid.uuid4())[:8]}"
@@ -255,14 +260,9 @@ def load_stored_prompts(session_id=None):
 
 async def initial_review():
     try:
-        # Repository and PR settings
-        repo_owner = 'microsoft'
-        repo_name = 'vscode'
-        pr_number = 246149
-
-        # Fetch PR data first
-        print("\n📦 Fetching pull request data...")
-        changed_files, pull_requests = fetch_pull_requests(repo_owner, repo_name)
+        # Remove duplicate declarations and use constants
+        print(f"\n📦 Fetching pull request data...")
+        changed_files, pull_requests = fetch_pull_requests(REPO_OWNER, REPO_NAME)
         
         if not changed_files or not pull_requests:
             raise Exception("Failed to fetch pull request data")
@@ -270,53 +270,50 @@ async def initial_review():
         # Create embeddings and get similar PRs
         print("\n🔄 Creating embeddings and finding similar PRs...")
         _, collection = store_embeddings(changed_files, pull_requests)
-        query_results, pr_files = query_similar_prs(pr_number, repo_owner, repo_name, collection, num_similar=3)
+        query_results, pr_files = query_similar_prs(PR_NUMBER, REPO_OWNER, REPO_NAME, collection, num_similar=3)
         
-        # Get similar PR numbers
+        # Get similar PR numbers and compare changes (reuse code from run_rag_review)
         similar_pr_numbers = []
         if query_results and "metadatas" in query_results:
-            for i in range(min(3, len(query_results["metadatas"][0]))):
-                similar_pr = query_results["metadatas"][0][i]["pr_number"]
-                if similar_pr != pr_number:
-                    similar_pr_numbers.append(similar_pr)
-        
+            for i, similar_pr in enumerate(query_results["metadatas"][0]):
+                pr_num = similar_pr["pr_number"]
+                if pr_num != PR_NUMBER:
+                    similar_pr_numbers.append(pr_num)
+                    if len(similar_pr_numbers) >= 3:
+                        break
+
         # Compare changes
         print("\n📊 Analyzing PR changes...")
-        current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, repo_owner, repo_name)
+        current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, REPO_OWNER, REPO_NAME)
         
         if not current_pr_changes or not similar_prs_changes:
             raise Exception("Failed to analyze PR changes")
 
-        # Now generate baseline review with the obtained changes
-        print("\n📊 Generating review with current prompt...")
-        baseline_review = await run_rag_review(repo_owner, repo_name, pr_number)
-        
-        if not baseline_review:
-            raise Exception("Failed to generate baseline review")
-        
-        # Initialize ReviewEvaluator
+        # Initialize ReviewEvaluator and evaluate models
+        print("\n🧪 Evaluating AI models for review quality...")
         evaluator = ReviewEvaluator()
-        
-        # Get current prompts
-        current_prompt, current_system = ReviewPrompts.get_current_prompt()
-        
-        # Now evaluate with the obtained PR changes
-        print("\n🧪 Evaluating models for baseline metrics...")
         best_model, model_metrics = await evaluator.evaluate_models(
             current_pr_changes, 
             similar_prs_changes
         )
 
-        # Rest of the function remains the same...
-        baseline_metrics = model_metrics[best_model]
-        
-        if not baseline_metrics:
-            raise Exception("Failed to calculate baseline metrics")
-        
-        # Generate enhanced prompt
+        # Generate review using best model directly instead of calling run_rag_review
+        print(f"\n🤖 Generating review with {best_model}...")
+        current_pr_file = ", ".join(f.filename for f in pr_files) if pr_files else None
+        baseline_review = generate_review(
+            current_pr_changes,
+            similar_prs_changes,
+            pr_number=PR_NUMBER,
+            similar_pr_number=similar_pr_numbers[0] if similar_pr_numbers else None,
+            current_pr_file=current_pr_file,
+            model_name=best_model
+        )
+
+        # Get current prompts and generate enhanced prompt
+        current_prompt, current_system = ReviewPrompts.get_current_prompt()
         print("\n🔄 Generating enhanced system prompt...")
         new_system_prompt = await evaluator.generate_enhanced_prompt(
-            current_metrics=baseline_metrics,
+            current_metrics=model_metrics[best_model],
             current_prompt=current_system
         )
         
@@ -356,11 +353,6 @@ if __name__ == "__main__":
             
             print("\n🔍 Running initial review and prompt generation...")
             
-            # Repository and PR settings
-            repo_owner = 'microsoft'
-            repo_name = 'vscode'
-            pr_number = 246149
-            
             import asyncio
             
             # Run initial review
@@ -388,11 +380,6 @@ if __name__ == "__main__":
                 input("\nPress Enter to continue...")
                 continue
             
-            # Repository and PR settings
-            repo_owner = 'microsoft'
-            repo_name = 'vscode'
-            pr_number = 246149
-            
             import asyncio
             
             async def add_confidence_scores():
@@ -403,7 +390,7 @@ if __name__ == "__main__":
                     
                     # Fetch PR data
                     print("\n📦 Fetching pull request data...")
-                    changed_files, pull_requests = fetch_pull_requests(repo_owner, repo_name)
+                    changed_files, pull_requests = fetch_pull_requests(REPO_OWNER, REPO_NAME)
                     
                     if not changed_files or not pull_requests:
                         raise Exception("Failed to fetch pull request data")
@@ -411,19 +398,19 @@ if __name__ == "__main__":
                     # Create embeddings and get similar PRs
                     print("\n🔄 Creating embeddings and finding similar PRs...")
                     _, collection = store_embeddings(changed_files, pull_requests)
-                    query_results, pr_files = query_similar_prs(pr_number, repo_owner, repo_name, collection, num_similar=3)
+                    query_results, pr_files = query_similar_prs(PR_NUMBER, REPO_OWNER, REPO_NAME, collection, num_similar=3)
                     
                     # Get similar PR numbers
                     similar_pr_numbers = []
                     if query_results and "metadatas" in query_results:
                         for i in range(min(3, len(query_results["metadatas"][0]))):
                             similar_pr = query_results["metadatas"][0][i]["pr_number"]
-                            if similar_pr != pr_number:
+                            if similar_pr != PR_NUMBER:
                                 similar_pr_numbers.append(similar_pr)
                     
                     # Compare changes
                     print("\n📊 Analyzing changes...")
-                    current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, repo_owner, repo_name)
+                    current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, REPO_OWNER, REPO_NAME)
                     
                     if not current_pr_changes or not similar_prs_changes:
                         raise Exception("Failed to analyze PR changes")
@@ -484,11 +471,6 @@ if __name__ == "__main__":
                 input("\nPress Enter to continue...")
                 continue
             
-            # Repository and PR settings
-            repo_owner = 'microsoft'
-            repo_name = 'vscode'
-            pr_number = 246149
-            
             import asyncio
             
             async def test_stored_prompt():
@@ -498,7 +480,7 @@ if __name__ == "__main__":
                     
                     # Fetch PR data first
                     print("\n📦 Fetching pull request data...")
-                    changed_files, pull_requests = fetch_pull_requests(repo_owner, repo_name)
+                    changed_files, pull_requests = fetch_pull_requests(REPO_OWNER, REPO_NAME)
                     
                     if not changed_files or not pull_requests:
                         raise Exception("Failed to fetch pull request data")
@@ -506,26 +488,26 @@ if __name__ == "__main__":
                     # Create embeddings and get similar PRs
                     print("\n🔄 Creating embeddings and finding similar PRs...")
                     _, collection = store_embeddings(changed_files, pull_requests)
-                    query_results, pr_files = query_similar_prs(pr_number, repo_owner, repo_name, collection, num_similar=3)
+                    query_results, pr_files = query_similar_prs(PR_NUMBER, REPO_OWNER, REPO_NAME, collection, num_similar=3)
                     
                     # Get similar PR numbers
                     similar_pr_numbers = []
                     if query_results and "metadatas" in query_results:
                         for i in range(min(3, len(query_results["metadatas"][0]))):
                             similar_pr = query_results["metadatas"][0][i]["pr_number"]
-                            if similar_pr != pr_number:
+                            if similar_pr != PR_NUMBER:
                                 similar_pr_numbers.append(similar_pr)
                     
                     # Compare changes
                     print("\n📊 Analyzing PR changes...")
-                    current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, repo_owner, repo_name)
+                    current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, REPO_OWNER, REPO_NAME)
                     
                     if not current_pr_changes or not similar_prs_changes:
                         raise Exception("Failed to analyze PR changes")
                     
                     # Generate new review with enhanced prompt
                     print("\n🔄 Testing stored enhanced prompt...")
-                    enhanced_review = await run_rag_review(repo_owner, repo_name, pr_number)
+                    enhanced_review = await run_rag_review(REPO_OWNER, REPO_NAME, PR_NUMBER)
                     
                     # Initialize ReviewEvaluator
                     evaluator = ReviewEvaluator()
@@ -624,10 +606,10 @@ if __name__ == "__main__":
             print("\n🚧 COMING SOON! This feature is under development.")
             input("\nPress Enter to continue...")
         
-        elif choice == "5":
+        elif choice == "6":
             print("\n👋 Exiting the program. Goodbye!")
             exit(0)
         
         else:
             print("\n⚠ Invalid option. Please try again.")
-            input("\nPress Enter to continue...")
+            input("\nPress Enter to continue...")
