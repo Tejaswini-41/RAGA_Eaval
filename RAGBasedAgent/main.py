@@ -118,7 +118,6 @@ async def run_rag_review(repo_owner, repo_name, pr_number):
     
     current_pr_file = ", ".join(file_paths) if file_paths else None
     
-    # Step 6: Evaluate models to select best one (NEW)
     print("\n🧪 Step 6: Evaluating AI models for review quality...")
     evaluator = ReviewEvaluator()
     best_model, model_metrics = await evaluator.evaluate_models(
@@ -130,7 +129,7 @@ async def run_rag_review(repo_owner, repo_name, pr_number):
     print(f"\n🤖 Step 7: Generating AI-based review using {best_model}...")
     review = generate_review(
         current_pr_changes, 
-        similar_prs_changes,
+        similar_prs_changes if 'similar_prs_changes' in locals() else None,
         pr_number=pr_number,
         similar_pr_number=most_similar_pr,  
         current_pr_file=current_pr_file,
@@ -163,25 +162,36 @@ def display_menu():
     return choice
 
 # Update the save_results function to handle markdown files
-def save_results(data, prefix, session_id):
-    """Save results with session tracking"""
+def save_results(data, prefix, session_id, evaluation_type=None):
+    """
+    Save results with session tracking and evaluation type
+    
+    Args:
+        data: Data to save
+        prefix: Prefix for filename
+        session_id: Current session ID
+        evaluation_type: Type of evaluation (baseline/enhanced)
+    """
     results_dir = "RAG_based_Analysis_2"
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
+    # Add evaluation type to filename if provided
+    eval_suffix = f"_{evaluation_type}" if evaluation_type else ""
+    
     # Handle markdown files for enhanced reviews
     if prefix == "confidence_enhanced_review":
-        filename = f"{prefix}_{session_id}_{timestamp}.md"
+        filename = f"{prefix}_{session_id}_{timestamp}{eval_suffix}.md"
         filepath = os.path.join(results_dir, filename)
         
         # Save as formatted markdown
         with open(filepath, "w", encoding='utf-8') as f:
-            f.write(data)  # data is already in markdown format
+            f.write(data)
     else:
         # Save other data as JSON
-        filename = f"{prefix}_{session_id}_{timestamp}.json"
+        filename = f"{prefix}_{session_id}_{timestamp}{eval_suffix}.json"
         filepath = os.path.join(results_dir, filename)
         
         with open(filepath, "w", encoding='utf-8') as f:
@@ -189,24 +199,23 @@ def save_results(data, prefix, session_id):
     
     return filepath
 
-def get_latest_session_file(session_id=None):
-    """Get the most recent file for the current session"""
+def get_latest_session_file(session_id=None, evaluation_type=None):
+    """Get the most recent file for the current session and evaluation type"""
     results_dir = "RAG_based_Analysis_2"
     if not os.path.exists(results_dir):
         return None
+        
+    files = []
+    eval_suffix = f"_{evaluation_type}" if evaluation_type else ""
     
-    files = os.listdir(results_dir)
-    if session_id:
-        # Filter files for current session
-        files = [f for f in files if session_id in f]
+    for f in os.listdir(results_dir):
+        if f.endswith(".json") and (not session_id or session_id in f):
+            if evaluation_type and eval_suffix in f:
+                files.append(os.path.join(results_dir, f))
+            elif not evaluation_type:
+                files.append(os.path.join(results_dir, f))
     
-    if not files:
-        return None
-    
-    # Sort by timestamp and get latest
-    latest_file = sorted(files)[-1]
-    return os.path.join(results_dir, latest_file)
-
+    return max(files, key=os.path.getctime) if files else None
 
 async def get_chunking_advice(pr_data):
     """Get chunking advice for the current PR"""
@@ -290,14 +299,13 @@ async def initial_review():
             raise Exception("Failed to analyze PR changes")
 
         # Initialize ReviewEvaluator and evaluate models
-        print("\n🧪 Evaluating AI models for review quality...")
         evaluator = ReviewEvaluator()
         best_model, model_metrics = await evaluator.evaluate_models(
             current_pr_changes, 
             similar_prs_changes
         )
 
-        # Generate review using best model directly instead of calling run_rag_review
+        # Generate review using best model directly
         print(f"\n🤖 Generating review with {best_model}...")
         current_pr_file = ", ".join(f.filename for f in pr_files) if pr_files else None
         baseline_review = generate_review(
@@ -317,7 +325,7 @@ async def initial_review():
             current_prompt=current_system
         )
         
-        # Store results
+        # Store results - ADD THESE NEW FIELDS
         results = {
             "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
             "original_system_prompt": current_system,
@@ -325,16 +333,123 @@ async def initial_review():
             "baseline_metrics": model_metrics,
             "best_model": best_model,
             "baseline_review": baseline_review,
-            "session_id": session_id
+            "session_id": session_id,
+            # Add these new fields
+            "current_pr_changes": current_pr_changes,
+            "similar_prs_changes": similar_prs_changes,
+            "pr_files": [f.filename for f in pr_files] if pr_files else []
         }
         
-        file_path = save_results(results, "prompt_enhancement", session_id)
-        print(f"\n💾 Initial results saved to {file_path}")
+        # Store baseline results
+        file_path = save_results(results, "prompt_enhancement", session_id, "baseline")
+        print(f"\n💾 Baseline results saved to {file_path}")
         return results
         
     except Exception as e:
         print(f"❌ Error during initial review: {e}")
         return None
+
+async def test_stored_prompt():
+    try:
+        stored_results = load_stored_prompts(session_id)
+        
+        # First get all required data from stored results
+        current_pr_changes = stored_results.get("current_pr_changes")
+        similar_prs_changes = stored_results.get("similar_prs_changes")
+        enhanced_prompt = stored_results.get("enhanced_system_prompt")
+        
+        if not all([current_pr_changes, similar_prs_changes, enhanced_prompt]):
+            raise Exception("Missing required data from stored results")
+        
+        print("\n📝 Prompt Evolution:")
+        print("Previous:", stored_results["original_system_prompt"][:100] + "...")
+        print("Current:", enhanced_prompt[:100] + "...")
+        
+        # Update system prompt before evaluation
+        print("\n🔄 Updating system prompt...")
+        ReviewPrompts.update_system_prompt(enhanced_prompt)
+        
+        # Verify prompt update
+        current_prompt, current_system = ReviewPrompts.get_current_prompt()
+        if current_system != enhanced_prompt:
+            raise Exception("Failed to update system prompt")
+        
+        # Generate new enhanced prompt for next iteration
+        evaluator = ReviewEvaluator()
+        next_enhanced_prompt = await evaluator.generate_enhanced_prompt(
+            current_metrics=stored_results["baseline_metrics"][stored_results["best_model"]],
+            current_prompt=enhanced_prompt
+        )
+        
+        print("Next Enhanced:", next_enhanced_prompt[:100] + "...")
+        
+        # Evaluate with enhanced prompt
+        print("\n🧪 Evaluating models with enhanced prompt...")
+        best_model, enhanced_model_metrics = await evaluator.evaluate_models(
+            current_pr_changes, 
+            similar_prs_changes,
+            system_prompt=enhanced_prompt
+        )
+        
+        # Add detailed metrics comparison
+        print("\n📊 RAGAS Metrics Comparison:")
+        print("=" * 80)
+        print(f"{'Model':<12} | {'Metric':<18} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} |")
+        print("=" * 80)
+
+        # Compare metrics for each model
+        for model_name in stored_results["baseline_metrics"]:
+            if model_name in enhanced_model_metrics:
+                print(f"\n📈 Model: {model_name.upper()}")
+                print("-" * 80)
+                
+                baseline = stored_results["baseline_metrics"][model_name]
+                enhanced = enhanced_model_metrics[model_name]
+                
+                for metric in baseline:
+                    if metric != "Overall":
+                        base_value = baseline[metric]
+                        enh_value = enhanced[metric]
+                        change = enh_value - base_value
+                        change_str = f"{'+' if change >= 0 else ''}{change:.3f}"
+                        print(f"{'':<12} | {metric:<18} | {base_value:>8.3f} | {enh_value:>8.3f} | {change_str:>8} |")
+                
+                # Add overall comparison
+                print("-" * 80)
+                overall_change = enhanced["Overall"] - baseline["Overall"]
+                overall_str = f"{'+' if overall_change >= 0 else ''}{overall_change:.3f}"
+                print(f"{'':<12} | {'Overall':<18} | {baseline['Overall']:>8.3f} | {enhanced['Overall']:>8.3f} | {overall_str:>8} |")
+
+        # Save enhanced results with all data
+        enhanced_results = {
+            "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+            "session_id": stored_results["session_id"],
+            "previous_prompt": stored_results["original_system_prompt"],
+            "current_prompt": enhanced_prompt,
+            "next_enhanced_prompt": next_enhanced_prompt,
+            "baseline_metrics": stored_results["baseline_metrics"],
+            "enhanced_metrics": enhanced_model_metrics,
+            "best_model": stored_results["best_model"],
+            "enhanced_best_model": best_model,
+            "pr_files": stored_results["pr_files"],
+            "current_pr_changes": current_pr_changes,
+            "similar_prs_changes": similar_prs_changes,
+            "metrics_comparison": {
+                "baseline": stored_results["baseline_metrics"],
+                "enhanced": enhanced_model_metrics
+            }
+        }
+        
+        enhanced_file = save_results(enhanced_results, "prompt_enhancement", 
+                                   session_id, "enhanced")
+        
+        print(f"\n💾 Enhanced results saved to: {enhanced_file}")
+        print("\n📊 Compare results in:")
+        print(f"Baseline: {get_latest_session_file(session_id, 'baseline')}")
+        print(f"Enhanced: {enhanced_file}")
+        
+    except Exception as e:
+        print(f"❌ Error during prompt testing: {e}")
 
 if __name__ == "__main__":
     # Check environment setup
@@ -461,114 +576,69 @@ if __name__ == "__main__":
                 print("❌ Please run option 0 first to generate baseline review")
                 input("\nPress Enter to continue...")
                 continue
-                
-            print("\n🔍 Testing previously generated prompt...")
-            
-            # Load stored prompts
-            stored_results = load_stored_prompts(session_id)
-            if not stored_results:
-                print("❌ No previously generated prompts found. Please run option 0 first.")
-                input("\nPress Enter to continue...")
-                continue
-            
-            import asyncio
+
+            print("\n🔍 Testing enhanced prompt from previous analysis...")
             
             async def test_stored_prompt():
                 try:
                     # Update system prompt in ReviewPrompts
-                    ReviewPrompts.update_system_prompt(stored_results["enhanced_system_prompt"])
+                    enhanced_prompt = stored_results.get("enhanced_system_prompt")
+                    if not enhanced_prompt:
+                        raise Exception("Enhanced prompt not found in stored results")
                     
-                    # Fetch PR data first
-                    print("\n📦 Fetching pull request data...")
-                    changed_files, pull_requests = fetch_pull_requests(REPO_OWNER, REPO_NAME)
+                    print("\n📝 Updating system prompt to enhanced version...")
+                    ReviewPrompts.update_system_prompt(enhanced_prompt)
                     
-                    if not changed_files or not pull_requests:
-                        raise Exception("Failed to fetch pull request data")
+                    # Verify prompt was updated
+                    current_prompt, current_system = ReviewPrompts.get_current_prompt()
+                    if current_system != enhanced_prompt:
+                        raise Exception("Failed to update system prompt")
                     
-                    # Create embeddings and get similar PRs
-                    print("\n🔄 Creating embeddings and finding similar PRs...")
-                    _, collection = store_embeddings(changed_files, pull_requests)
-                    query_results, pr_files = query_similar_prs(PR_NUMBER, REPO_OWNER, REPO_NAME, collection, num_similar=3)
-                    
-                    # Get similar PR numbers
-                    similar_pr_numbers = []
-                    if query_results and "metadatas" in query_results:
-                        for i in range(min(3, len(query_results["metadatas"][0]))):
-                            similar_pr = query_results["metadatas"][0][i]["pr_number"]
-                            if similar_pr != PR_NUMBER:
-                                similar_pr_numbers.append(similar_pr)
-                    
-                    # Compare changes
-                    print("\n📊 Analyzing PR changes...")
-                    current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, REPO_OWNER, REPO_NAME)
+                    # Use existing PR data
+                    current_pr_changes = stored_results.get("current_pr_changes")
+                    similar_prs_changes = stored_results.get("similar_prs_changes")
                     
                     if not current_pr_changes or not similar_prs_changes:
-                        raise Exception("Failed to analyze PR changes")
+                        raise Exception("Required PR data not found in stored results")
                     
-                    # Generate new review with enhanced prompt
-                    print("\n🔄 Testing stored enhanced prompt...")
-                    enhanced_review = await run_rag_review(REPO_OWNER, REPO_NAME, PR_NUMBER)
-                    
-                    # Initialize ReviewEvaluator
-                    evaluator = ReviewEvaluator()
-                    
-                    # Now evaluate with the obtained PR changes
+                    # Evaluate with enhanced prompt
                     print("\n🧪 Evaluating models with enhanced prompt...")
+                    evaluator = ReviewEvaluator()
                     best_model, enhanced_model_metrics = await evaluator.evaluate_models(
                         current_pr_changes, 
-                        similar_prs_changes
+                        similar_prs_changes,
+                        system_prompt=enhanced_prompt  # Pass enhanced prompt explicitly
                     )
                     
-                    # Rest of the code remains the same...
-                    stored_results["enhanced_metrics"] = enhanced_model_metrics
-                    stored_results["enhanced_best_model"] = best_model
-                    stored_results["enhanced_review"] = enhanced_review
-                    stored_results["test_timestamp"] = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    # Save enhanced results to a new file with proper suffix
+                    enhanced_results = {
+                        "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+                        "session_id": stored_results["session_id"],
+                        "original_system_prompt": stored_results["original_system_prompt"],
+                        "enhanced_system_prompt": enhanced_prompt,
+                        "baseline_metrics": stored_results["baseline_metrics"],
+                        "enhanced_metrics": enhanced_model_metrics,
+                        "best_model": stored_results["best_model"],
+                        "enhanced_best_model": best_model,
+                        "pr_files": stored_results["pr_files"],
+                        "current_pr_changes": current_pr_changes,
+                        "similar_prs_changes": similar_prs_changes
+                    }
                     
-                    # Display comparison of metrics
-                    print("\n📊 RAGAS Metrics Comparison:")
-                    print("="*80)
-                    print(f"{'Model':<12} | {'Metric':<18} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} |")
-                    print("="*80)
+                    enhanced_file = save_results(enhanced_results, "prompt_enhancement", 
+                                            session_id, "enhanced")
                     
-                    # Compare metrics for each model
-                    for model_name in stored_results["baseline_metrics"].keys():
-                        if model_name in enhanced_model_metrics:
-                            print(f"\n📈 Model: {model_name.upper()}")
-                            print("-"*80)
-                            
-                            baseline = stored_results["baseline_metrics"][model_name]
-                            enhanced = enhanced_model_metrics[model_name]
-                            
-                            for metric in baseline:
-                                if metric != "Overall":
-                                    base_value = baseline[metric]
-                                    enh_value = enhanced[metric]
-                                    change = enh_value - base_value
-                                    change_str = f"{'+' if change >= 0 else ''}{change:.3f}"
-                                    print(f"{'':<12} | {metric:<18} | {base_value:>8.3f} | {enh_value:>8.3f} | {change_str:>8} |")
-                            
-                            # Show overall change
-                            base_overall = baseline["Overall"]
-                            enh_overall = enhanced["Overall"]
-                            overall_change = enh_overall - base_overall
-                            print("-"*80)
-                            print(f"{'':<12} | {'Overall':<18} | {base_overall:>8.3f} | {enh_overall:>8.3f} | {overall_change:+.3f} |")
-                    
-                    # Update the JSON file
-                    latest_file = get_latest_session_file(session_id)
-                    with open(latest_file, "w") as f:
-                        json.dump(stored_results, f, indent=2)
-                    
-                    print(f"\n💾 Test results updated in {latest_file}")
+                    print(f"\n💾 Enhanced results saved to: {enhanced_file}")
+                    print("\n📊 Compare results in:")
+                    print(f"Baseline: {get_latest_session_file(session_id, 'baseline')}")
+                    print(f"Enhanced: {enhanced_file}")
                     
                 except Exception as e:
                     print(f"❌ Error during prompt testing: {e}")
             
             # Run the prompt testing
             asyncio.run(test_stored_prompt())
-            input("\nPress Enter to continue...")
-        
+            input("\nPress Enter to continue...")    
         elif choice == "3":
             if not session_id:
                 print("❌ No active session found. Please run option 0 first")
@@ -587,7 +657,7 @@ if __name__ == "__main__":
             # Prepare PR data for chunking analysis
             pr_data = {
                 "current_pr_changes": stored_results.get("baseline_review", ""),
-                "pr_files": stored_results.get("pr_files", []),
+                "pr_files": stored_results.get("pr_files", []),  # These are now string file paths
                 "metrics": stored_results.get("baseline_metrics", {})
             }
             

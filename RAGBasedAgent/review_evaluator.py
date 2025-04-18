@@ -39,7 +39,7 @@ class ReviewEvaluator:
         }
     
     async def evaluate_models(self, current_pr_changes, similar_pr_changes, 
-                             models=None, test_prompt_size=0.3):
+                             models=None, test_prompt_size=0.3, system_prompt=None):
         """
         Evaluate multiple models on PR review task to select best performer
         
@@ -53,6 +53,10 @@ class ReviewEvaluator:
             best_model: Name of the best performing model
             all_metrics: Dict of metrics for all models
         """
+        # Use provided system prompt or get default
+        if not system_prompt:
+            _, system_prompt = ReviewPrompts.get_current_prompt()
+            
         # Truncate PR content to avoid token limit errors
         max_tokens = 4000  # Set a reasonable token limit
         

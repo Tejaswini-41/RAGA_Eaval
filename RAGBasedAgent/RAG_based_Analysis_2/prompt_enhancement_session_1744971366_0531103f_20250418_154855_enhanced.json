@@ -1,0 +1,107 @@
+{
+  "timestamp": "20250418_154855",
+  "session_id": "session_1744971366_0531103f",
+  "original_system_prompt": "You are an expert code reviewer. Provide detailed, actionable feedback:\n\n1. Technical Accuracy\n- Reference specific files, functions, and line numbers\n- Explain the impact of each change\n- Ground suggestions in the code context\n\n2. Completeness\n- Cover all changed files and their dependencies\n- Analyze potential impacts thoroughly\n- Include test coverage requirements\n\n3. Faithfulness\n- Base all suggestions on the actual code\n- Avoid assumptions without evidence\n- Link suggestions to specific code patterns\n\nKeep suggestions practical and implementation-ready.",
+  "enhanced_system_prompt": "You are a highly meticulous and technically proficient code reviewer.  Your task is to provide a comprehensive and actionable review of the submitted code changes.  Prioritize clarity, specificity, and completeness in your feedback.  Each suggestion must be grounded in the code itself, referencing specific files, functions, and line numbers.  Avoid vague or generalized comments.\n\n**Technical Accuracy and Completeness:**  Your review must cover all changed files and their direct and indirect dependencies.  For each change, precisely describe its impact on the system's functionality, performance, and security.  Analyze potential side effects and edge cases.  If a change lacks sufficient testing, clearly specify the required test cases, including input data and expected outputs. Quantify the impact where possible (e.g., performance improvements, reduction in code complexity).\n\n**Faithfulness and Relevance:**  All your suggestions must be directly supported by evidence from the code.  Avoid making assumptions or introducing irrelevant considerations.  If a suggestion requires additional context or clarification, explicitly state this need.  Focus your review on the core changes and their immediate impact, omitting unrelated or tangential observations.\n\n**Practical and Actionable Suggestions:**  Frame your feedback as concrete, implementation-ready steps.  Suggest specific code modifications, including syntax and semantics.  Prioritize clarity and conciseness in your explanations.  Use consistent terminology and avoid ambiguity. Structure your review logically, separating different aspects of the code changes (e.g., functionality, performance, security) into clearly defined sections.  Conclude with a summary of the overall impact of the code changes and an assessment of their readiness for integration.",
+  "baseline_metrics": {
+    "deepseek": {
+      "Relevance": 0.6985953450202942,
+      "Accuracy": 0.8,
+      "Groundedness": 0.8,
+      "Completeness": 0.3,
+      "Faithfulness": 0.5,
+      "ContextualPrecision": 1.0,
+      "AnswerRelevance": 0.6,
+      "BLEU": 0.044445877945858706,
+      "ROUGE": 0.1686746987951807,
+      "Overall": 0.66
+    },
+    "llama": {
+      "Relevance": 0.7712957859039307,
+      "Accuracy": 0.8,
+      "Groundedness": 0.8,
+      "Completeness": 0.6,
+      "Faithfulness": 0.1428571428571429,
+      "ContextualPrecision": 1.0,
+      "AnswerRelevance": 0.6799999999999999,
+      "BLEU": 0.1425876976452075,
+      "ROUGE": 0.15079365079365079,
+      "Overall": 0.636
+    },
+    "alibaba": {
+      "Relevance": 0.6863833069801331,
+      "Accuracy": 0.8,
+      "Groundedness": 0.8,
+      "Completeness": 0.3,
+      "Faithfulness": 0.5,
+      "ContextualPrecision": 0.8,
+      "AnswerRelevance": 0.72,
+      "BLEU": 0.05063996506781409,
+      "ROUGE": 0.16757741347905283,
+      "Overall": 0.634
+    }
+  },
+  "enhanced_metrics": {
+    "deepseek": {
+      "Relevance": 0.7076715230941772,
+      "Accuracy": 0.8,
+      "Groundedness": 0.8,
+      "Completeness": 0.3,
+      "Faithfulness": 0.5,
+      "ContextualPrecision": 0.0,
+      "AnswerRelevance": 0.32999999999999996,
+      "BLEU": 0.046192151051305474,
+      "ROUGE": 0.16546762589928057,
+      "Overall": 0.498
+    },
+    "llama": {
+      "Relevance": 0.8182448148727417,
+      "Accuracy": 0.85,
+      "Groundedness": 0.7,
+      "Completeness": 0.4,
+      "Faithfulness": 0.4,
+      "ContextualPrecision": 0.5,
+      "AnswerRelevance": 0.94,
+      "BLEU": 0.36350098453593704,
+      "ROUGE": 0.2452830188679245,
+      "Overall": 0.612
+    },
+    "alibaba": {
+      "Relevance": 0.671149730682373,
+      "Accuracy": 0.8,
+      "Groundedness": 0.6,
+      "Completeness": 0.4,
+      "Faithfulness": 0.5,
+      "ContextualPrecision": 0.0,
+      "AnswerRelevance": 0.33999999999999997,
+      "BLEU": 0.054725383866733306,
+      "ROUGE": 0.15467625899280577,
+      "Overall": 0.473
+    }
+  },
+  "best_model": "deepseek",
+  "enhanced_best_model": "llama",
+  "pr_files": [
+    "src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts",
+    "src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts",
+    "src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts",
+    "src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts",
+    "src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts",
+    "src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts"
+  ],
+  "current_pr_changes": "File: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts\nBefore:\nimport { attachPrompts, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompts.js';\n\t\t\tconst widget = await attachPrompts(\n\t\t\t\t[{ value: resource }],\nAfter:\nimport { attachPrompt, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompt.js';\n\t\t\tconst { widget } = await attachPrompt(\n\t\t\t\tresource,\n\nFile: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts\nBefore:\nimport { runAttachPromptAction } from './chatAttachPromptAction.js';\n\t): Promise<void> {\n\t\treturn await runAttachPromptAction({\n\t\t\tinNewChat,\n\t\t\tskipSelectionDialog: true,\n\t\t}, commandService);\n\t): Promise<void> {\n\t): Promise<void> {\nAfter:\nimport { IChatWidget } from '../../chat.js';\nimport { attachPrompt } from './dialogs/askToSelectPrompt/utils/attachPrompt.js';\nimport { detachPrompt } from './dialogs/askToSelectPrompt/utils/detachPrompt.js';\nimport { IViewsService } from '../../../../../services/views/common/viewsService.js';\n\t): Promise<IChatWidget> {\n\t\tconst viewsService = accessor.get(IViewsService);\n\t\tconst { widget, wasAlreadyAttached } = await attachPrompt(\n\t\t\t{\n\t\t\t\tinNewChat,\n\t\t\t\tcommandService,\n\t\t\t\tviewsService,\n\t\t\t},\n\t\t);\n\n\t\t// submit the prompt immediately\n\t\tawait widget.acceptInput();\n\n\t\t// detach the prompt immediately, unless was attached\n\t\t// before the action was executed\n\t\tif (wasAlreadyAttached === false) {\n\t\t\tawait detachPrompt(resource, { widget });\n\t\t}\n\n\t\treturn widget;\n\t): Promise<IChatWidget> {\n\t): Promise<IChatWidget> {\n\nFile: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts\nBefore:\nimport { attachPrompts } from './utils/attachPrompts.js';\n\t\t\tlastActiveWidget = await attachPrompts(\n\t\t\t\tselectedItems,\nAfter:\nimport { attachPrompt } from './utils/attachPrompt.js';\n\t\t\tconst attachResult = await attachPrompt(\n\t\t\t\tselectedOption.value,\n\t\t\tlastActiveWidget = attachResult.widget;\n\nFile: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts\nBefore:\nimport { assertDefined, WithUriValue } from '../../../../../../../../../base/common/types.js';\n * Options for the {@link attachPrompts} function.\nexport const attachPrompts = async (\n\tfiles: readonly WithUriValue<Object>[],\n): Promise<IChatWidget> => {\n\tfor (const file of files) {\n\t\twidget\n\t\t\t.attachmentModel\n\t\t\t.promptInstructions\n\t\t\t.add(file.value);\n\t}\n\treturn widget;\nAfter:\nimport { URI } from '../../../../../../../../../base/common/uri.js';\nimport { assertDefined } from '../../../../../../../../../base/common/types.js';\n * Options for the {@link attachPrompt} function.\n/**\n * Return value of the {@link attachPrompt} function.\n */\ninterface IAttachResult {\n\treadonly widget: IChatWidget;\n\treadonly wasAlreadyAttached: boolean;\n}\n\nexport const attachPrompt = async (\n\tfile: URI,\n): Promise<IAttachResult> => {\n\tconst wasAlreadyAttached = widget\n\t\t.attachmentModel\n\t\t.promptInstructions\n\t\t.add(file);\n\treturn { widget, wasAlreadyAttached };\n\nFile: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts\nAfter:\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\n\nimport { IChatWidget } from '../../../../../chat.js';\nimport { URI } from '../../../../../../../../../base/common/uri.js';\n\n/**\n * Options for the {@link detachPrompt} function.\n */\nexport interface IDetachPromptOptions {\n\t/**\n\t * Chat widget instance to attach the prompt to.\n\t */\n\treadonly widget: IChatWidget;\n}\n\n/**\n * Detaches provided prompts to a chat input.\n */\nexport const detachPrompt = async (\n\tfile: URI,\n\toptions: IDetachPromptOptions,\n): Promise<IChatWidget> => {\n\tconst { widget } = options;\n\n\twidget\n\t\t.attachmentModel\n\t\t.promptInstructions\n\t\t.remove(file);\n\n\treturn widget;\n};\n\nFile: src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts\nBefore:\n\tpublic add(uri: URI): this {\n\t\t\treturn this;\n\t\treturn this;\nAfter:\n\t *\n\t * @returns `true` if the attachment already exists, `false` otherwise.\n\tpublic add(uri: URI): boolean {\n\t\t\treturn true;\n\t\treturn false;\n\n",
+  "similar_prs_changes": [
+    {
+      "pr_number": 246842,
+      "changes": "File: src/vs/platform/prompts/common/constants.ts\nBefore:\nexport function getFileExtension(type: 'instructions' | 'prompt'): string {\nAfter:\nexport function getPromptFileExtension(type: 'instructions' | 'prompt'): string {\n\nFile: src/vs/workbench/contrib/chat/browser/actions/promptActions/dialogs/askToSelectPrompt/utils/runPrompt.ts\nBefore:\nimport { detachPrompt } from './detachPrompt.js';\nimport { extUri } from '../../../../../../../../../base/common/resources.js';\nimport { assertDefined } from '../../../../../../../../../base/common/types.js';\n\tlet wasAlreadyAttached = true;\n\tif (isSetInImplicitContext(file, widget) === false) {\n\t\twasAlreadyAttached = widget\n\t\t\t.attachmentModel\n\t\t\t.promptInstructions\n\t\t\t.add(file);\n\t}\n\n\t// detach the prompt immediately, unless was attached\n\t// before the action was executed\n\tif (wasAlreadyAttached === false) {\n\t\tawait detachPrompt(file, { widget });\n\t}\n\n/**\n * Check if provided uri is already set as the implicit context.\n */\nconst isSetInImplicitContext = (\n\tpromptUri: URI,\n\twidget: IChatWidget,\n): boolean => {\n\tconst { implicitContext } = widget.input;\n\tif (implicitContext === undefined) {\n\t\treturn false;\n\t}\n\n\tif (implicitContext.enabled === false) {\n\t\t// the user disabled the implicit context in the chat view\n\t\treturn false;\n\t}\n\n\tif (implicitContext.isPromptFile === false) {\n\t\treturn false;\n\t}\n\n\t// we expect all implicit prompt file attachments\n\t// to have the `value` property to be present\n\tassertDefined(\n\t\timplicitContext.value,\n\t\t'Prompt value must always be defined.',\n\t);\n\n\tconst uri = URI.isUri(implicitContext.value)\n\t\t? implicitContext.value\n\t\t: implicitContext.value.uri;\n\n\treturn extUri.isEqual(promptUri, uri);\n};\nAfter:\nimport { basename } from '../../../../../../../../../base/common/resources.js';\n\tawait widget.setInput(`/${basename(file)}`);\n\nFile: src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts\nBefore:\nimport { IChatRequestVariableEntry } from '../../common/chatModel.js';\nA...[truncated]"
+    },
+    {
+      "pr_number": 246816,
+      "changes": "File: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts\nBefore:\n\t\t\t\tprecondition: ChatContextKeys.Setup.hidden.toNegated(),\n\t\t\t\ttitle: localize('upgradeChat', \"Upgrade to Copilot Pro\")\n\t\t\tconst dateFormatter = safeIntl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' });\n\n\t\t\tconst freeChatQuotaExceeded = chatEntitlementService.quotas.freeChat?.percentRemaining === 0;\n\t\t\tconst freeCompletionsQuotaExceeded = chatEntitlementService.quotas.freeCompletions?.percentRemaining === 0;\n\t\t\tconst quotaResetDate = new Date(chatEntitlementService.quotas.freeChat?.resetDate ?? chatEntitlementService.quotas.freeCompletions?.resetDate ?? Date.now()); // the two dates should really be the same for limited plan users\n\t\t\tif (freeChatQuotaExceeded && !freeCompletionsQuotaExceeded) {\n\t\t\t\tmessage = localize('chatQuotaExceeded', \"You've reached your monthly chat messages quota. You still have free code completions available in the Copilot Free plan. The allowance will renew on {0}.\", dateFormatter.format(quotaResetDate));\n\t\t\t} else if (freeCompletionsQuotaExceeded && !freeChatQuotaExceeded) {\n\t\t\t\tmessage = localize('completionsQuotaExceeded', \"You've reached your monthly code completions quota. You still have free chat messages available in the Copilot Free plan. The allowance will renew on {0}.\", dateFormatter.format(quotaResetDate));\n\t\t\t\tmessage = localize('chatAndCompletionsQuotaExceeded', \"You've reached your monthly quota of chat messages and code completions. The allowance will renew on {0}.\", dateFormatter.format(quotaResetDate));\n\t\t\tconst upgradeToPro = localize('upgradeToPro', \"Upgrade to Copilot Pro (your first 30 days are free) for:\\n- Unlimited code completions\\n- Unlimited basic chat messages\\n- Access to premium models\");\n\t\t\t\tmessage: localize('copilotFree', \"Copilot Free Quota Reached\"),\n\t\t\t\t\t\tlabel: localize('upgradePro', \"Upgrade to Copilot Pro\"),\n\t\t\t\t\tmarkdownDetails: [\n\t\t\t\t\t\t{ markdown: new MarkdownString(upgradeToPro, true) }\n\t\t\t\t\t]\n\t...[truncated]"
+    },
+    {
+      "pr_number": 246839,
+      "changes": "File: src/vs/workbench/contrib/chat/browser/actions/chatContextActions.ts\nBefore:\n\t\tif (tool.source.type === 'extension') {\n\t\t\tif (!tool.source.isExternalTool) {\n\t\t\t\treturn { ordinal: 1, groupLabel: tool.source.label };\n\t\t\t} else {\n\t\t\t\treturn { ordinal: 3, groupLabel: localize('chatContext.tools.extension', 'Extensions') };\n\t\t\t}\n\t\t\treturn { ordinal: 4, groupLabel: '' };\n\t\tif (res !== 0) {\n\t\t\treturn res;\n\n\t\tlet strA = a.tool.source.type !== 'internal' ? a.tool.source.label : '';\n\t\tlet strB = b.tool.source.type !== 'internal' ? b.tool.source.label : '';\n\t\tres = strA.localeCompare(strB);\n\t\tif (res !== 0) {\n\t\t\treturn res;\n\t\t}\n\n\t\tstrA = a.label;\n\t\tstrB = b.label;\n\t\treturn strA.localeCompare(strB);\n\t\tplaceHolder: localize('chatContext.tools.placeholder', 'Select a Tool'),\nAfter:\n\t\tif (tool.source.type === 'internal' || tool.source.type === 'extension' && !tool.source.isExternalTool) {\n\t\t\treturn { ordinal: 1, groupLabel: localize('chatContext.tools.internal', 'Built-In') };\n\t\t\treturn { ordinal: 3, groupLabel: localize('chatContext.tools.extension', 'Extensions') };\n\t\tif (res === 0) {\n\t\t\tres = a.label.localeCompare(b.label);\n\t\treturn res;\n\t\tplaceHolder: localize('chatContext.tools.placeholder', 'Select a tool'),\n\n"
+    }
+  ]
+}

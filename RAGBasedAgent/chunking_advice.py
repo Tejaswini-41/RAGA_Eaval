@@ -58,8 +58,9 @@ Please provide concrete, implementable recommendations."""
             
         if pr_content.get("pr_files"):
             file_types = {}
-            for file in pr_content["pr_files"]:
-                ext = file.filename.split('.')[-1] if '.' in file.filename else 'no_ext'
+            for filepath in pr_content["pr_files"]:
+                # Handle filepath as string instead of file object
+                ext = filepath.split('.')[-1] if '.' in filepath else 'no_ext'
                 file_types[ext] = file_types.get(ext, 0) + 1
             
             summary.append("\nFile distribution:")
