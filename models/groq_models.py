@@ -6,25 +6,26 @@ import groq
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# Define available models
+# Define available models with updated replacements
 MODEL_CONFIGS = {
     "deepseek": {
-        "groq_id": "deepseek-r1-distill-qwen-32b",
-        "display_name": "DeepSeek"
+        "groq_id": "qwen-qwq-32b",  # Replacement for deepseek-r1-distill-qwen-32b
+        "display_name": "DeepSeek (Qwen)"
     },
     "llama": {
-        "groq_id": "llama3-70b-8192", 
-        "display_name": "Llama3"
+        "groq_id": "meta-llama/llama-4-scout-17b-16e-instruct",  # Replacement for older Llama models
+        "display_name": "Llama4 Scout"
     },
     "alibaba": {
-        "groq_id": "qwen-2.5-32b",
-        "display_name": "Alibaba Qwen"
+        "groq_id": "qwen-qwq-32b",  # Replacement for qwen-2.5-32b
+        "display_name": "Alibaba Qwen QWQ"
     }
     # "mixtral": {
     #     "groq_id": "mixtral-8x7b-32768",
     #     "display_name": "Mixtral"
     # }
 }
+
 
 class GroqModel:
     """Handler for Groq API interactions"""

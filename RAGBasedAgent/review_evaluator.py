@@ -1,7 +1,9 @@
 import os
 import sys
 import asyncio
+import json
 from dotenv import load_dotenv
+import datetime
 
 # Add parent directory to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -9,6 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # Import from existing evaluation system
 from evaluation.metrics import MetricsCalculator 
 from models.model_factory import ModelFactory
+from prompts.review_prompts import ReviewPrompts
 
 class ReviewEvaluator:
     """Evaluates models for PR review quality using existing RAGA metrics"""
@@ -160,42 +163,17 @@ Be specific with file names, function names, and line numbers when possible.
             # Use best model from evaluation or default to gemini
             model_name = "gemini"
         
-        # Extract key information
-        current_files = current_pr_data.get('changed_files', [])
-        current_changes = current_pr_data.get('changes', '')
+        # Get current prompts
+        review_template, system_prompt = ReviewPrompts.get_current_prompt()
         
-        # Build context from similar PRs
-        similar_prs_context = self._build_similar_prs_context(similar_prs_data)
-        
-        prompt = f"""As an expert code reviewer, analyze this PR and provide specific suggestions:
-
-CURRENT PR DETAILS:
-PR #{current_pr_data.get('number', 'Unknown')}
-Changed Files: {', '.join(current_files)}
-
-CODE CHANGES:
-{current_changes}
-
-SIMILAR PRS HISTORY:
-{similar_prs_context}
-
-PROVIDE THE FOLLOWING SECTIONS:
-1. Summary of Changes - Brief overview of what this PR does
-2. File Change Suggestions - Identify additional files that might need changes based on modified files
-3. Conflict Prediction - Flag files with high change frequency that could cause conflicts
-4. Breakage Risk Warning - Note which changes might break existing functionality
-5. Test Coverage Advice - Recommend test files that should be updated
-6. Code Quality Suggestions - Point out potential code smells or duplication
-
-Be specific with file names, function names, and line numbers when possible.
-"""
-        
-        print("\n🔍 Generating detailed PR review...")
-        
+        # Use centralized prompts
         detailed_review = self.model_factory.generate_response_with_prompt(
             model_name, 
-            prompt, 
-            "You are an expert code reviewer. Focus on practical, specific suggestions. Mention specific files, functions, and line numbers when relevant."
+            review_template.format(
+                similar_prs=similar_prs_data.get('changes', ''),
+                current_pr=current_pr_data.get('changes', '')
+            ),
+            system_prompt
         )
         
         return detailed_review
@@ -466,3 +444,92 @@ Focus on specific files, line numbers, and code patterns.
                 content.append(line)
         
         return '\n'.join(content) if content else ""
+
+    async def generate_enhanced_prompt(self, current_metrics, current_prompt):
+        """Generate enhanced system prompt based on RAGAS metrics analysis using Gemini"""
+        try:
+            # Import Gemini
+            import google.generativeai as genai
+            from dotenv import load_dotenv
+            import os
+            import datetime
+
+            # Load API key
+            load_dotenv()
+            genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+
+            # Setup Gemini
+            model = genai.GenerativeModel('gemini-1.5-flash')  # Changed to gemini-pro for better reliability
+
+            # Analyze metrics to identify areas for improvement
+            metric_analysis = []
+            for metric, score in current_metrics.items():
+                if metric != "Overall":
+                    if score < 0.7:
+                        status = "needs significant improvement"
+                    elif score < 0.8:
+                        status = "could be improved"
+                    else:
+                        status = "performing well"
+                    metric_analysis.append(f"{metric}: {score:.3f} ({status})")
+
+            # Create prompt for generating enhanced system prompt
+            prompt = f"""You are an expert prompt engineer. Create an enhanced system prompt for code review that addresses the following metrics:
+
+Current Metrics Performance:
+{chr(10).join(metric_analysis)}
+
+Current System Prompt:
+"{current_prompt}"
+
+Requirements:
+1. Focus heavily on metrics scoring below 0.7
+2. Maintain strengths of metrics above 0.8
+3. Emphasize:
+   - Specific file and line number references
+   - Technical accuracy and completeness
+   - Practical, actionable suggestions
+   - Context awareness
+   - Clear structure and organization
+
+Generate a new system prompt that's between 200-300 words. Focus on clarity and specificity.
+Return ONLY the new system prompt, no explanations or additional text."""
+
+            # Generate new prompt using Gemini
+            response = model.generate_content(prompt)
+            new_system_prompt = response.text.strip()
+
+            # More lenient validation (200-400 words instead of character count)
+            word_count = len(new_system_prompt.split())
+            if word_count < 50 or word_count > 400:
+                print(f"\n⚠️ Generated prompt length ({word_count} words) outside ideal range (50-400 words)")
+                if word_count < 20:  # Only reject if extremely short
+                    raise ValueError("Generated prompt too short")
+        
+            print(f"\n✅ Generated new system prompt ({word_count} words)")
+            print("\n📝 New System Prompt:")
+            print("-" * 50)
+            print(new_system_prompt)
+            print("-" * 50)
+        
+            prompt_history = {
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "system_prompt": new_system_prompt,
+                "metrics": current_metrics
+            }
+
+            # Create prompts directory if it doesn't exist
+            if not os.path.exists("prompts/history"):
+                os.makedirs("prompts/history", exist_ok=True)
+
+            # Save to history file with proper datetime
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            with open(f"prompts/history/prompt_{timestamp}.json", "w") as f:
+                json.dump(prompt_history, f, indent=2)
+
+            return new_system_prompt
+
+        except Exception as e:
+            print(f"❌ Error generating enhanced prompt: {str(e)}")
+            print("⚠️ Falling back to current prompt")
+            return current_prompt

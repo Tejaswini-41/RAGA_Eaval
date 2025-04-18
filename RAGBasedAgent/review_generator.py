@@ -4,6 +4,9 @@ import sys
 from datetime import datetime
 import csv
 
+# Add import at top
+from prompts.review_prompts import ReviewPrompts
+
 # Path to the models directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -80,32 +83,18 @@ def generate_review(current_pr_changes, similar_prs_changes, pr_number=None, sim
     if not combined_similar_changes:
         combined_similar_changes = "No similar PR changes available."
     
-    # Updated prompt with more specific sections and multiple PR context
-    prompt = f"""Compare these pull requests:
+    # Get current prompts
+    review_template, system_prompt = ReviewPrompts.get_current_prompt()
     
-Similar PRs:
-{combined_similar_changes}
-
-Current PR:
-{current_pr_changes}
-
-Please provide a detailed code review including:
-1. Summary of the changes
-2. File Change Suggestions - Identify files that might get affected based on changes
-3. Conflict Prediction - Flag files changed in multiple PRs that could cause conflicts
-4. Breakage Risk Warning - Note which changes might break existing functionality
-5. Test Coverage Advice - Recommend test files that should be updated
-6. Code Quality Suggestions - Point out potential code smells or duplication
-
-Be specific with file names, function names, and line numbers when possible.
-"""
+    # Format prompt with PR data
+    prompt = review_template.format(
+        similar_prs=similar_prs_changes,
+        current_pr=current_pr_changes
+    )
     
     try:
         # Import model factory
         from models.model_factory import ModelFactory
-        
-        # Custom system prompt for code review
-        system_prompt = "You are an expert code reviewer. Analyze the pull request and provide detailed, constructive feedback."
         
         # Get model factory
         model_factory = ModelFactory()
@@ -113,21 +102,23 @@ Be specific with file names, function names, and line numbers when possible.
         print(f"Generating review with {model_name} model...")
         
         # Generate review using the specified model
-        review = model_factory.generate_response_with_prompt(
-            model_name, prompt, system_prompt
+        response = model_factory.generate_response_with_prompt(
+            model_name, 
+            prompt,
+            system_prompt
         )
         
         print("\n✅ Generated AI Review:")
         # Display full review instead of truncating
-        print(review)
+        print(response)
         
         # Save review to CSV if PR number is provided
         if pr_number:
             # Use the most similar PR number for the CSV (first one)
             most_similar_pr = similar_prs_changes[0]['pr_number'] if similar_prs_changes else similar_pr_number
-            save_review_to_csv(pr_number, model_name, review, current_pr_file, most_similar_pr, current_pr_changes, combined_similar_changes)
+            save_review_to_csv(pr_number, model_name, response, current_pr_file, most_similar_pr, current_pr_changes, combined_similar_changes)
         
-        return review
+        return response
         
     except Exception as e:
         print(f"Error using {model_name} model: {e}")

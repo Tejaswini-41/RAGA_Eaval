@@ -1,0 +1,38 @@
+## I. Technical Accuracy & Contextual Precision
+
+### Summary - Key changes and their purpose
+
+The provided PR involves changes to the chat functionality in the VS Workbench, specifically related to attaching prompts and handling chat context actions. The primary modifications are:
+
+1. **Renaming and Refactoring of Attach Prompt Functions**:
+   - The function `attachPrompts` has been renamed to `attachPrompt` and its import statement has been updated from `./dialogs/askToSelectPrompt/utils/attachPrompts.js` to `./dialogs/askToSelectPrompt/utils/attachPrompt.js`.
+   - This change seems to reflect a shift towards a singular prompt attachment approach.
+
+2. **Update of `chatAttachPromptAction.ts`**:
+   - The import statement for `attachPrompts` and its usage have been modified to use `attachPrompt` instead.
+
+3. **Update of `chatRunPromptAction.ts`**:
+   - Although the exact changes are not detailed in the provided diff, it seems there might be related adjustments to accommodate the new `attachPrompt` function.
+
+### File Changes - Specific files needing updates
+
+Based on the provided information, the following files have been directly modified:
+
+1. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts**:
+   - Before: `import { attachPrompts, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompts.js';`
+   - After: `import { attachPrompt, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompt.js';`
+
+2. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts**:
+   - This file seems to have been updated to work with the new `attachPrompt` function, although the exact diff is not provided.
+
+### Conflicts - Files with high change frequency
+
+The following files could potentially have high change frequencies or be impacted by these changes:
+
+1. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts**:
+   - As the source of the newly named function `attachPrompt`.
+
+2. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts**:
+   - Directly modified in this PR.
+
+3. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction
