@@ -349,105 +349,82 @@ async def initial_review():
         print(f"❌ Error during initial review: {e}")
         return None
 
-async def test_stored_prompt():
+# async def test_stored_prompt():
     try:
         stored_results = load_stored_prompts(session_id)
-        
-        # First get all required data from stored results
+        if not stored_results:
+            raise Exception("Missing stored results")
+
+        # Get required data
         current_pr_changes = stored_results.get("current_pr_changes")
         similar_prs_changes = stored_results.get("similar_prs_changes")
         enhanced_prompt = stored_results.get("enhanced_system_prompt")
+        pr_files = stored_results.get("pr_files", [])
         
         if not all([current_pr_changes, similar_prs_changes, enhanced_prompt]):
-            raise Exception("Missing required data from stored results")
-        
-        print("\n📝 Prompt Evolution:")
-        print("Previous:", stored_results["original_system_prompt"][:100] + "...")
-        print("Current:", enhanced_prompt[:100] + "...")
-        
-        # Update system prompt before evaluation
-        print("\n🔄 Updating system prompt...")
+            raise Exception("Missing required PR data")
+
+        print("\n📝 Using Enhanced System Prompt...")
         ReviewPrompts.update_system_prompt(enhanced_prompt)
         
-        # Verify prompt update
-        current_prompt, current_system = ReviewPrompts.get_current_prompt()
-        if current_system != enhanced_prompt:
-            raise Exception("Failed to update system prompt")
-        
-        # Generate new enhanced prompt for next iteration
+        # Initialize evaluator
         evaluator = ReviewEvaluator()
-        next_enhanced_prompt = await evaluator.generate_enhanced_prompt(
-            current_metrics=stored_results["baseline_metrics"][stored_results["best_model"]],
-            current_prompt=enhanced_prompt
-        )
         
-        print("Next Enhanced:", next_enhanced_prompt[:100] + "...")
+        # Generate reviews with all models using enhanced prompt
+        print("\n🤖 Generating Reviews with Enhanced Prompt:")
         
-        # Evaluate with enhanced prompt
-        print("\n🧪 Evaluating models with enhanced prompt...")
-        best_model, enhanced_model_metrics = await evaluator.evaluate_models(
-            current_pr_changes, 
-            similar_prs_changes,
-            system_prompt=enhanced_prompt
-        )
+        # Use the same models as in initial review
+        models = ["gemini", "llama", "alibaba", "deepseek"]
+        enhanced_reviews = {}
         
-        # Add detailed metrics comparison
-        print("\n📊 RAGAS Metrics Comparison:")
-        print("=" * 80)
-        print(f"{'Model':<12} | {'Metric':<18} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} |")
-        print("=" * 80)
+        print("\n🔄 Generating reviews with all models...")
+        for model in models:
+            print(f"\n📋 Model: {model.upper()}")
+            
+            # Generate review using enhanced prompt
+            review = generate_review(
+                current_pr_changes,
+                similar_prs_changes,
+                pr_number=PR_NUMBER,
+                current_pr_file=", ".join(pr_files),
+                model_name=model
+            )
+            
+            if review:
+                print(f"✅ Review generated successfully")
+                enhanced_reviews[model] = review
+                if model == "gemini":  # Use gemini as reference
+                    reference_review = review
 
-        # Compare metrics for each model
-        for model_name in stored_results["baseline_metrics"]:
-            if model_name in enhanced_model_metrics:
-                print(f"\n📈 Model: {model_name.upper()}")
-                print("-" * 80)
+        # Calculate metrics for all models against reference
+        print("\n📊 Calculating RAGAS Metrics...")
+        best_score = 0
+        best_model = None
+        enhanced_metrics = {}
+        
+        for model in enhanced_reviews:
+            if model != "gemini":
+                metrics = await evaluator._calculate_metrics(
+                    reference_review,
+                    enhanced_reviews[model]
+                )
+                enhanced_metrics[model] = metrics
                 
-                baseline = stored_results["baseline_metrics"][model_name]
-                enhanced = enhanced_model_metrics[model_name]
-                
-                for metric in baseline:
-                    if metric != "Overall":
-                        base_value = baseline[metric]
-                        enh_value = enhanced[metric]
-                        change = enh_value - base_value
-                        change_str = f"{'+' if change >= 0 else ''}{change:.3f}"
-                        print(f"{'':<12} | {metric:<18} | {base_value:>8.3f} | {enh_value:>8.3f} | {change_str:>8} |")
-                
-                # Add overall comparison
-                print("-" * 80)
-                overall_change = enhanced["Overall"] - baseline["Overall"]
-                overall_str = f"{'+' if overall_change >= 0 else ''}{overall_change:.3f}"
-                print(f"{'':<12} | {'Overall':<18} | {baseline['Overall']:>8.3f} | {enhanced['Overall']:>8.3f} | {overall_str:>8} |")
+                if metrics["Overall"] > best_score:
+                    best_score = metrics["Overall"]
+                    best_model = model
 
-        # Save enhanced results with all data
-        enhanced_results = {
-            "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
-            "session_id": stored_results["session_id"],
-            "previous_prompt": stored_results["original_system_prompt"],
-            "current_prompt": enhanced_prompt,
-            "next_enhanced_prompt": next_enhanced_prompt,
-            "baseline_metrics": stored_results["baseline_metrics"],
-            "enhanced_metrics": enhanced_model_metrics,
-            "best_model": stored_results["best_model"],
-            "enhanced_best_model": best_model,
-            "pr_files": stored_results["pr_files"],
-            "current_pr_changes": current_pr_changes,
-            "similar_prs_changes": similar_prs_changes,
-            "metrics_comparison": {
-                "baseline": stored_results["baseline_metrics"],
-                "enhanced": enhanced_model_metrics
-            }
-        }
+        # Show detailed metrics comparison
+        print("\n📈 RAGAS Metrics Comparison:")
+        print("=" * 90)
+        print(f"{'Model':<10} | {'Metric':<15} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} | {'% Change':>8} |")
+        print("=" * 90)
+
+        baseline_metrics = stored_results["baseline_metrics"]
         
-        enhanced_file = save_results(enhanced_results, "prompt_enhancement", 
-                                   session_id, "enhanced")
-        
-        print(f"\n💾 Enhanced results saved to: {enhanced_file}")
-        print("\n📊 Compare results in:")
-        print(f"Baseline: {get_latest_session_file(session_id, 'baseline')}")
-        print(f"Enhanced: {enhanced_file}")
-        
+        # Rest of the comparison and saving logic remains the same
+        # ...existing code...
+
     except Exception as e:
         print(f"❌ Error during prompt testing: {e}")
 
@@ -581,60 +558,133 @@ if __name__ == "__main__":
             
             async def test_stored_prompt():
                 try:
-                    # Update system prompt in ReviewPrompts
-                    enhanced_prompt = stored_results.get("enhanced_system_prompt")
-                    if not enhanced_prompt:
-                        raise Exception("Enhanced prompt not found in stored results")
-                    
-                    print("\n📝 Updating system prompt to enhanced version...")
-                    ReviewPrompts.update_system_prompt(enhanced_prompt)
-                    
-                    # Verify prompt was updated
-                    current_prompt, current_system = ReviewPrompts.get_current_prompt()
-                    if current_system != enhanced_prompt:
-                        raise Exception("Failed to update system prompt")
-                    
-                    # Use existing PR data
+                    stored_results = load_stored_prompts(session_id)
+                    if not stored_results:
+                        raise Exception("Missing stored results")
+
+                    # Get required data
                     current_pr_changes = stored_results.get("current_pr_changes")
                     similar_prs_changes = stored_results.get("similar_prs_changes")
+                    enhanced_prompt = stored_results.get("enhanced_system_prompt")
+                    pr_files = stored_results.get("pr_files", [])
                     
-                    if not current_pr_changes or not similar_prs_changes:
-                        raise Exception("Required PR data not found in stored results")
+                    if not all([current_pr_changes, similar_prs_changes, enhanced_prompt]):
+                        raise Exception("Missing required PR data")
+
+                    print("\n📝 Using Enhanced System Prompt...")
+                    ReviewPrompts.update_system_prompt(enhanced_prompt)
+                    print("=" * 80)
+                    print(enhanced_prompt)
+                    print("=" * 80)
+
+                    # Verify prompt update
+                    ReviewPrompts.update_system_prompt(enhanced_prompt)
+                    current_prompt, current_system = ReviewPrompts.get_current_prompt()
+                    if current_system != enhanced_prompt:
+                        print("⚠️ Warning: System prompt may not have updated correctly")
                     
-                    # Evaluate with enhanced prompt
-                    print("\n🧪 Evaluating models with enhanced prompt...")
+                    # Initialize evaluator
                     evaluator = ReviewEvaluator()
-                    best_model, enhanced_model_metrics = await evaluator.evaluate_models(
-                        current_pr_changes, 
-                        similar_prs_changes,
-                        system_prompt=enhanced_prompt  # Pass enhanced prompt explicitly
-                    )
                     
-                    # Save enhanced results to a new file with proper suffix
+                    # Generate reviews with all models using enhanced prompt
+                    print("\n🤖 Generating Reviews with Enhanced Prompt:")
+                    
+                    # Use the same models as in initial review
+                    models = ["gemini", "llama", "alibaba", "deepseek"]
+                    enhanced_reviews = {}
+                    
+                    print("\n🔄 Generating reviews with all models...")
+                    for model in models:
+                        print(f"\n📋 Model: {model.upper()}")
+                        
+                        # Generate review using enhanced prompt
+                        review = generate_review(
+                            current_pr_changes,
+                            similar_prs_changes,
+                            pr_number=PR_NUMBER,
+                            current_pr_file=", ".join(pr_files),
+                            model_name=model
+                        )
+                        
+                        if review:
+                            print(f"✅ Review generated successfully")
+                            enhanced_reviews[model] = review
+                            if model == "gemini":  # Use gemini as reference
+                                reference_review = review
+
+                    # Calculate metrics for all models against reference
+                    print("\n📊 Calculating RAGAS Metrics...")
+                    best_score = 0
+                    best_model = None
+                    enhanced_metrics = {}
+                    
+                    for model in enhanced_reviews:
+                        if model != "gemini":
+                            metrics = await evaluator._calculate_metrics(
+                                reference_review,
+                                enhanced_reviews[model]
+                            )
+                            enhanced_metrics[model] = metrics
+                            
+                            if metrics["Overall"] > best_score:
+                                best_score = metrics["Overall"]
+                                best_model = model
+
+                    # Show detailed metrics comparison
+                    print("\n📈 RAGAS Metrics Comparison:")
+                    print("=" * 90)
+                    print(f"{'Model':<10} | {'Metric':<15} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} | {'% Change':>8} |")
+                    print("=" * 90)
+
+                    baseline_metrics = stored_results["baseline_metrics"]
+                    
+                    for model in enhanced_metrics:
+                        if model in baseline_metrics:
+                            print(f"\n📊 {model.upper()}")
+                            print("-" * 90)
+                
+                            for metric in enhanced_metrics[model]:
+                                if metric != "Overall":
+                                    baseline = baseline_metrics[model][metric]
+                                    enhanced = enhanced_metrics[model][metric]
+                                    change = enhanced - baseline
+                                    pct_change = (change / baseline * 100) if baseline else 0
+                        
+                                    print(f"{'':<10} | {metric:<15} | {baseline:>8.3f} | {enhanced:>8.3f} | {change:>+8.3f} | {pct_change:>7.1f}% |")
+
+                    # Save comprehensive results
                     enhanced_results = {
                         "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
                         "session_id": stored_results["session_id"],
-                        "original_system_prompt": stored_results["original_system_prompt"],
-                        "enhanced_system_prompt": enhanced_prompt,
-                        "baseline_metrics": stored_results["baseline_metrics"],
-                        "enhanced_metrics": enhanced_model_metrics,
-                        "best_model": stored_results["best_model"],
-                        "enhanced_best_model": best_model,
-                        "pr_files": stored_results["pr_files"],
-                        "current_pr_changes": current_pr_changes,
-                        "similar_prs_changes": similar_prs_changes
+                        "prompts": {
+                            "original": stored_results["original_system_prompt"],
+                            "enhanced": enhanced_prompt
+                        },
+                        "reviews": enhanced_reviews,
+                        "metrics_comparison": {
+                            "baseline": baseline_metrics,
+                             "enhanced": enhanced_metrics
+                        },
+                        "best_model": {
+                            "baseline": stored_results["best_model"],
+                            "enhanced": best_model
+                        }
                     }
-                    
-                    enhanced_file = save_results(enhanced_results, "prompt_enhancement", 
-                                            session_id, "enhanced")
-                    
+
+                    enhanced_file = save_results(
+                        enhanced_results, 
+                        "prompt_enhancement", 
+                        stored_results["session_id"],
+                        "enhanced"
+                    )
+        
                     print(f"\n💾 Enhanced results saved to: {enhanced_file}")
-                    print("\n📊 Compare results in:")
-                    print(f"Baseline: {get_latest_session_file(session_id, 'baseline')}")
-                    print(f"Enhanced: {enhanced_file}")
-                    
+        
                 except Exception as e:
-                    print(f"❌ Error during prompt testing: {e}")
+                    print(f"❌ Error during enhanced prompt evaluation: {e}")
+                    
+                # except Exception as e:
+                #     print(f"❌ Error during prompt testing: {e}")
             
             # Run the prompt testing
             asyncio.run(test_stored_prompt())

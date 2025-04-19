@@ -1,0 +1,96 @@
+{
+  "timestamp": "20250419_191547",
+  "session_id": "session_1745070186_aa192795",
+  "prompts": {
+    "original": "You are an expert code reviewer. Provide detailed, actionable feedback:\n\n1. Technical Accuracy\n- Reference specific files, functions, and line numbers\n- Explain the impact of each change\n- Ground suggestions in the code context\n\n2. Completeness\n- Cover all changed files and their dependencies\n- Analyze potential impacts thoroughly\n- Include test coverage requirements\n\n3. Faithfulness\n- Base all suggestions on the actual code\n- Avoid assumptions without evidence\n- Link suggestions to specific code patterns\n\nKeep suggestions practical and implementation-ready.",
+    "enhanced": "You are a highly precise and detail-oriented code review expert.  Your task is to provide a comprehensive and actionable review focusing on technical accuracy, completeness, faithfulness, and answer relevance.  Your response must be structured clearly and concisely, using numbered points to address each aspect of the code changes.\n\n**1. Technical Accuracy & Impact Analysis:** For each code change, identify the specific file, function, and line numbers affected. Explain the technical implications of each change, including potential benefits, drawbacks, and edge cases. Ground your analysis directly in the provided code snippets, providing specific examples and citing relevant lines.  Avoid vague or generalized comments.\n\n**2. Completeness & Dependency Analysis:**  Thoroughly analyze all modified files and their dependencies.  Identify any potential cascading effects or unforeseen consequences resulting from the changes.  Explicitly address all relevant aspects of the codebase impacted, including configuration files, database schemas, and external services.  Clearly state any necessary additions or modifications to test cases to ensure comprehensive coverage of the changes.  If dependencies are missing from the provided code, explicitly state this and explain the required next steps.\n\n**3. Faithfulness & Evidence-Based Suggestions:** All feedback must be directly supported by the provided code.  Avoid making assumptions or offering suggestions not directly grounded in the code itself.  Clearly link each suggestion to the specific code patterns, lines, or sections that justify it.  If a suggestion requires additional information or context, explicitly request this.\n\n**4. Answer Relevance & Actionable Steps:**  Ensure that all comments are directly relevant to the code changes and contribute to the overall understanding and improvement of the code.  Provide practical, actionable suggestions that are easily implementable by the developer.  Clearly outline the steps required to implement each suggestion. Prioritize feedback that addresses potential bugs, security vulnerabilities, or performance bottlenecks.  Frame suggestions as clear, concise, and specific instructions.  Avoid ambiguity and ensure your feedback is unambiguous."
+  },
+  "reviews": {
+    "gemini": "## Code Review of PR: Refactoring Prompt Attachment Handling\n\nThis review analyzes the provided pull request focusing on refactoring how prompts are attached and detached from chat widgets.\n\n\n**1. Summary - Key Changes and Their Purpose:**\n\nThe PR refactors the codebase to manage prompt attachments more efficiently and robustly.  The primary change is replacing the `attachPrompts` function with `attachPrompt`, handling single file attachments instead of arrays.  A new `detachPrompt` function is introduced to manage detachment. The `attachPrompt` function now returns an object indicating whether the attachment already existed (`wasAlreadyAttached`).  The `chatPromptAttachmentsCollection.add` method is modified to return a boolean indicating whether the addition was successful.\n\n**2. File Changes - Specific Files Needing Updates:**\n\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts`:  The `runAttachPromptAction` function is significantly altered to use the new `attachPrompt` and `detachPrompt` functions and incorporate `IViewsService`. (Lines 1-19)\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts`: This file now imports `IChatWidget`, `attachPrompt`, and `detachPrompt` and uses them to manage prompt attachment and detachment.  The function now returns an `IChatWidget` and handles immediate prompt submission and detachment based on `wasAlreadyAttached`. (Lines 1-26)\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts`:  Uses the new `attachPrompt` function to handle single file attachment. (Lines 1-5)\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts`: This file is completely rewritten to handle single file attachments, using `URI` instead of an array of `WithUriValue<Object>`. It now returns an `IAttachResult` object including `wasAlreadyAttached`. (Lines 1-18)\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts`: This new file introduces the `detachPrompt` function. (Lines 1-26)\n*   `src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts`: The `add` method is updated to return a boolean indicating whether the attachment already existed. (Lines 1-4)\n\n\n**3. Conflicts - Files with High Change Frequency:**\n\nNo direct conflicts are evident from the provided snippets. However, the changes in the `chatPromptAttachmentsCollection` class, and other related changes, may introduce conflicts if concurrent work is being done in this area.  Checking for conflicts with similar PRs (e.g., PR numbers 246891, 246931, 246914) is crucial.  The frequent changes to files related to prompt actions (in multiple PRs) suggest a need to review the overall architecture.\n\n\n**4. Risks - Potential Breaking Changes with Evidence:**\n\n*   **Type Changes:** The change from `attachPrompts` (accepting an array) to `attachPrompt` (accepting a single `URI`) is a breaking change. Any callers relying on the old signature need updating.  This impacts `chatAttachPromptAction.ts`, `chatRunPromptAction.ts`, and `askToSelectPrompt.ts`.\n*   **Return Value Change:** `attachPrompt` now returns `IAttachResult`, which is a significant change requiring modifications to all call sites. This includes handling the `wasAlreadyAttached` flag, especially crucial in `chatRunPromptAction.ts`.\n*   **Missing Dependency:** The new `detachPrompt` function relies on a `widget` object passed as an argument.  The nature of this `widget` object (and its lifecycle) is not fully clear from the provided code snippet, and its implications need further investigation.  It's important to establish that the `widget` always exists when `detachPrompt` is called to avoid potential null pointer exceptions.\n\n**5. Testing - Required Test Coverage with File Paths:**\n\nComprehensive testing is crucial due to the significant changes.  Test cases should cover:\n\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.test.ts`:  Verify the updated `runAttachPromptAction` with both single and multiple attachment scenarios, including edge cases where a prompt might already be attached.\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.test.ts`:  Test the new function thoroughly, validating the prompt submission and detachment logic based on `wasAlreadyAttached`.  Specifically test cases for `inNewChat` being true and false.\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.test.ts`: Unit tests for the new `attachPrompt` usage.\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.test.ts`:  Thorough unit tests for `attachPrompt` covering successful and unsuccessful attachments, including edge cases where the `widget` object is not correctly initialized.\n*   `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.test.ts`: Unit tests verifying that the `detachPrompt` function correctly removes attachments.\n*   `src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.test.ts`: Unit tests for the updated `add` method, verifying the return value accurately reflects the attachment's existence.\n\n\n**6. Quality - Code Smells with Exact Locations:**\n\n*   **Implicit Widget Dependency:** The `detachPrompt` function relies on an externally provided `widget` (in `detachPrompt.ts` Line 14).  This creates an implicit dependency and reduces code clarity. Consider passing the necessary information more explicitly or refactoring to obtain the widget within the function.\n*   **Lack of Error Handling:**  There's no explicit error handling in `attachPrompt` and `detachPrompt`.  Add `try...catch` blocks to handle potential exceptions during attachment or detachment operations.\n*   **Inconsistent Return Types:** `attachPrompt` returns `IAttachResult`, while `detachPrompt` returns `IChatWidget`.  Standardize the return types for consistency.  Potentially return a result object with success/failure status in both functions.\n\nThe PR introduces positive improvements but needs thorough testing and addressing of the identified risks to ensure stability.  The frequent changes to related files across multiple PRs indicate a need for broader architectural review to prevent future maintenance issues.\n",
+    "llama": "**Summary - Key changes and their purpose**\n\nThe provided PR introduces several changes to the codebase, primarily focused on refactoring and improving the chat attachment model and prompt actions. The main goals of these changes are:\n\n*   Improve the handling of chat attachments and prompts\n*   Enhance the user experience by allowing for more flexible and efficient attachment and detachment of prompts\n*   Refactor existing code to improve maintainability and readability\n\nKey changes include:\n\n*   Renaming and refactoring of functions and variables related to chat attachment and prompt actions (e.g., `attachPrompts` to `attachPrompt`, `runAttachPromptAction` updates)\n*   Introduction of new functions, such as `detachPrompt` and `allSettled`\n*   Updates to the `chatPromptAttachmentsCollection` and `promptInstructionsCollectionWidget` to improve attachment handling\n\n**File Changes - Specific files needing updates**\n\nBased on the provided PR, the following files require updates:\n\n1.  **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts**: Updates to import statements and function calls (lines 1-5)\n2.  **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts**: Significant changes to function implementation and return types (lines 1-20)\n3.  **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts**: Updates to import statements and function calls (lines 1-5)\n4.  **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts**: Renaming and refactoring of `attachPrompts` to `attachPrompt` (lines 1-15)\n5.  **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts**: Introduction of new `detachPrompt` function (lines 1-15)\n6.  **src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts**: Updates to `add` method return type and implementation (lines 1-10)\n\n**Conflicts - Files with high change frequency**\n\nThe following files may have a high change frequency based on the provided PR and similar PRs:\n\n1.  **src/vs/workbench/contrib/chat/browser/actions/chatActions.ts** (",
+    "alibaba": "\n<think>\nOkay, let me try to tackle this query. The user wants a detailed analysis of the given PR changes. They provided multiple files with before/after diffs and some similar PR references. My task is to structure the response into six sections per their instructions.\n\nFirst, I need to go through each file in the PR to see what's changed. Let's start with the first file: chatAttachPromptAction.ts. The changes here replace 'attachPrompts' from one file to 'attachPrompt' from another. The import path changed, so maybe they refactored the function. Also, they removed an array and now pass a single resource? The 'const widget = await attachPrompts(...)' becomes 'const { widget } = await attachPrompt(resource)...', so the return type might now be an object with 'widget' and 'wasAlreadyAttached'.\n\nNext, looking at chatRunPromptAction.ts, there's a bunch of imports added, like IChatWidget, attachPrompt, and others. The function return type changes from Promise<void> to Promise<IChatWidget>, which is a significant change. Also, they introduced the 'wasAlreadyAttached' check to decide whether to detach. That might fix some duplication or prevent unnecessary detaching.\n\nIn askToSelectPrompt.ts, the call to attachPrompts is replaced with attachPrompt, and now they're using the returned widget from the result. The 'add' function in chatPromptAttachmentsCollection.ts now returns a boolean indicating if it was already present, which affects how adding is tracked. They also removed some UI elements, like error messages. \n\nFor detachPrompt.ts, the function now takes a URI and widget, removing the item. The chatPromptAttachmentsCollection's add method now returns a boolean instead of 'this'\u2014that's a change in return type which could break existing code that expects to chain calls.\n\nNow, summarizing the key changes: they replaced the multiple attachment handling (attachPrompts) with individual attachPrompt, added flags for existing attachments, and more. The purpose seems to handle attachments more efficiently and track whether they were already added, thus improving management of prompts. Maybe to prevent duplicates or optimize widget interactions.\n\nFile changes required would be all the ones listed. The user also mentioned other PRs, but maybe those are to check for conflicts. The similar PR 246914 has changes in chatContextActions and other files, so perhaps if those PRs are open, there might be",
+    "deepseek": "\n<think>\nOkay, I need to analyze this PR based on the provided code changes and answer the questions. Let me start by understanding the changes made in each file. The main changes seem to involve moving from 'attachPrompts' to 'attachPrompt', along with some refactoring. The user wants a structured review, so I should follow the six sections outlined: Summary, File Changes, Conflicts, Risks, Testing, and Quality.\n\nFirst, reviewing the Summary section: the key changes are replacing the plural 'attchPrompts' with singular 'attachPrompt', which likely simplifies handling. The PR also extracts the 'detachPrompt' function and introduces return values indicating if something was already attached. Then there's a method 'add' in chatPromptAttachmentsCollection that now returns a boolean, which is part of the same functionality.\n\nFor File Changes, the main files affected are the ones listed. The chatAttachPromptAction and chatRunPromptAction have significant changes in how they handle attaching, including new imports and handling of 'wasAlreadyAttached'. The 'detachPrompt' is new in one file. The 'chatPromptAttachmentsCollection' has the method 'add' returning a boolean instead of 'this', so that's a structural change. The askToSelectPrompt files also use the new attachPrompt and store the widget result. The other files in the 'SIMILAR PRS' might not be related, but I should focus only on current PR's files.\n\nConflicts: The files that have high changes are the ones where multiple PRs modify the same functions. For example, 'chatPromptAttachmentsCollection.ts' had a prior change in a similar PR, which could lead to conflicts if not merged properly. Need to mention that since other PRs modified same area (like in 246914's changes in chatPromptAttachmentModel).\n\nRisks: The main risks would be breaking existing functionality. The return type of 'chatPromptAttachmentsCollection.add' changed from 'this' to 'boolean', which could break any part of the code that expects a return reference to the object for chaining. Also, in 'attachPrompt', the new add method returns a boolean indicating presence. Also, the 'runAttachPromptAction' now returns a ChatWidget instead of void. These changes might affect callers expecting void or different return types. The 'detachPrompt' function's parameters might miss a parameter? Let me check: in the 'detachPrompt' function's definition it takes"
+  },
+  "metrics_comparison": {
+    "baseline": {
+      "deepseek": {
+        "Relevance": 0.7501935958862305,
+        "Accuracy": 0.8,
+        "Groundedness": 0.8,
+        "Completeness": 0.3,
+        "Faithfulness": 0.5,
+        "ContextualPrecision": 0.5,
+        "AnswerRelevance": 0.8799999999999999,
+        "BLEU": 0.03458592114102736,
+        "ROUGE": 0.17812197483059053,
+        "Overall": 0.607
+      },
+      "llama": {
+        "Relevance": 0.7837920188903809,
+        "Accuracy": 0.8,
+        "Groundedness": 0.8,
+        "Completeness": 0.4,
+        "Faithfulness": 0.18181818181818177,
+        "ContextualPrecision": 1.0,
+        "AnswerRelevance": 1.0,
+        "BLEU": 0.1543909476981724,
+        "ROUGE": 0.24049331963001028,
+        "Overall": 0.644
+      },
+      "alibaba": {
+        "Relevance": 0.7472826838493347,
+        "Accuracy": 0.8,
+        "Groundedness": 0.8,
+        "Completeness": 0.6,
+        "Faithfulness": 0.5,
+        "ContextualPrecision": 0.9,
+        "AnswerRelevance": 0.41,
+        "BLEU": 0.1064727618653598,
+        "ROUGE": 0.1904761904761905,
+        "Overall": 0.675
+      }
+    },
+    "enhanced": {
+      "llama": {
+        "Relevance": 0.854360818862915,
+        "Accuracy": 0.8,
+        "Groundedness": 0.8,
+        "Completeness": 0.4,
+        "Faithfulness": 0.8571428571428572,
+        "ContextualPrecision": 0.0,
+        "AnswerRelevance": 0.21,
+        "BLEU": 0.12780945414987385,
+        "ROUGE": 0.2598770851624232,
+        "Overall": 0.6
+      },
+      "alibaba": {
+        "Relevance": 0.647088885307312,
+        "Accuracy": 0.8,
+        "Groundedness": 0.8,
+        "Completeness": 0.2,
+        "Faithfulness": 0.5,
+        "ContextualPrecision": 0.0,
+        "AnswerRelevance": 0.33999999999999997,
+        "BLEU": 0.05300156689756297,
+        "ROUGE": 0.14614121510673236,
+        "Overall": 0.479
+      },
+      "deepseek": {
+        "Relevance": 0.784832239151001,
+        "Accuracy": 0.8,
+        "Groundedness": 0.9,
+        "Completeness": 0.5,
+        "Faithfulness": 0.5,
+        "ContextualPrecision": 0.0,
+        "AnswerRelevance": 0.73,
+        "BLEU": 0.12711270706947775,
+        "ROUGE": 0.15933609958506223,
+        "Overall": 0.566
+      }
+    }
+  },
+  "best_model": {
+    "baseline": "alibaba",
+    "enhanced": "llama"
+  }
+}
