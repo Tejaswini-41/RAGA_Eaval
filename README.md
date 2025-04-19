@@ -1,87 +1,35 @@
+Here is a sample `README.md` file for your project:
 
-### 🚀 RAGA_EVAL: Evaluating LLM Responses with Precision
+```markdown
+# RAG-Based Agent for Pull Request Review
 
-<div align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" />
-  <img src="https://img.shields.io/badge/node-18.x-green.svg" />
-  <img src="https://img.shields.io/badge/react-19.0.0-blue.svg" />
-  <img src="https://img.shields.io/badge/mongodb-atlas-green.svg" />
-  <img src="https://img.shields.io/badge/license-MIT-yellow.svg" />
-</div>
-
-<p align="center">
-  <img width="180" src="https://i.imgur.com/pSOxq3J.png" alt="EmpowerHer Logo" />
-</p>
-
-<p align="center"><strong>A platform empowering women in tech through education, mentorship, and community support.</strong></p>
+This project implements a **RAG-Based Agent** (Retrieval-Augmented Generation) to automate and enhance the process of reviewing pull requests (PRs) in software repositories. The system leverages advanced AI models to generate detailed, actionable feedback for PRs by analyzing code changes, comparing them with similar PRs, and evaluating the quality of the changes using custom metrics.
 
 ---
 
-## 📋 Project Overview
+## Features
 
-**RAGA_EVAL** is a cutting-edge evaluation tool that enhances and assesses responses from Large Language Models (LLMs) using smart, iterative prompt optimization. By leveraging multiple evaluation dimensions, RAGA_EVAL provides deep insights into model behavior and output quality.
+- **Pull Request Analysis**:
+  - Extracts and compares changes in the current PR with similar PRs.
+  - Identifies potential risks, conflicts, and areas for improvement.
 
----
+- **RAG-Based Review Generation**:
+  - Uses retrieval-augmented generation to provide context-aware reviews.
+  - Supports multiple AI models (e.g., `gemini`, `llama`, `alibaba`, `deepseek`).
 
-## ✨ Key Features
+- **Enhanced Prompting**:
+  - Dynamically generates enhanced prompts for better review quality.
+  - Stores and compares baseline and enhanced reviews.
 
-- 🔄 **Iterative Prompt Optimization** – Improve prompt quality through 3 automatic feedback loops  
-- 📊 **Comprehensive Metrics** – Evaluate outputs with Relevance, Accuracy, BLEU, ROUGE, and more  
-- 🚦 **Rate Limiting Handling** – Smart retry and backoff to manage API quotas  
-- 📈 **Performance Visualization** – Track model improvements across iterations  
-- 💡 **Ground Truth Generation** – Reference answers from Gemini for comparison  
-- 📁 **Results Export** – Organized outputs in CSV format for easy access  
+- **Confidence Scoring**:
+  - Adds confidence scores to reviews based on similarity and complexity metrics.
 
----
-
-## 🧠 Models & Metrics
-
-### 💬 **Models Evaluated**
-- **Ground Truth:** Gemini  
-- **Evaluation Models:** Mixtral, Llama, Qwen, DeepSeek (via Groq API)  
-
-### 📏 **Evaluation Metrics**
-| Metric         | Description                          |
-|----------------|--------------------------------------|
-| ✅ Relevance    | Response relevance to the query      |
-| 🎯 Accuracy     | Factual correctness                 |
-| 📚 Groundedness | Rooted in reference material         |
-| 📖 Completeness | Information coverage                 |
-| 🧠 Faithfulness | Logical consistency                  |
-| 🧾 BLEU/ROUGE   | Text similarity & fluency checks     |
+- **Chunking Advice**:
+  - Provides intelligent chunking strategies for large PRs to optimize processing.
 
 ---
 
-## 🗂 Folder Structure
-
-```bash
-📁 RAGA_EVAL/
-├── interactive_eval.py       # Evaluation CLI interface
-├── questions.json            # Evaluation input prompts
-├── evaluation/               # Evaluation logic & metrics
-│   ├── evaluator.py
-│   ├── metrics.py
-│   ├── prompt_improver.py
-│   └── recommendation.py
-├── models/                   # Model wrappers & config
-│   ├── gemini_model.py
-│   ├── groq_models.py
-│   └── model_factory.py
-├── RAGA_Eaval/               # RAG agent backend
-│   └── RAGBasedAgent/
-│       ├── main.py
-│       ├── GithubAuth.py
-│       ├── review_generator.py
-│       └── similarity_query.py
-├── responses/                # Raw model outputs
-├── improved_responses/       # Responses after enhancement
-├── prompts/                  # Updated prompts by iteration
-└── results/                  # CSV summary of metrics
-```
-
----
-
-## 🛠️ Installation & Setup
+## Installation
 
 ### 🔽 Clone Repository
 ```bash
@@ -96,91 +44,142 @@ source venv/bin/activate        # macOS/Linux
 venv\Scripts\activate           # Windows
 ```
 
-### 📦 Install Dependencies
+2. Install required packages:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 🔑 Configure Environment Variables
-
+3. Set up environment variables:
 Create a `.env` file:
-
 ```env
 GITHUB_ACCESS_TOKEN=your_github_token
 GEMINI_API_KEY=your_gemini_api_key
 GROQ_API_KEY=your_groq_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
-```
+``` 
 
 ---
 
-## 🚀 How to Use
+## Usage
 
-1. 📝 **Update `questions.json`** with your queries  
-2. 🔧 **Run evaluation script**:
+### Running the RAG-Based Review Process
+
+1. Start the review process:
    ```bash
-   python interactive_eval.py
+   cd RAGBasedAgent 
+   python main.py
    ```
 
-3. 📋 **Choose from interactive menu**:
-   - Evaluate single question
-   - Iterative evaluation (3 rounds)
-   - List available questions
-   - Exit  
+2. Follow the interactive menu to:
+   - Perform an initial review.
+   - Test stored prompts.
+   - Add confidence scores.
+   - Generate chunking advice.
 
-4. 📊 **Review output**:
-   - Terminal comparison view
-   - CSV exports (`results/`)
-   - Enhanced prompts (`prompts/`)
+### Key Commands
+
+- **Initial Review**:
+  - Fetches PR data, generates embeddings, and performs a baseline review.
+- **Enhanced Review**:
+  - Uses enhanced prompts to generate improved reviews.
+- **Confidence Scoring**:
+  - Adds confidence metrics to the review output.
 
 ---
 
-## 📊 Sample Output
+## Project Structure
 
+```plaintext
+RAGBasedAgent/
+├── main.py                     # Entry point for the application
+├── review_generator.py         # Generates PR reviews
+├── review_evaluator.py         # Evaluates review quality using metrics
+├── embedding_store.py          # Handles embedding storage in ChromaDB
+├── change_analyzer.py          # Compares changes in PRs
+├── Confidence_Scorer.py        # Adds confidence scores to reviews
+├── prompts/                    # Contains prompt templates and history
+├── reviews/                    # Stores generated reviews and PR data
+├── recommendations/            # Stores chunking advice and recommendations
+└── requirements.txt            # Python dependencies
 ```
-✅ Best model for PR review: llama (Score: 0.625)
 
-📊 MODEL COMPARISON (Reference: GEMINI)
-────────────────────────────────────────────────────────────
-Model     | Overall | Relev | Accur | Grnd | Comp | BLEU | ROUGE
-llama     | 0.625   | 0.74  | 0.85  | 0.80 | 0.20 | 0.18 | 0.20
-deepseek  | 0.589   | 0.77  | 0.90  | 0.60 | 0.20 | 0.04 | 0.17
-alibaba   | 0.485   | 0.80  | 0.80  | 0.80 | 0.20 | 0.11 | 0.19
+---
+
+## Key Components
+
+### 1. **Review Generator**
+- Generates reviews using AI models.
+- Supports fallback to rule-based generation if AI fails.
+
+### 2. **Review Evaluator**
+- Calculates metrics like relevance, accuracy, groundedness, and completeness.
+- Compares baseline and enhanced reviews.
+
+### 3. **Embedding Store**
+- Stores PR file embeddings using TF-IDF and ChromaDB.
+- Queries similar PRs for context.
+
+### 4. **Confidence Scorer**
+- Analyzes PR changes and assigns confidence scores.
+- Highlights risks and overlaps with similar PRs.
+
+### 5. **Chunking Advisor**
+- Provides chunking strategies for large PRs.
+- Ensures optimal processing and context preservation.
+
+---
+
+## Example Workflow
+
+1. **Initial Review**:
+   - Fetch PR data and generate a baseline review.
+   - Save results for further analysis.
+
+2. **Enhanced Review**:
+   - Generate enhanced prompts and reviews.
+   - Compare metrics with the baseline.
+
+3. **Confidence Scoring**:
+   - Add confidence scores to the review.
+   - Highlight risks and overlaps.
+
+4. **Chunking Advice**:
+   - Generate chunking strategies for large PRs.
+
+---
+
+## Metrics
+
+The system evaluates PR reviews using the following metrics:
+- **Relevance**
+- **Accuracy**
+- **Groundedness**
+- **Completeness**
+- **Faithfulness**
+- **Contextual Precision**
+- **Answer Relevance**
+- **BLEU/ROUGE Scores**
+- **Overall Quality**
+
+---
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Submit a pull request with a detailed description of your changes.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+---
+
+## Contact
+
+For questions or support, please contact:
+- **Name**: tejaswini, dipali
 ```
-
----
-
-## 🚧 Development Status
-
-| Feature                                      | Status |
-|---------------------------------------------|--------|
-| Core Evaluation Engine                      | ✅     |
-| Multi-Model Support                         | ✅     |
-| Iterative Prompt Enhancement                | ✅     |
-| Rate Limiting & Retry Logic                 | ✅     |
-| CSV Export of Results                       | ✅     |
-| RAG Agent Integration                       | 🔜     |
-
----
-
-## 🔮 Roadmap
-
-- 📦 Integration with RAG-Based Agents  
-- 📉 Interactive Web Dashboard  
-- 🧠 Support for Semantic Evaluation Metrics  
-- ⚙️ Parallel Processing for Large-Scale Runs  
-
----
-
-## 👥 Contributors
-
-- 👩‍💻 **Tejaswini Durge**  
-- 👩‍💻 **Dipali Gangarde**
-
----
-
-## 📄 License
-
-Licensed under the [MIT License](LICENSE).
-
-🕒 *Last updated: March 16, 2025*
