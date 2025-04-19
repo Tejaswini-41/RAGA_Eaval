@@ -1,3 +1,5 @@
+# Pull Request Review with Confidence Scores
+
 ### Summary
 
 The current PR (Pull Request) involves refactoring the chat attachment and prompt handling in the VS Code workbench. The key changes include:
@@ -7,6 +9,19 @@ The current PR (Pull Request) involves refactoring the chat attachment and promp
 * Updating related functions and interfaces to support these changes
 
 The purpose of these changes is to improve the handling of chat attachments and prompts, making the code more modular and efficient.
+
+
+## 🎯 Confidence Assessment
+
+### 🟡 Functional Change Risk: Medium
+Moderate changes with 0 lines modified across 6 files.
+
+### 🟢 Merge Conflict Risk: Low
+Only 1 files overlap with recent PRs, with moderate change frequency.
+
+### 🔴 Test Coverage Sufficiency: Critical
+Test to code ratio is low (0.00). Only 0 test files for 6 code files. Consider adding more tests.
+
 
 ### File Changes
 

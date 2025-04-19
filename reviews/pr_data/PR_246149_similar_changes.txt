@@ -1,0 +1,124 @@
+
+--- Similar PR #246842 ---
+File: src/vs/platform/prompts/common/constants.ts
+Before:
+export function getFileExtension(type: 'instructions' | 'prompt'): string {
+After:
+export function getPromptFileExtension(type: 'instructions' | 'prompt'): string {
+
+File: src/vs/workbench/contrib/chat/browser/actions/promptActions/dialogs/askToSelectPrompt/utils/runPrompt.ts
+Before:
+import { detachPrompt } from './detachPrompt.js';
+import { extUri } from '../../../../../../../../../base/common/resources.js';
+import { assertDefined } from '../../../../../../../../../base/common/types.js';
+	let wasAlreadyAttached = true;
+	if (isSetInImplicitContext(file, widget) === false) {
+		wasAlreadyAttached = widget
+			.attachmentModel
+			.promptInstructions
+			.add(file);
+	}
+
+	// detach the prompt immediately, unless was attached
+	// before the action was executed
+	if (wasAlreadyAttached === false) {
+		await detachPrompt(file, { widget });
+	}
+
+/**
+ * Check if provided uri is already set as the implicit context.
+ */
+const isSetInImplicitContext = (
+	promptUri: URI,
+	widget: IChatWidget,
+): boolean => {
+	const { implicitContext } = widget.input;
+	if (implicitContext === undefined) {
+		return false;
+	}
+
+	if (implicitContext.enabled === false) {
+		// the user disabled the implicit context in the chat view
+		return false;
+	}
+
+	if (implicitContext.isPromptFile === false) {
+		return false;
+	}
+
+	// we expect all implicit prompt file attachments
+	// to have the `value` property to be present
+	assertDefined(
+		implicitContext.value,
+		'Prompt value must always be defined.',
+	);
+
+	const uri = URI.isUri(implicitContext.value)
+		? implicitContext.value
+		: implicitContext.value.uri;
+
+	return extUri.isEqual(promptUri, uri);
+};
+After:
+import { basename } from '../../../../../../../../../base/common/resources.js';
+	await widget.setInput(`/${basename(file)}`);
+
+File: src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts
+Before:
+import { IChatRequestVariableEntry } from '../../common/chatModel.js';
+A...[truncated]
+--- Similar PR #246816 ---
+File: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
+Before:
+				precondition: ChatContextKeys.Setup.hidden.toNegated(),
+				title: localize('upgradeChat', "Upgrade to Copilot Pro")
+			const dateFormatter = safeIntl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' });
+
+			const freeChatQuotaExceeded = chatEntitlementService.quotas.freeChat?.percentRemaining === 0;
+			const freeCompletionsQuotaExceeded = chatEntitlementService.quotas.freeCompletions?.percentRemaining === 0;
+			const quotaResetDate = new Date(chatEntitlementService.quotas.freeChat?.resetDate ?? chatEntitlementService.quotas.freeCompletions?.resetDate ?? Date.now()); // the two dates should really be the same for limited plan users
+			if (freeChatQuotaExceeded && !freeCompletionsQuotaExceeded) {
+				message = localize('chatQuotaExceeded', "You've reached your monthly chat messages quota. You still have free code completions available in the Copilot Free plan. The allowance will renew on {0}.", dateFormatter.format(quotaResetDate));
+			} else if (freeCompletionsQuotaExceeded && !freeChatQuotaExceeded) {
+				message = localize('completionsQuotaExceeded', "You've reached your monthly code completions quota. You still have free chat messages available in the Copilot Free plan. The allowance will renew on {0}.", dateFormatter.format(quotaResetDate));
+				message = localize('chatAndCompletionsQuotaExceeded', "You've reached your monthly quota of chat messages and code completions. The allowance will renew on {0}.", dateFormatter.format(quotaResetDate));
+			const upgradeToPro = localize('upgradeToPro', "Upgrade to Copilot Pro (your first 30 days are free) for:\n- Unlimited code completions\n- Unlimited basic chat messages\n- Access to premium models");
+				message: localize('copilotFree', "Copilot Free Quota Reached"),
+						label: localize('upgradePro', "Upgrade to Copilot Pro"),
+					markdownDetails: [
+						{ markdown: new MarkdownString(upgradeToPro, true) }
+					]
+	...[truncated]
+--- Similar PR #246839 ---
+File: src/vs/workbench/contrib/chat/browser/actions/chatContextActions.ts
+Before:
+		if (tool.source.type === 'extension') {
+			if (!tool.source.isExternalTool) {
+				return { ordinal: 1, groupLabel: tool.source.label };
+			} else {
+				return { ordinal: 3, groupLabel: localize('chatContext.tools.extension', 'Extensions') };
+			}
+			return { ordinal: 4, groupLabel: '' };
+		if (res !== 0) {
+			return res;
+
+		let strA = a.tool.source.type !== 'internal' ? a.tool.source.label : '';
+		let strB = b.tool.source.type !== 'internal' ? b.tool.source.label : '';
+		res = strA.localeCompare(strB);
+		if (res !== 0) {
+			return res;
+		}
+
+		strA = a.label;
+		strB = b.label;
+		return strA.localeCompare(strB);
+		placeHolder: localize('chatContext.tools.placeholder', 'Select a Tool'),
+After:
+		if (tool.source.type === 'internal' || tool.source.type === 'extension' && !tool.source.isExternalTool) {
+			return { ordinal: 1, groupLabel: localize('chatContext.tools.internal', 'Built-In') };
+			return { ordinal: 3, groupLabel: localize('chatContext.tools.extension', 'Extensions') };
+		if (res === 0) {
+			res = a.label.localeCompare(b.label);
+		return res;
+		placeHolder: localize('chatContext.tools.placeholder', 'Select a tool'),
+

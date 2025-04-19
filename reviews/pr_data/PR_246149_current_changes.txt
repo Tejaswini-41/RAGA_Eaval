@@ -1,0 +1,143 @@
+File: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts
+Before:
+import { attachPrompts, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompts.js';
+			const widget = await attachPrompts(
+				[{ value: resource }],
+After:
+import { attachPrompt, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompt.js';
+			const { widget } = await attachPrompt(
+				resource,
+
+File: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts
+Before:
+import { runAttachPromptAction } from './chatAttachPromptAction.js';
+	): Promise<void> {
+		return await runAttachPromptAction({
+			inNewChat,
+			skipSelectionDialog: true,
+		}, commandService);
+	): Promise<void> {
+	): Promise<void> {
+After:
+import { IChatWidget } from '../../chat.js';
+import { attachPrompt } from './dialogs/askToSelectPrompt/utils/attachPrompt.js';
+import { detachPrompt } from './dialogs/askToSelectPrompt/utils/detachPrompt.js';
+import { IViewsService } from '../../../../../services/views/common/viewsService.js';
+	): Promise<IChatWidget> {
+		const viewsService = accessor.get(IViewsService);
+		const { widget, wasAlreadyAttached } = await attachPrompt(
+			{
+				inNewChat,
+				commandService,
+				viewsService,
+			},
+		);
+
+		// submit the prompt immediately
+		await widget.acceptInput();
+
+		// detach the prompt immediately, unless was attached
+		// before the action was executed
+		if (wasAlreadyAttached === false) {
+			await detachPrompt(resource, { widget });
+		}
+
+		return widget;
+	): Promise<IChatWidget> {
+	): Promise<IChatWidget> {
+
+File: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts
+Before:
+import { attachPrompts } from './utils/attachPrompts.js';
+			lastActiveWidget = await attachPrompts(
+				selectedItems,
+After:
+import { attachPrompt } from './utils/attachPrompt.js';
+			const attachResult = await attachPrompt(
+				selectedOption.value,
+			lastActiveWidget = attachResult.widget;
+
+File: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts
+Before:
+import { assertDefined, WithUriValue } from '../../../../../../../../../base/common/types.js';
+ * Options for the {@link attachPrompts} function.
+export const attachPrompts = async (
+	files: readonly WithUriValue<Object>[],
+): Promise<IChatWidget> => {
+	for (const file of files) {
+		widget
+			.attachmentModel
+			.promptInstructions
+			.add(file.value);
+	}
+	return widget;
+After:
+import { URI } from '../../../../../../../../../base/common/uri.js';
+import { assertDefined } from '../../../../../../../../../base/common/types.js';
+ * Options for the {@link attachPrompt} function.
+/**
+ * Return value of the {@link attachPrompt} function.
+ */
+interface IAttachResult {
+	readonly widget: IChatWidget;
+	readonly wasAlreadyAttached: boolean;
+}
+
+export const attachPrompt = async (
+	file: URI,
+): Promise<IAttachResult> => {
+	const wasAlreadyAttached = widget
+		.attachmentModel
+		.promptInstructions
+		.add(file);
+	return { widget, wasAlreadyAttached };
+
+File: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts
+After:
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import { IChatWidget } from '../../../../../chat.js';
+import { URI } from '../../../../../../../../../base/common/uri.js';
+
+/**
+ * Options for the {@link detachPrompt} function.
+ */
+export interface IDetachPromptOptions {
+	/**
+	 * Chat widget instance to attach the prompt to.
+	 */
+	readonly widget: IChatWidget;
+}
+
+/**
+ * Detaches provided prompts to a chat input.
+ */
+export const detachPrompt = async (
+	file: URI,
+	options: IDetachPromptOptions,
+): Promise<IChatWidget> => {
+	const { widget } = options;
+
+	widget
+		.attachmentModel
+		.promptInstructions
+		.remove(file);
+
+	return widget;
+};
+
+File: src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts
+Before:
+	public add(uri: URI): this {
+			return this;
+		return this;
+After:
+	 *
+	 * @returns `true` if the attachment already exists, `false` otherwise.
+	public add(uri: URI): boolean {
+			return true;
+		return false;
+

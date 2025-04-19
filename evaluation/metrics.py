@@ -269,7 +269,7 @@ class MetricsCalculator:
         # Safety check to prevent token limit errors
         max_length = 4000  # Keep well under token limits
         if len(reference) > max_length or len(response) > max_length:
-            print("Content too long for RAGAS faithfulness, using custom implementation")
+            # print("Content too long for RAGAS faithfulness, using custom implementation")
             return self.compute_faithfulness(reference, response)
         
         try:
