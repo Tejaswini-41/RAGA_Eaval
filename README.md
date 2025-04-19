@@ -1,5 +1,4 @@
 
-# 🌟 EmpowerHer - Women's Technology Platform  
 ### 🚀 RAGA_EVAL: Evaluating LLM Responses with Precision
 
 <div align="center">
