@@ -1,4 +1,3 @@
-Here is a sample `README.md` file for your project:
 
 ```markdown
 # RAG-Based Agent for Pull Request Review
