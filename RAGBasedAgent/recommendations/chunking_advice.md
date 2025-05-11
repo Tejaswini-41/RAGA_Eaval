@@ -1,49 +1,38 @@
 
 # 📊 Chunking Strategy Recommendations
 
-Based on the provided content summary, I'll offer specific chunking recommendations for the pull request content.
+**Document Chunking Analysis and Recommendations**
+=====================================================
 
-**1. Optimal Chunking Strategy:**
+### Content Analysis
 
-* **Method:** Hybrid chunking strategy
-	+ Use semantic chunking for documentation sections to preserve context and meaning.
-	+ Consider fixed-size chunking for code sections, if present (though there are 0 code lines in this case).
-* **Handling code and documentation sections:**
-	+ Since there are no code lines, focus on optimizing documentation chunking.
-	+ Keep documentation chunks self-contained while preserving context.
+The provided content consists of 143 lines, with no code lines and 143 documentation lines, spread across 6 `.ts` files. This suggests that the content is primarily documentation-focused.
 
-**2. Implementation Guidelines:**
+### Optimal Chunking Strategy
 
-* **Chunk size recommendations:**
-	+ For documentation, aim for chunks of 150-250 tokens (approximately 3-5 sentences).
-	+ Consider a maximum chunk size of 400 tokens to prevent excessive context loss.
-* **Handling documentation sections:**
-	+ Split documentation into chunks based on sentence or section boundaries.
-	+ Prioritize preserving context, especially for lists, tables, or code snippets within documentation.
-* **Preservation of context between chunks:**
-	+ Use overlapping chunks (e.g., 50-100 tokens) to maintain context between adjacent chunks.
-	+ Consider adding a brief summary or header to each chunk to provide context.
+1. **Chunking Method**: Given the documentation-heavy nature of the content, a **semantic chunking** approach is recommended. This method involves breaking down the content into chunks based on meaningful sections, such as headings, subheadings, and paragraphs.
+2. **Handling Code Sections**: Since there are no code lines in the provided content, we can focus on documentation chunking. However, if code sections were present, they would require a **fixed-size chunking** approach to preserve code structure and readability.
 
-**3. Technical Considerations:**
+### Implementation Guidelines
 
-* **Code structure preservation:**
-	+ Not applicable in this case, but if code were present, consider preserving code block structures and indentation.
-* **Comment and documentation handling:**
-	+ Treat comments and documentation as essential parts of the content, and chunk them accordingly.
-	+ Consider adding special markers or delimiters to indicate the start and end of documentation sections.
-* **Special delimiters or markers:**
-	+ Use markdown headers (e.g., `# Heading`, `## Subheading`) to separate documentation sections.
-	+ Consider using horizontal rules (`---`) or other special delimiters to indicate chunk boundaries.
+1. **Chunk Size Recommendations**:
+	* **Token-based chunking**: 256-512 tokens (approximately 150-300 words) per chunk. This allows for a balance between context preservation and chunk manageability.
+	* **Character-based chunking**: 1000-2000 characters per chunk. This ensures that chunks are large enough to contain meaningful information but small enough to be processed efficiently.
+2. **Handling Code Blocks and Documentation Sections**:
+	* **Code blocks**: If present, code blocks should be treated as fixed-size chunks (e.g., 1-2 code blocks per chunk).
+	* **Documentation sections**: Break down documentation into semantic chunks based on headings, subheadings, and paragraphs.
+3. **Preservation of Context between Chunks**:
+	* Use **overlap** or **context windows** to ensure that adjacent chunks share some contextual information (e.g., 50-100 tokens).
 
-To implement these recommendations, you can follow these steps:
+### Technical Considerations
 
-1. Split the documentation into sentences or section boundaries.
-2. Group related sentences into chunks of 150-250 tokens.
-3. Use overlapping chunks to maintain context between adjacent chunks.
-4. Add brief summaries or headers to each chunk to provide context.
-5. Consider using special markers or delimiters to indicate chunk boundaries and documentation sections.
-
-By following these guidelines, you can effectively chunk the pull request content, preserving context and meaning for optimal use in RAG systems.
+1. **Code Structure Preservation**: When handling code sections (if present), preserve the original code structure by maintaining indentation, syntax highlighting, and line numbering.
+2. **Comment and Documentation Handling**:
+	* **Comments**: Treat comments as part of the documentation and include them in the semantic chunking process.
+	* **Documentation**: Preserve documentation formatting, such as headings, bold/italic text, and links.
+3. **Special Delimiters or Markers**:
+	* **Section delimiters**: Use Markdown-style headers (e.g., `# Heading`, `## Subheading`) or HTML tags (e.g., `<h1>Heading</h1>`) to indicate section boundaries.
+	* **Code block
 
 ## Implementation Notes
 - Always validate chunk integrity before processing

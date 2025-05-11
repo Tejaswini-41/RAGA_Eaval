@@ -1,116 +1,59 @@
 
---- Similar PR #246891 ---
-File: src/vs/workbench/contrib/chat/browser/actions/chatActions.ts
+--- Similar PR #248579 ---
+File: src/vs/workbench/contrib/chat/browser/chatWidget.ts
 Before:
-				message = localize('chatQuotaExceeded', "You've reached your monthly chat messages quota. You still have free code completions available.");
-				message = localize('completionsQuotaExceeded', "You've reached your monthly code completions quota. You still have free chat messages available.");
-				message = localize('chatAndCompletionsQuotaExceeded', "You've reached your monthly chat messages and code completions quota.");
-			const upgradeToPro = limited ? localize('upgradeToPro', "Upgrade to Copilot Pro (your first 30 days are free) for:\n- Unlimited code completions\n- Unlimited basic chat messages\n- Access to premium models") : undefined;
-					primaryActionTitle = localize('chatQuotaExceededButton', "Copilot Free plan chat messages quota reached. Click for details.");
+import { IChatFollowup, IChatLocationData, IChatSendRequestOptions, IChatService } from '../common/chatService.js';
+			if (this.lastItem && isResponseVM(this.lastItem) && this.lastItem.isComplete) {
+				this.renderFollowups(this.lastItem.replyFollowups, this.lastItem);
+			} else {
+				this.renderFollowups(undefined);
+			}
+	private async renderFollowups(items: IChatFollowup[] | undefined, response?: IChatResponseViewModel): Promise<void> {
+		this.inputPart.renderFollowups(items, response);
 After:
-				message = localize('chatQuotaExceeded', "You've reached your monthly chat requests quota. You still have free code completions available.");
-				message = localize('completionsQuotaExceeded', "You've reached your monthly code completions quota. You still have free chat requests available.");
-				message = localize('chatAndCompletionsQuotaExceeded', "You've reached your monthly chat requests and code completions quota.");
-			const upgradeToPro = limited ? localize('upgradeToPro', "Upgrade to Copilot Pro (your first 30 days are free) for:\n- Unlimited code completions\n- Unlimited basic chat requests\n- Access to premium models") : undefined;
-					primaryActionTitle = localize('chatQuotaExceededButton', "Copilot Free plan chat requests quota reached. Click for details.");
+import { IChatLocationData, IChatSendRequestOptions, IChatService } from '../common/chatService.js';
+			this.renderFollowups();
+	private async renderFollowups(): Promise<void> {
+		if (this.lastItem && isResponseVM(this.lastItem) && this.lastItem.isComplete && this.inputPart.currentMode === ChatMode.Ask) {
+			this.inputPart.renderFollowups(this.lastItem.replyFollowups, this.lastItem);
+		} else {
+			this.inputPart.renderFollowups(undefined, undefined);
+		}
+			this.renderFollowups();
 
-File: src/vs/workbench/contrib/chat/browser/chatStatus.ts
+
+--- Similar PR #248568 ---
+File: src/vs/workbench/contrib/chat/browser/chatWidget.ts
 Before:
-			const completionsQuotaIndicator = completionsQuota ? this.createQuotaIndicator(this.element, completionsQuota, localize('completionsLabel', "Code completions")) : undefined;
-			const chatQuotaIndicator = chatQuota ? this.createQuotaIndicator(this.element, chatQuota, localize('c...[truncated]
---- Similar PR #246931 ---
-File: src/vs/editor/common/codecs/markdownCodec/parsers/markdownLink.ts
-Before:
- * into the {@linkcode MarkdownLinkCaption} parser type which continues the general
- * Otherwise, if one of the stop characters defined in the {@linkcode MARKDOWN_LINK_STOP_CHARACTERS}
- * The parser responsible for transitioning from a {@linkcode PartialMarkdownLinkCaption}
- * transitions into the {@linkcode MarkdownLink} token type which signifies the end of the entire
- * Otherwise, if one of the stop characters defined in the {@linkcode MARKDOWN_LINK_STOP_CHARACTERS}
-	 * See comment in the {@linkcode accept} method for more details.
+import { ICommandService } from '../../../../platform/commands/common/commands.js';
+import { IToggleChatModeArgs, ToggleAgentModeActionId } from './actions/chatExecuteActions.js';
+		@ICommandService private readonly commandService: ICommandService,
+				input = await this.setupChatModeAndTools(input, attachedContext);
+	): Promise<string> {
+			await this.commandService.executeCommand(
+				ToggleAgentModeActionId,
+				{ mode } satisfies IToggleChatModeArgs,
+			);
 After:
- * into the {@link MarkdownLinkCaption} parser type which continues the general
- * Otherwise, if one of the stop characters defined in the {@link MARKDOWN_LINK_STOP_CHARACTERS}
- * The parser responsible for transitioning from a {@link PartialMarkdownLinkCaption}
- * transitions into the {@link MarkdownLink} token type which signifies the end of the entire
- * Otherwise, if one of the stop characters defined in the {@link MARKDOWN_LINK_STOP_CHARACTERS}
-	 * See comment in the {@link accept} method for more details.
+import { handleModeSwitch } from './actions/chatActions.js';
+				const newInput = await this.setupChatModeAndTools(input, attachedContext);
+				if (newInput === undefined) {
+					return;
+				}
+				input = newInput;
+	): Promise<string | undefined> {
+			const chatModeCheck = await this.instantiationService.invokeFunction(handleModeSwitch, this.inputPart.currentMode, mode, this.viewModel?.model.getRequests().length ?? 0, this.viewModel?.model.editingSession);
+			if (!chatModeCheck) {
+				return undefined;
+			} else if (chatModeCheck.needToClearSession) {
+				this.clear();
+				await this.waitForReady();
+			}
+			this.inputPart.setChatMode(mode);
 
-File: src/vs/workbench/contrib/chat/browser/attachments/promptInstructions/promptInstructionsCollectionWidget.ts
-Before:
- * See {@linkcode InstructionsAttachmentWidget}.
-	 * See {@linkcode onAttachmentsCountChange}.
-	private _onAttachmentsCountChange = this._register(new Emitter<void>());
-	 * Subscribe to the `onAttachmentsCountChange` event.
-	public onAttachmentsCountChange(callback: () => unknown): this {
-		this._register(this._onAttachmentsCountChange.event(callback));
-			this._onAttachmentsCountChange.fire();
-		this._onAttachmentsCountChange.fire();
+
+--- Similar PR #248580 ---
+File: src/vs/workbench/contrib/chat/browser/chat.contribution.ts
 After:
- * See {@link InstructionsAttachmentWidget}.
-	 * See {@link onAttachmentsChange}.
-	private _onAttachmentsChange = this._register(new Emitter<void>());
-	 * Subscribe to the `onAttachmentsChange` event.
-	public onAttachmentsChange(callback: () => unknown): this {
-		this._register(this._on...[truncated]
---- Similar PR #246914 ---
-File: src/vs/workbench/contrib/chat/browser/actions/chatContextActions.ts
-Before:
-import { runAttachInstructionsAction } from './promptActions/index.js';
+			tags: ['preview'],
 
-
-After:
-import { runAttachInstructionsAction, registerPromptActions } from './promptActions/index.js';
-
-/**
- * Register all actions related to reusable prompt files.
- */
-registerPromptActions();
-
-File: src/vs/workbench/contrib/chat/browser/actions/promptActions/dialogs/askToSelectPrompt/utils/runPrompt.ts
-Before:
-	await widget.setInput(`/${basename(file)}`);
-
-After:
-	widget.setInput(`/${basename(file)}`);
-
-
-File: src/vs/workbench/contrib/chat/browser/actions/promptActions/index.ts
-Before:
-
-export { runAttachInstructionsAction } from './chatAttachInstructionsAction.js';
-After:
-export { runAttachInstructionsAction } from './chatAttachInstructionsAction.js';
-
-File: src/vs/workbench/contrib/chat/browser/attachments/promptInstructions/promptInstructionsCollectionWidget.ts
-After:
-	/**
-	 * Get a promise that resolves when parsing/resolving processes
-	 * are fully completed, including all possible nested child references.
-	 */
-	public allSettled() {
-		return this.model.allSettled();
-	}
-
-
-File: src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentModel.ts
-Before:
-		const { errorCondition } = this.reference;
-		this._onUpdate.fire = this._onUpdate.fire.bind(this._onUpdate);
-		this._reference.onUpdate(this._onUpdate.fire);
-After:
-		const { errorCondition } = reference;
-	/**
-	 * Get list of all tools associated with the prompt.
-	 *
-	 * Note! This property returns pont-in-time state of the tools metadata
-	 *       and does not take into account if the prompt or its nested child
-	 *       references are still being resolved. Please use the {@link settled}
-	 *       or {@link allSettled} properties if you need to retrieve the final
-	 *       list of the tools available.
-	 */
-	public get toolsMetadata(): readonly string[] | null {
-		return this.reference.allToolsMetadata;
-	}
-
-		this._reference.onUpdate(
-		...[truncated]
