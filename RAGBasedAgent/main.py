@@ -9,6 +9,7 @@ from change_analyzer import compare_pr_changes
 from review_generator import generate_review
 from review_evaluator import ReviewEvaluator
 from prompts.review_prompts import ReviewPrompts
+from improvement_analyzer import analyze_improvements
 from datetime import datetime  # Update the import statement
 from Confidence_Scorer import enhance_review_with_confidence_scores
 from chunking_advice import ChunkingAdvisor  # Assuming this is the correct import path
@@ -157,8 +158,9 @@ def display_menu():
     print("1. 🔍 Add confidence scores to review suggestions")
     print("2. 📝 Use enhanced prompts for better specificity")
     print("3. 📊 DB chunking Advice")
-    print("4. 💡 Add interactive feedback system for RAGAS improvement")
-    print("5. 🧪 Test Chunking Strategy")  # New option
+    print("4. 🧪 Test Chunking Strategy")
+    print("5. 💡 Add interactive feedback system for RAGAS improvement")
+  # New option
     print("6. ❌ Exit")
 
     print("-"*50)
@@ -978,16 +980,16 @@ if __name__ == "__main__":
                     
                     print(f"\n📁 Detailed metrics saved to {metrics_file}")
                     
-                    # Ask if user wants to use chunked strategy for future operations
-                    use_chunked = input("\nDo you want to use the chunked strategy for future operations? (y/n): ").strip().lower()
-                    if use_chunked == 'y':
-                        stored_results["baseline_review"] = chunked_review
-                        stored_results["chunked_metrics"] = chunked_metrics
-                        stored_results["chunking_applied"] = True
+                    # # Ask if user wants to use chunked strategy for future operations
+                    # use_chunked = input("\nDo you want to use the chunked strategy for future operations? (y/n): ").strip().lower()
+                    # if use_chunked == 'y':
+                    #     stored_results["baseline_review"] = chunked_review
+                    #     stored_results["chunked_metrics"] = chunked_metrics
+                    #     stored_results["chunking_applied"] = True
                         
-                        # Save updated stored results
-                        save_results(stored_results, "stored_prompts", session_id)
-                        print("\n✅ Chunking strategy set as the new baseline!")
+                    #     # Save updated stored results
+                    #     save_results(stored_results, "stored_prompts", session_id)
+                    #     print("\n✅ Chunking strategy set as the new baseline!")
                     
                 except Exception as e:
                     print(f"\n❌ Error during chunking strategy evaluation: {e}")
