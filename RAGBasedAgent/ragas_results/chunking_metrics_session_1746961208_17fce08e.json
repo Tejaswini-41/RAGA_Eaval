@@ -1,0 +1,22 @@
+{
+  "session_id": "session_1746961208_17fce08e",
+  "timestamp": "20250511_163230",
+  "baseline_metrics": {
+    "Relevance": 1.0,
+    "Accuracy": 0.8,
+    "Groundedness": 1.0,
+    "Completeness": 0.98,
+    "ContextualPrecision": 1.0,
+    "AnswerRelevance": 0.13999999999999999,
+    "Overall": 0.811
+  },
+  "chunked_metrics": {
+    "Relevance": 0.3991532623767853,
+    "Accuracy": 0.7,
+    "Groundedness": 0.2,
+    "Completeness": 0.0,
+    "ContextualPrecision": 0.3,
+    "AnswerRelevance": 0.58,
+    "Overall": 0.385
+  }
+}

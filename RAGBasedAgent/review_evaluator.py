@@ -23,15 +23,15 @@ class ReviewEvaluator:
         # Updated weights with enhanced RAGA metrics
         self.weights = {
             # Original metrics with adjusted weights
-            "Relevance": 0.15,
+            "Relevance": 0.10,
             "Accuracy": 0.15,
-            "Groundedness": 0.15,
+            "Groundedness": 0.10,
             "Completeness": 0.10,
             
             # New RAGA metrics
             "Faithfulness": 0.20,     # How well the response avoids hallucinations
-            "ContextualPrecision": 0.15,  # How precisely the review references specific PR elements
-            "AnswerRelevance": 0.05,   # How well the review addresses PR-specific issues
+            "ContextualPrecision": 0.25,  # How precisely the review references specific PR elements
+            "AnswerRelevance": 0.15,   # How well the review addresses PR-specific issues
             
             # Existing metrics with reduced weights
             "BLEU": 0.025,

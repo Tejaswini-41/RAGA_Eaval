@@ -153,8 +153,9 @@ def display_menu():
     print("1. 🔍 Add confidence scores to review suggestions")
     print("2. 📝 Use enhanced prompts for better specificity")
     print("3. 📊 DB chunking Advice")
-    print("4. 💡 Add interactive feedback system for RAGAS improvement")
-    print("5. 🧪 Test Chunking Strategy")  # New option
+    print("4. 🧪 Test Chunking Strategy")
+    print("5. 💡 Add interactive feedback system for RAGAS improvement")
+  # New option
     print("6. ❌ Exit")
 
     print("-"*50)
@@ -689,6 +690,7 @@ if __name__ == "__main__":
             # Run the prompt testing
             asyncio.run(test_stored_prompt())
             input("\nPress Enter to continue...")    
+
         elif choice == "3":
             if not session_id:
                 print("❌ No active session found. Please run option 0 first")
@@ -723,7 +725,182 @@ if __name__ == "__main__":
             input("\nPress Enter to continue...")
         
         elif choice == "4":
-            print("\n🚧 COMING SOON! This feature is under development.")
+            if not session_id:
+                print("❌ No active session found. Please run option 0 first")
+                input("\nPress Enter to continue...")
+                continue
+                
+            # Load stored results from previous run
+            stored_results = load_stored_prompts(session_id)
+            if not stored_results:
+                print("❌ Please run option 0 first to generate baseline review")
+                input("\nPress Enter to continue...")
+                continue
+            
+            print("\n🧮 Evaluating Chunking Strategy with RAGAS Metrics...")
+            
+            # Import needed modules
+            from chunk_tester import ChunkingStrategyTester
+            from review_evaluator import ReviewEvaluator
+            import asyncio
+            
+            async def test_chunking_with_ragas():
+                try:
+                    # Prepare PR data for chunking tests - reuse stored data
+                    pr_data = {
+                        "current_pr_changes": stored_results.get("current_pr_changes", ""),
+                        "similar_prs_changes": stored_results.get("similar_prs_changes", []),
+                        "pr_files": stored_results.get("pr_files", [])
+                    }
+                    
+                    # Get baseline review
+                    baseline_review = stored_results.get("baseline_review", "")
+                    if not baseline_review:
+                        print("❌ No baseline review found in stored results")
+                        return
+                    
+                    # Initialize chunking tester and evaluator
+                    chunking_tester = ChunkingStrategyTester()
+                    evaluator = ReviewEvaluator()
+                    
+                    # Generate chunked review using existing code from chunk_tester
+                    print("\n📄 Generating chunked review...")
+                    chunked_review = await chunking_tester._generate_chunked_review(pr_data)
+                    
+                    if not chunked_review:
+                        print("❌ Failed to generate chunked review")
+                        return
+                    
+                    # Use reference for metrics calculation
+                    reference_review = stored_results.get("reference_review", baseline_review)
+                    
+                    print("\n📊 Calculating RAGAS metrics...")
+                    
+                    # Calculate metrics manually using only reliable metrics from metrics.py
+                    baseline_metrics = {}
+                    chunked_metrics = {}
+                    
+                    # Use metrics calculator directly to avoid issues with RAGAS
+                    metrics_calculator = evaluator.metrics_calculator
+                    
+                    # Calculate only reliable metrics directly from metrics.py
+                    baseline_metrics["Relevance"] = metrics_calculator.compute_relevance(reference_review, baseline_review)
+                    baseline_metrics["Accuracy"] = metrics_calculator.compute_accuracy(baseline_review)
+                    baseline_metrics["Groundedness"] = metrics_calculator.compute_groundedness(reference_review, baseline_review)
+                    baseline_metrics["Completeness"] = metrics_calculator.compute_completeness(reference_review, baseline_review)
+                    baseline_metrics["ContextualPrecision"] = metrics_calculator.compute_contextual_precision(reference_review, baseline_review)
+                    baseline_metrics["AnswerRelevance"] = metrics_calculator.compute_answer_relevance(reference_review, baseline_review)
+                    
+                    # Same for chunked review
+                    chunked_metrics["Relevance"] = metrics_calculator.compute_relevance(reference_review, chunked_review)
+                    chunked_metrics["Accuracy"] = metrics_calculator.compute_accuracy(chunked_review)
+                    chunked_metrics["Groundedness"] = metrics_calculator.compute_groundedness(reference_review, chunked_review)
+                    chunked_metrics["Completeness"] = metrics_calculator.compute_completeness(reference_review, chunked_review)
+                    chunked_metrics["ContextualPrecision"] = metrics_calculator.compute_contextual_precision(reference_review, chunked_review)
+                    chunked_metrics["AnswerRelevance"] = metrics_calculator.compute_answer_relevance(reference_review, chunked_review)
+                    
+                    # Calculate overall scores
+                    weights = evaluator.weights
+                    
+                    # Only use available metrics for weighted score
+                    available_weights = {k: v for k, v in weights.items() if k in baseline_metrics}
+                    weight_sum = sum(available_weights.values())
+                    
+                    # Calculate overall scores
+                    baseline_overall = sum(baseline_metrics[m] * (weights[m]/weight_sum) 
+                                          for m in baseline_metrics)
+                    chunked_overall = sum(chunked_metrics[m] * (weights[m]/weight_sum)
+                                         for m in chunked_metrics)
+                    
+                    baseline_metrics["Overall"] = round(baseline_overall, 3)
+                    chunked_metrics["Overall"] = round(chunked_overall, 3)
+                    
+                    # Save results for future reference
+                    metrics_comparison = {
+                        "session_id": session_id,
+                        "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+                        "baseline_metrics": baseline_metrics,
+                        "chunked_metrics": chunked_metrics
+                    }
+                    
+                    os.makedirs("ragas_results", exist_ok=True)
+                    metrics_file = f"ragas_results/chunking_metrics_{session_id}.json"
+                    with open(metrics_file, "w", encoding="utf-8") as f:
+                        json.dump(metrics_comparison, f, indent=2)
+                    
+                    # Display metrics comparison in a formatted table
+                    print("\n📈 RAGAS Metrics Comparison (Default vs. Chunked):")
+                    print("=" * 70)
+                    print(f"{'Metric':<18} | {'Default':>8} | {'Chunked':>8} | {'Change':>8} | {'%':>7} |")
+                    print("=" * 70)
+                    
+                    # Track changes for analysis
+                    improvements = []
+                    declines = []
+                    
+                    for metric in baseline_metrics:
+                        if metric in chunked_metrics:
+                            baseline_val = baseline_metrics[metric]
+                            chunked_val = chunked_metrics[metric]
+                            change = chunked_val - baseline_val
+                            
+                            # Avoid division by zero
+                            if baseline_val > 0:
+                                pct_change = (change / baseline_val) * 100
+                            else:
+                                pct_change = 0 if change == 0 else 100
+                                
+                            print(f"{metric:<18} | {baseline_val:>8.3f} | {chunked_val:>8.3f} | {change:>+8.3f} | {pct_change:>+7.1f}% |")
+                            
+                            if metric != "Overall":  # Don't include Overall in improvements/declines
+                                if change > 0:
+                                    improvements.append((metric, pct_change))
+                                elif change < 0:
+                                    declines.append((metric, pct_change))
+                    
+                    # Calculate overall change
+                    overall_change = chunked_metrics["Overall"] - baseline_metrics["Overall"] 
+                    overall_pct = (overall_change / max(0.001, baseline_metrics["Overall"])) * 100
+                    
+                    print("=" * 70)
+                    print(f"{'Overall':<18} | {baseline_metrics['Overall']:>8.3f} | {chunked_metrics['Overall']:>8.3f} | {overall_change:>+8.3f} | {overall_pct:>+7.1f}% |")
+                    
+                    # Show analysis based on results
+                    if overall_pct >= 0:
+                        print(f"\n✅ Chunking strategy IMPROVED RAGAS scores by {overall_pct:.1f}%")
+                    else:
+                        print(f"\n⚠️ The chunking strategy did NOT improve RAGAS scores ({overall_pct:.1f}%).")
+                    
+                    if improvements:
+                        print("\nImprovements in:")
+                        for metric, pct in sorted(improvements, key=lambda x: x[1], reverse=True):
+                            print(f"  • {metric}: {pct:+.1f}%")
+                            
+                    if declines:
+                        print("\nDeclines in:")
+                        for metric, pct in sorted(declines, key=lambda x: x[1]):
+                            print(f"  • {metric}: {pct:+.1f}%")
+                    
+                    print(f"\n📁 Detailed metrics saved to {metrics_file}")
+                    
+                    # Ask if user wants to use chunked strategy for future operations
+                    use_chunked = input("\nDo you want to use the chunked strategy for future operations? (y/n): ").strip().lower()
+                    if use_chunked == 'y':
+                        stored_results["baseline_review"] = chunked_review
+                        stored_results["chunked_metrics"] = chunked_metrics
+                        stored_results["chunking_applied"] = True
+                        
+                        # Save updated stored results
+                        save_results(stored_results, "stored_prompts", session_id)
+                        print("\n✅ Chunking strategy set as the new baseline!")
+                    
+                except Exception as e:
+                    print(f"\n❌ Error during chunking strategy evaluation: {e}")
+                    import traceback
+                    traceback.print_exc()
+            
+            # Run the test asynchronously
+            asyncio.run(test_chunking_with_ragas())
             input("\nPress Enter to continue...")
         
         elif choice == "6":
