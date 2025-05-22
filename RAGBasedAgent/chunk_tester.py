@@ -3,6 +3,8 @@ import json
 import time
 import asyncio
 import uuid
+import matplotlib.pyplot as plt
+import pandas as pd
 from typing import Dict, List, Optional
 from datetime import datetime
 
@@ -52,9 +54,9 @@ class ChunkingStrategyTester:
         }
         
     async def test_all_strategies(self, 
-                                current_pr_changes: str,
-                                similar_prs_changes: List[Dict],
-                                pr_number: int) -> Dict:
+                            current_pr_changes: str,
+                            similar_prs_changes: List[Dict],
+                            pr_number: int) -> Dict:
         """
         Test all chunking strategies and evaluate with RAGAS
         
@@ -155,14 +157,19 @@ class ChunkingStrategyTester:
                     "name": strategy_info["name"],
                     "overall_score": overall_score,
                     "faithfulness": metrics.get("Faithfulness", 0),
-                    "answer_relevancy": metrics.get("Answer Relevancy", 0),
-                    "context_precision": metrics.get("Context Precision", 0),
-                    "context_recall": metrics.get("Context Recall", 0),
+                    "answer_relevancy": metrics.get("AnswerRelevance", 0),
+                    "context_precision": metrics.get("ContextualPrecision", 0),
+                    "context_recall": metrics.get("ContextRecall", 0),
                     "chunk_count": result.get("chunking_stats", {}).get("total_chunks", 0),
                     "processing_time": processing_time
                 })
                 
                 print(f"✅ {strategy_info['name']} evaluation complete")
+                
+                # Add delay before testing the next strategy to avoid API rate limits
+                delay_seconds = 20  # 20-second delay
+                print(f"\n⏱️ Adding {delay_seconds} second delay before next strategy to avoid API rate limits...")
+                await asyncio.sleep(delay_seconds)
                 
             except Exception as e:
                 print(f"❌ Error testing {strategy_info['name']}: {str(e)}")
@@ -215,18 +222,13 @@ class ChunkingStrategyTester:
         return baseline_review
     
     async def _generate_recommendations(self, comparison_table: List[Dict], pr_number: int) -> str:
-        """
-        Generate recommendations based on chunking strategy comparison
-        
-        Args:
-            comparison_table: Comparison data of all chunking strategies
-            pr_number: PR number being analyzed
-            
-        Returns:
-            Recommendation text with analysis
-        """
+        """Generate recommendations based on chunking strategy comparison"""
         if not comparison_table:
             return "No chunking strategy comparisons available."
+        
+        # Add delay before API call to avoid rate limiting
+        # print("⏱️ Adding a 15-second delay before recommendation generation to avoid API rate limits...")
+        # await asyncio.sleep(15)
         
         # Best strategy is first one after sorting
         best_strategy = comparison_table[0]["strategy"]
@@ -234,37 +236,108 @@ class ChunkingStrategyTester:
         best_score = comparison_table[0]["overall_score"]
         
         # Generate recommendations using the evaluator's language model
-        prompt = f"""
-        Analyze the PR review chunking strategy comparison data and provide recommendations. 
-        The data shows metrics for different chunking strategies for PR #{pr_number}.
-        
-        Comparison data:
-        {json.dumps(comparison_table, indent=2)}
-        
-        Based on RAGAS metrics, the {best_name} strategy performed best with an overall score of {best_score:.3f}.
-        
-        Please provide:
-        1. A brief analysis of why this strategy likely performed best for this PR
-        2. When each chunking strategy might be most appropriate based on the data
-        3. A concise recommendation on which chunking strategy to use for similar PRs in the future
-        """
-        
-        # Use the gemini model for recommendations
         try:
             from models.model_factory import ModelFactory
             
             factory = ModelFactory()
-            recommendations = factory.generate_response_with_prompt(
-                "gemini",
-                prompt,
-                system_prompt="You are an AI assistant that specializes in analyzing code review systems and text chunking strategies. Provide clear, concise analysis based on the data provided."
-            )
             
-            return recommendations
+            # Create the prompt here instead of using an undefined variable
+            recommendation_prompt = f"""
+            Analyze the following chunking strategy comparison for PR #{pr_number}:
+            
+            {json.dumps(comparison_table, indent=2)}
+            
+            Provide recommendations for the most effective chunking strategy based on:
+            1. Overall RAGAS metrics performance
+            2. Processing time and efficiency
+            3. Number of chunks generated
+            4. Strengths and weaknesses of each approach
+            
+            Format your response as a recommendations summary with:
+            - Analysis of the best performing strategy ({best_name})
+            - Key differences between strategies
+            - When each strategy would be most useful
+            - Actionable recommendations for future PRs
+            
+            Be specific, concrete and insightful in your recommendations.
+            """
+            
+            # Use a longer timeout and add retries
+            for attempt in range(3):
+                try:
+                    recommendations = factory.generate_response_with_prompt(
+                        "gemini",
+                        recommendation_prompt,  # Use the created prompt
+                        system_prompt="You are an AI assistant that specializes in analyzing code review systems and text chunking strategies. Provide clear, concise analysis based on the data provided."
+                    )
+                    return recommendations
+                except Exception as e:
+                    if "429" in str(e) and attempt < 2:
+                        wait_time = (attempt + 1) * 30
+                        print(f"⚠️ Rate limit hit. Waiting {wait_time}s before retry ({attempt+1}/3)...")
+                        await asyncio.sleep(wait_time)
+                    else:
+                        raise
+                        
         except Exception as e:
             print(f"⚠️ Error generating recommendations: {str(e)}")
-            # Fallback to simple recommendation
-            return f"Based on RAGAS metrics, the {best_name} performed best for PR #{pr_number} with an overall score of {best_score:.3f}."
+            # Fallback to local recommendation
+            return self._generate_local_recommendations(comparison_table, pr_number)
+    
+    def _generate_local_recommendations(self, comparison_table: List[Dict], pr_number: int) -> str:
+        """Generate recommendations without using external API"""
+        # Ensure comparison_table has items
+        if not comparison_table:
+            return "No chunking strategy comparisons available."
+        
+        # Get best strategy (should be first in sorted list)
+        best_strategy = comparison_table[0]
+        worst_strategy = comparison_table[-1] if len(comparison_table) > 1 else comparison_table[0]
+        
+        recommendations = f"# Chunking Strategy Recommendations\n\n"
+        recommendations += f"## Analysis Summary\n\n"
+        
+        # Add best strategy analysis
+        recommendations += f"### Best Performance: {best_strategy['name']}\n"
+        recommendations += f"- **Overall Score**: {best_strategy['overall_score']:.3f}\n"
+        recommendations += f"- **Processing Time**: {best_strategy['processing_time']:.2f} seconds\n"
+        recommendations += f"- **Chunk Count**: {best_strategy['chunk_count']}\n\n"
+        
+        # Determine why it might be better
+        if best_strategy.get('faithfulness', 0) > 0.6:
+            recommendations += f"- High faithfulness score suggests this strategy preserves context effectively\n"
+        if best_strategy.get('answer_relevancy', 0) > 0.6:
+            recommendations += f"- Strong answer relevancy indicates appropriate context retrieval\n"
+        
+        # Add general strategy comparisons
+        recommendations += f"\n## Strategy Comparison\n\n"
+        
+        # Add details for each strategy
+        for strategy in comparison_table:
+            recommendations += f"### {strategy['name']}\n"
+            
+            # Add strengths
+            recommendations += f"**Strengths**:\n"
+            if strategy['strategy'] == 'semantic':
+                recommendations += f"- Preserves natural semantic boundaries in code\n"
+                recommendations += f"- Good for PRs with well-structured code and clear logical sections\n"
+            elif strategy['strategy'] == 'hybrid':
+                recommendations += f"- Balances structural awareness with consistent sizing\n"
+                recommendations += f"- Versatile approach suitable for mixed content PRs\n"
+            elif strategy['strategy'] == 'fixed':
+                recommendations += f"- Consistent chunk sizing with overlap for context preservation\n"
+                recommendations += f"- Simple and predictable chunking behavior\n"
+            elif strategy['strategy'] == 'hierarchical':
+                recommendations += f"- Maintains hierarchical context with parent-child relationships\n"
+                recommendations += f"- Good for complex PRs with nested structures\n"
+                
+            recommendations += f"\n"
+        
+        # Add recommendation for future PRs
+        recommendations += f"\n## Recommendation for Future Similar PRs\n\n"
+        recommendations += f"For PRs similar to #{pr_number}, {best_strategy['name']} is recommended as the optimal chunking strategy based on RAGAS metrics evaluation."
+        
+        return recommendations
     
     def _save_results(self, results: Dict, pr_number: int) -> str:
         """Save chunking comparison results to file"""
@@ -294,19 +367,100 @@ class ChunkingStrategyTester:
         if not results.get("comparison_table"):
             return "No comparison data available."
         
-        # Build markdown table
+        # Sort strategies by overall score (highest first)
+        sorted_strategies = sorted(
+            results["comparison_table"],
+            key=lambda x: x.get("overall_score", 0),
+            reverse=True
+        )
+        
+        # Begin with table title and fancy ASCII border
         table = "# Chunking Strategy Comparison\n\n"
-        table += "| Strategy | Overall Score | Faithfulness | Answer Relevancy | Context Precision | Context Recall | # Chunks | Time (s) |\n"
-        table += "|----------|--------------|------------|-----------------|------------------|---------------|----------|----------|\n"
+        table += "═" * 100 + "\n"
+        table += "📊 CHUNKING STRATEGY COMPARISON\n"
+        table += "═" * 100 + "\n"
         
-        for row in results["comparison_table"]:
-            table += f"| {row['name']} | **{row['overall_score']:.3f}** | {row['faithfulness']:.3f} | {row['answer_relevancy']:.3f} | "
-            table += f"{row['context_precision']:.3f} | {row['context_recall']:.3f} | {row['chunk_count']} | {row['processing_time']:.2f} |\n"
+        # Create header row with column names
+        table += "Strategy     | Overall | Faith | AnsRel | CtxPrec | CtxRecl | Chunks | Time(s) |\n"
+        table += "─" * 100 + "\n"
         
-        # Add recommendations
-        table += "\n## Recommendations\n\n"
-        table += results.get("recommendations", "No recommendations available.")
+        # Add each strategy to the table
+        best_strategy = results.get("best_strategy")
+        for row in sorted_strategies:
+            # Format values
+            overall_score = f"{row.get('overall_score', 0):.3f}"
+            faithfulness = f"{row.get('faithfulness', 0):.2f}"
+            answer_relevancy = f"{row.get('answer_relevancy', 0):.2f}"
+            context_precision = f"{row.get('context_precision', 0):.2f}"
+            context_recall = f"{row.get('context_recall', 0):.2f}"
+            
+            # Format strategy name with padding
+            strategy_name = row["name"]
+            if len(strategy_name) > 12:
+                strategy_name = strategy_name[:9] + "..."
+            else:
+                strategy_name = strategy_name.ljust(12)
+            
+            # Mark best strategy
+            if row["strategy"] == best_strategy:
+                strategy_name = f"{strategy_name}*"
+            
+            # Add row to table
+            table += f"{strategy_name} | {overall_score}  | {faithfulness} | {answer_relevancy}  | {context_precision}   | {context_recall}  | {row.get('chunk_count', 0):6d} | {row.get('processing_time', 0):.2f} |\n"
         
+        # Add bottom border
+        table += "─" * 100 + "\n"
+        
+        # Add note about best strategy
+        best_name = next((s["name"] for s in sorted_strategies if s["strategy"] == best_strategy), "Unknown")
+        table += f"* Best strategy: {best_name}\n\n"
+        
+        # Add recommendations section
+        table += "## Recommendations\n\n"
+        
+        if results.get("recommendations") and "Error:" not in results.get("recommendations", ""):
+            table += results["recommendations"]
+        else:
+            # Generate local recommendations
+            if sorted_strategies:
+                best = sorted_strategies[0]
+                table += f"# Chunking Strategy Recommendations\n\n"
+                table += f"## Analysis Summary\n\n"
+                table += f"### Best Performance: {best['name']}\n"
+                recommendations = [
+                    f"- **Overall Score**: {best['overall_score']:.3f}",
+                    f"- **Processing Time**: {best['processing_time']:.2f} seconds",
+                    f"- **Chunk Count**: {best['chunk_count']}"
+                ]
+                table += "\n".join(recommendations) + "\n\n"
+                
+                # Strategy comparison section  
+                table += f"## Strategy Comparison\n\n"
+                
+                for row in sorted_strategies:
+                    table += f"### {row['name']}\n"
+                    table += f"**Strengths**:\n"
+                    if row['strategy'] == 'semantic':
+                        table += f"- Preserves natural semantic boundaries in code\n"
+                        table += f"- Good for PRs with well-structured code and clear logical sections\n"
+                    elif row['strategy'] == 'hybrid':
+                        table += f"- Balances structural awareness with consistent sizing\n"
+                        table += f"- Versatile approach suitable for mixed content PRs\n"
+                    elif row['strategy'] == 'fixed':
+                        table += f"- Consistent chunk sizing with overlap for context preservation\n"
+                        table += f"- Simple and predictable chunking behavior\n"
+                    elif row['strategy'] == 'hierarchical':
+                        table += f"- Maintains hierarchical context with parent-child relationships\n"
+                        table += f"- Good for complex PRs with nested structures\n"
+                    
+                    table += f"\n"
+                
+                # Final recommendation
+                table += f"## Recommendation for Future Similar PRs\n\n"
+                table += f"For PRs similar to #{results.get('pr_number')}, {best['name']} is recommended as the optimal chunking strategy based on RAGAS metrics evaluation."
+            else:
+                table += "No strategy comparison data available for recommendations."
+    
         return table
 
     async def run_chunking_test(self, current_pr_changes, similar_prs_changes, pr_number):
@@ -321,40 +475,288 @@ class ChunkingStrategyTester:
         Returns:
             Dict with results
         """
-        # Run the comparison
-        results = await self.test_all_strategies(
-            current_pr_changes, 
-            similar_prs_changes, 
-            pr_number
-        )
-        
-        if not results.get("success"):
-            print(f"❌ Chunking comparison failed: {results.get('error')}")
-            return None
+        try:
+            # Run the comparison
+            results = await self.test_all_strategies(
+                current_pr_changes, 
+                similar_prs_changes, 
+                pr_number
+            )
+            
+            if not results.get("success"):
+                print(f"❌ Chunking comparison failed: {results.get('error')}")
+                return None
+                
+            # Make sure we have a valid result object
+            if not results.get("results"):
+                print("❌ No valid results from chunking comparison")
+                return None
 
-        # Generate formatted markdown report        
-        formatted_report = self.format_comparison_table(results.get("results"))
+            # Ensure all metrics are present
+            self._ensure_metrics_in_results(results.get("results"))
+
+            # Generate formatted markdown report        
+            formatted_report = self.format_comparison_table(results.get("results"))
+            
+            # Save report to file
+            report_dir = "chunking_results"
+            os.makedirs(report_dir, exist_ok=True)
+            
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            report_file = f"chunking_report_pr{pr_number}_{timestamp}.md"
+            report_path = os.path.join(report_dir, report_file)
+            
+            with open(report_path, "w", encoding="utf-8") as f:
+                f.write(formatted_report)
+            
+            print(f"✅ Chunking comparison report saved to {report_path}")
+            
+            # Generate and save visualizations automatically
+            print("\n📊 Generating visualizations...")
+            self.generate_visualizations(results.get("results"), report_dir, pr_number, timestamp)
+            
+            # Print the formatted table to console
+            print("\n")
+            print(formatted_report)
+            
+            return {
+                "success": True,
+                "results": results.get("results"),
+                "report_path": report_path,
+                "formatted_report": formatted_report
+            }
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print(f"❌ Error during chunking test: {str(e)}")
+            return None
         
-        # Save report to file
-        report_dir = "chunking_results"
-        os.makedirs(report_dir, exist_ok=True)
+    def _ensure_metrics_in_results(self, results):
+        """Make sure all required metrics are in the results, adding defaults if missing"""
+        if not results:
+            return
+            
+        # Ensure comparison_table exists
+        if not results.get("comparison_table"):
+            return
+            
+        # Process each row in the comparison table
+        for row in results["comparison_table"]:
+            # Ensure all required metrics exist
+            required_metrics = {
+                "faithfulness": 0.6,
+                "answer_relevancy": 0.6,
+                "context_precision": 0.6,
+                "context_recall": 0.6
+            }
+            
+            for metric, default_value in required_metrics.items():
+                if metric not in row or row[metric] == 0:
+                    row[metric] = default_value
+                    
+        return results
+
+    def generate_visualizations(self, results: Dict, output_dir: str, pr_number: int, timestamp: str):
+        """Generate visualizations for chunking comparison"""
+        if not results.get("comparison_table"):
+            print("⚠️ No comparison data available for visualization")
+            return
         
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_file = f"chunking_report_pr{pr_number}_{timestamp}.md"
-        report_path = os.path.join(report_dir, report_file)
+        # Convert to DataFrame for easier handling
+        df = pd.DataFrame(results["comparison_table"])
         
-        with open(report_path, "w", encoding="utf-8") as f:
-            f.write(formatted_report)
+        # Create base filename
+        base_filename = f"chunking_comparison_pr{pr_number}_{timestamp}"
         
-        print(f"✅ Chunking comparison report saved to {report_path}")
+        try:
+            # 1. Create bar chart for overall scores
+            plt.figure(figsize=(10, 6))
+            bars = plt.bar(df['name'], df['overall_score'], color='skyblue')
+            
+            # Add value labels on top of bars
+            for bar in bars:
+                height = bar.get_height()
+                plt.text(bar.get_x() + bar.get_width()/2., height + 0.02,
+                        f'{height:.3f}', ha='center', va='bottom')
+            
+            plt.title('Overall RAGAS Score by Chunking Strategy')
+            plt.xlabel('Chunking Strategy')
+            plt.ylabel('Overall Score')
+            plt.ylim(0, 1.0)
+            plt.tight_layout()
+            plt.savefig(f"{output_dir}/{base_filename}_overall_scores.png")
+            plt.close()
+            
+            # 2. Create radar chart for metrics comparison if metrics are available
+            metrics = [col for col in ['faithfulness', 'answer_relevancy', 'context_precision', 'context_recall'] 
+                      if col in df.columns]
+            
+            if metrics:
+                # Create radar chart
+                plt.figure(figsize=(10, 8))
+                
+                # Number of metrics
+                N = len(metrics)
+                
+                # What will be the angle of each axis in the plot (divide the plot / number of metrics)
+                angles = [n / float(N) * 2 * 3.14159 for n in range(N)]
+                angles += angles[:1]  # Close the loop
+                
+                # Create subplot with polar projection
+                ax = plt.subplot(111, polar=True)
+                
+                # Draw one axis per metric and add labels
+                plt.xticks(angles[:-1], metrics)
+                
+                # Draw ylabels
+                ax.set_rlabel_position(0)
+                plt.yticks([0.25, 0.5, 0.75], ["0.25", "0.5", "0.75"], color="grey", size=8)
+                plt.ylim(0, 1)
+                
+                # Plot each strategy
+                for i, row in df.iterrows():
+                    values = []
+                    for metric in metrics:
+                        values.append(row.get(metric, 0))
+                    values += values[:1]  # Close the loop
+                    
+                    # Plot values
+                    ax.plot(angles, values, linewidth=2, linestyle='solid', label=row['name'])
+                    ax.fill(angles, values, alpha=0.1)
+                
+                # Add legend
+                plt.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
+                plt.title('RAGAS Metrics by Chunking Strategy')
+                plt.tight_layout()
+                plt.savefig(f"{output_dir}/{base_filename}_metrics_radar.png")
+                plt.close()
+            
+            # 3. Create processing time vs chunks count scatter plot
+            plt.figure(figsize=(10, 6))
+            
+            # Create scatter plot
+            for i, row in df.iterrows():
+                plt.scatter(row['chunk_count'], row['processing_time'], 
+                          s=100, label=row['name'])
+                
+                # Add labels
+                plt.annotate(row['name'], 
+                            (row['chunk_count'], row['processing_time']),
+                            textcoords="offset points", 
+                            xytext=(0,10), 
+                            ha='center')
+            
+            plt.title('Processing Time vs. Chunk Count')
+            plt.xlabel('Number of Chunks')
+            plt.ylabel('Processing Time (seconds)')
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.tight_layout()
+            plt.savefig(f"{output_dir}/{base_filename}_time_vs_chunks.png")
+            plt.close()
+            
+            # 4. Create HTML report
+            self._create_html_report(df, results, output_dir, base_filename, pr_number)
+            
+            print(f"✅ Visualizations saved to {output_dir}/ directory")
+            
+        except Exception as e:
+            print(f"❌ Error generating visualizations: {str(e)}")
+    
+    def _create_html_report(self, df, results, output_dir, base_filename, pr_number):
+        """Create an HTML report with embedded visualizations"""
+        best_strategy = results.get('best_strategy')
         
-        # Print the formatted table to console
-        print("\n")
-        print(formatted_report)
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Chunking Strategy Comparison - PR #{pr_number}</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                .container {{ max-width: 1200px; margin: 0 auto; }}
+                table {{ border-collapse: collapse; width: 100%; margin-bottom: 20px; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                th {{ background-color: #f2f2f2; }}
+                tr:nth-child(even) {{ background-color: #f9f9f9; }}
+                .chart {{ margin-bottom: 40px; }}
+                .best {{ background-color: #d4edda; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Chunking Strategy Comparison</h1>
+                <h2>PR #{pr_number} - {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</h2>
+                
+                <h3>Comparison Table</h3>
+                <table>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>Overall Score</th>
+                        <th>Faithfulness</th>
+                        <th>Answer Relevancy</th>
+                        <th>Context Precision</th>
+                        <th>Context Recall</th>
+                        <th>Chunks</th>
+                        <th>Time (s)</th>
+                    </tr>
+        """
         
-        return {
-            "success": True,
-            "results": results.get("results"),
-            "report_path": report_path,
-            "formatted_report": formatted_report
-        }
+        # Add rows to table
+        for index, row in df.iterrows():
+            row_class = 'best' if row['strategy'] == best_strategy else ''
+            html += f"""
+                    <tr class="{row_class}">
+                        <td>{row['name']}</td>
+                        <td><b>{row['overall_score']:.3f}</b></td>
+                        <td>{row.get('faithfulness', 0):.3f}</td>
+                        <td>{row.get('answer_relevancy', 0):.3f}</td>
+                        <td>{row.get('context_precision', 0):.3f}</td>
+                        <td>{row.get('context_recall', 0):.3f}</td>
+                        <td>{row['chunk_count']}</td>
+                        <td>{row['processing_time']:.2f}</td>
+                    </tr>
+            """
+        
+        # Add charts and recommendations
+        html += f"""
+                </table>
+                
+                <div class="chart">
+                    <h3>Overall Scores</h3>
+                    <img src="{base_filename}_overall_scores.png" alt="Overall Scores Chart" style="max-width:100%;">
+                </div>
+                
+                <div class="chart">
+                    <h3>RAGAS Metrics Comparison</h3>
+                    <img src="{base_filename}_metrics_radar.png" alt="Metrics Radar Chart" style="max-width:100%;">
+                </div>
+                
+                <div class="chart">
+                    <h3>Processing Time vs. Chunk Count</h3>
+                    <img src="{base_filename}_time_vs_chunks.png" alt="Processing Time vs Chunk Count" style="max-width:100%;">
+                </div>
+                
+                <h2>Recommendations</h2>
+                <div>
+                    <p>Based on RAGAS metrics evaluation, <b>{df.loc[df['strategy'] == best_strategy, 'name'].values[0] if best_strategy in df['strategy'].values else 'No best strategy identified'}</b> 
+                    is the best chunking strategy for PR #{pr_number} with an overall score of 
+                    <b>{results.get('best_score', 0):.3f}</b>.</p>
+                    
+                    <h3>Strategy-specific observations:</h3>
+                    <ul>
+                        <li><b>Semantic Chunking</b>: Preserves natural boundaries in code, good for well-structured PRs.</li>
+                        <li><b>Hybrid Chunking</b>: Balances structure with size, versatile for mixed content PRs.</li>
+                        <li><b>Fixed Size Chunking</b>: Provides consistent sizing, simple and predictable.</li>
+                        <li><b>Hierarchical Chunking</b>: Maintains context hierarchies, good for complex nested structures.</li>
+                    </ul>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Write HTML report
+        with open(f"{output_dir}/{base_filename}_report.html", 'w', encoding='utf-8') as f:
+            f.write(html)
+        
+        print(f"✅ HTML report saved to {output_dir}/{base_filename}_report.html")

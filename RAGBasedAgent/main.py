@@ -1021,7 +1021,7 @@ if __name__ == "__main__":
                     # Initialize chunking tester
                     chunking_tester = ChunkingStrategyTester()
                     
-                    # Run chunking comparison
+                    # Run chunking comparison with rate limiting
                     print("\n🔄 Running chunking strategy comparison (this may take several minutes)...")
                     result = await chunking_tester.run_chunking_test(
                         current_pr_changes,
@@ -1034,7 +1034,18 @@ if __name__ == "__main__":
                         return False
                         
                     print("\n✅ Chunking comparison completed successfully!")
-                    print(f"\n💾 Detailed report saved to {result.get('report_path')}")
+                    
+                    # Visualizations are now automatically generated in the ChunkingStrategyTester
+                    print("\n📊 Visualizations have been automatically generated")
+                    
+                    # Open the HTML report in the default browser
+                    import webbrowser
+                    import os
+                    if result.get("report_path"):
+                        html_report = result.get("report_path").replace(".md", "_report.html")
+                        if os.path.exists(html_report):
+                            print(f"\n🌐 Opening HTML report in browser...")
+                            webbrowser.open(f"file://{os.path.abspath(html_report)}")
                     
                     return True
                         
