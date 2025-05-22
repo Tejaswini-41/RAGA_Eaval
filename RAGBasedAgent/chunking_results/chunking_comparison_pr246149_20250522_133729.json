@@ -1,0 +1,156 @@
+{
+  "timestamp": "2025-05-22 13:34:26",
+  "pr_number": 246149,
+  "baseline_review_length": 2505,
+  "baseline_review": "\n<think>\nOkay, let me tackle this PR analysis. First, I need to look at all the changes listed. The user provided a diff across several files related to attaching and detaching prompts in the chat feature. \n\nStarting with the Key Changes Summary, the PR is about replacing attachPrompts with attachPrompt, which now returns an IAttachResult. That implies moving from handling multiple prompts at once to a single prompt, adding details like whether it was previously attached. Also, there's a new detachPrompt function introduced, handling removal of prompts. The chatPromptAttachmentsCollection now has an add method that returns a boolean indicating if the URI was already present. So the core change is moving from a multi-attachment approach to a more granular, single prompt handling with added state tracking.\n\nNext, looking at the File Changes. The code in chatAttachPromptAction.ts switches from import and usage of attachPrompts to attachPrompt. In chatRunPromptAction.ts, they added imports...",
+  "strategies": {
+    "hybrid": {
+      "review": "# PR Review with Hybrid Chunking\n\n## Chunking Strategy: Hybrid\n\n## Summary\n- The function `attachPrompts` has been renamed to `attachPrompt` to reflect its new functionality of attaching a single prompt. This change affects files:\n- The provided PR appears to be related to refactoring and improving type safety in the context of chat attachments and prompts. The key changes include:\n- `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts`\n- `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts`\n- A new interface `IAttachResult` is introduced to define the return type of `attachPrompt`. This change is in:\n- `src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts`\n*   Introduction of a new interface `IAttachResult` to define the return type of the `attachPrompt` function.\n- `src/vs/workbench/contrib/chat/browser/cha...",
+      "review_length": 3836,
+      "metrics": {
+        "Relevance": 0.6799327731132507,
+        "Accuracy": 0.6,
+        "Groundedness": 0.7,
+        "Completeness": 0.6,
+        "Faithfulness": 0.0,
+        "ContextualPrecision": 1.0,
+        "AnswerRelevance": 0.48999999999999994,
+        "BLEU": 0.055657444753663604,
+        "ROUGE": 0.16628175519630486,
+        "Overall": 0.617
+      },
+      "chunking_stats": {
+        "success": true,
+        "current_pr_chunks": 5,
+        "similar_pr_chunks": 11,
+        "total_chunks": 16
+      },
+      "processing_time": 53.858012676239014
+    },
+    "semantic": {
+      "review": "# PR Review with Semantic Chunking\n\n## Chunking Strategy: Semantic\n\n## Summary\n- The current PR involves changes to the `chatRunPromptAction.ts` file, specifically in how the `runAttachPromptAction` function is utilized. The primary change is a refactor to use `attachPrompt` and `detachPrompt` functions from `./dialogs/askToSelectPrompt/utils/` instead of directly importing and calling `runAttachPromptAction`.\n- The current PR introduces changes to the `attachPrompt` function in `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts`. Key changes include:\n- Replacing the direct call to `runAttachPromptAction` with a call to `attachPrompt`, which involves creating an instance of `IViewsService` and handling the attachment of prompts in a more modular way.\n- **Purpose**: The purpose appears to be improving modularity, potentially enhancing maintainability, and aligning the code with newer or preferred patterns for handling pro...",
+      "review_length": 4671,
+      "metrics": {
+        "Relevance": 0.679172933101654,
+        "Accuracy": 0.7,
+        "Groundedness": 0.7,
+        "Completeness": 0.6,
+        "Faithfulness": 0.0,
+        "ContextualPrecision": 1.0,
+        "AnswerRelevance": 0.69,
+        "BLEU": 0.06274689639716802,
+        "ROUGE": 0.1973550356052899,
+        "Overall": 0.663
+      },
+      "chunking_stats": {
+        "success": true,
+        "current_pr_chunks": 8,
+        "similar_pr_chunks": 9,
+        "total_chunks": 17,
+        "chunker_type": "semantic"
+      },
+      "processing_time": 39.037535667419434
+    },
+    "fixed": {
+      "review": "# PR Review with Fixed Chunking\n\n## Chunking Strategy: Fixed\n\n## File Changes\n- 3. **Attaching and detaching prompts**: The introduction of `attachPrompt` and `detachPrompt` functions seems to streamline the process of handling prompts. The `attachPrompt` function now returns an object containing the widget and a boolean indicating whether the prompt was already attached. The `detachPrompt` function is used to detach the prompt if it was not already attached.\n- 2. **Updating function signature**: A function signature change from `Promise<void>` to `Promise<IChatWidget>` indicates that the function now returns a chat widget object. This change facilitates better control and access to the chat widget's properties and methods.\n- 1. **Importing dependencies**: The PR imports `IChatWidget`, `attachPrompt`, `detachPrompt`, and `IViewsService` from various modules. This expansion of imports is likely intended to provide the necessary functionality for the new attachment and detachment logic.\n...",
+      "review_length": 2270,
+      "metrics": {
+        "Relevance": 0.5758901834487915,
+        "Accuracy": 0.7,
+        "Groundedness": 0.6,
+        "Completeness": 0.3,
+        "Faithfulness": 0.0,
+        "ContextualPrecision": 0.0,
+        "AnswerRelevance": 0.06999999999999999,
+        "BLEU": 0.05401157445454033,
+        "ROUGE": 0.2088235294117647,
+        "Overall": 0.27
+      },
+      "chunking_stats": {
+        "success": true,
+        "current_pr_chunks": 7,
+        "similar_pr_chunks": 10,
+        "total_chunks": 17,
+        "chunker_type": "fixed",
+        "chunk_size": 800,
+        "chunk_overlap": 100
+      },
+      "processing_time": 46.29502320289612
+    },
+    "hierarchical": {
+      "review": "# PR Review with Hierarchical Chunking\n\n## Chunking Strategy: Hierarchical\n\n",
+      "review_length": 76,
+      "metrics": {
+        "Relevance": 0.16009074449539185,
+        "Accuracy": 1.0,
+        "Groundedness": 0.0,
+        "Completeness": 0.0,
+        "Faithfulness": 0.5,
+        "ContextualPrecision": 0.0,
+        "AnswerRelevance": 0.0,
+        "BLEU": 0.04456882760699064,
+        "ROUGE": 0.010230179028132991,
+        "Overall": 0.267
+      },
+      "chunking_stats": {
+        "success": true,
+        "current_pr_chunks": 10,
+        "similar_pr_chunks": 15,
+        "total_chunks": 25,
+        "parent_chunks": 1,
+        "child_chunks": 9,
+        "chunker_type": "hierarchical"
+      },
+      "processing_time": 29.7687406539917
+    }
+  },
+  "best_strategy": "semantic",
+  "best_score": 0.663,
+  "comparison_table": [
+    {
+      "strategy": "semantic",
+      "name": "Pure Semantic Chunking",
+      "overall_score": 0.663,
+      "faithfulness": 0.0,
+      "answer_relevancy": 0,
+      "context_precision": 0,
+      "context_recall": 0,
+      "chunk_count": 17,
+      "processing_time": 39.037535667419434
+    },
+    {
+      "strategy": "hybrid",
+      "name": "Hybrid Semantic Chunking",
+      "overall_score": 0.617,
+      "faithfulness": 0.0,
+      "answer_relevancy": 0,
+      "context_precision": 0,
+      "context_recall": 0,
+      "chunk_count": 16,
+      "processing_time": 53.858012676239014
+    },
+    {
+      "strategy": "fixed",
+      "name": "Fixed Size Chunking",
+      "overall_score": 0.27,
+      "faithfulness": 0.0,
+      "answer_relevancy": 0,
+      "context_precision": 0,
+      "context_recall": 0,
+      "chunk_count": 17,
+      "processing_time": 46.29502320289612
+    },
+    {
+      "strategy": "hierarchical",
+      "name": "Hierarchical Chunking",
+      "overall_score": 0.267,
+      "faithfulness": 0.5,
+      "answer_relevancy": 0,
+      "context_precision": 0,
+      "context_recall": 0,
+      "chunk_count": 25,
+      "processing_time": 29.7687406539917
+    }
+  ],
+  "recommendations": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. [violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerMinutePerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-1.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 15\n}\n, links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, retry_delay {\n  seconds: 30\n}\n]"
+}

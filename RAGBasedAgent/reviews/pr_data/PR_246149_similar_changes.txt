@@ -1,16 +1,4 @@
 
---- Similar PR #249512 ---
-File: src/vs/workbench/contrib/chat/electron-sandbox/actions/voiceChatActions.ts
-Before:
-				detail: error && !isCancellationError(error) ? toErrorMessage(error) : undefined,
-After:
-			if (isCancellationError(error)) {
-				return;
-			}
-
-				detail: toErrorMessage(error),
-
-
 --- Similar PR #249473 ---
 File: src/vs/workbench/contrib/chat/browser/attachments/implicitContextAttachment.ts
 Before:
@@ -36,35 +24,106 @@ import { ChatAttachmentModel } from '../chatAttachmentModel.js';
 		private readonly attachmentModel: ChatAttachmentModel,
 		this.domNode.classList.add('disabled');
 		const range ...[truncated]
---- Similar PR #249450 ---
+--- Similar PR #249497 ---
+File: src/vs/workbench/api/common/extHostLanguageModelTools.ts
+Before:
+					title: result.confirmationMessages.title,
+					title: result.confirmationMessages.title,
+After:
+					title: typeof result.confirmationMessages.title === 'string' ? result.confirmationMessages.title : typeConvert.MarkdownString.from(result.confirmationMessages.title),
+					title: typeof result.confirmationMessages.title === 'string' ? result.confirmationMessages.title : typeConvert.MarkdownString.from(result.confirmationMessages.title),
+
 File: src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts
 Before:
-			input = v.toolSpecificData?.kind === 'terminal' ? v.toolSpecificData.command : JSON.stringify(v.toolSpecificData.rawInput);
+					toolInvocationHint += localize('toolCompletedHint', "Tool {0} completed.", invocation.confirmationMessages?.title);
 After:
-			input = v.toolSpecificData?.kind === 'terminal'
-				? v.toolSpecificData.command
-				: v.toolSpecificData?.kind === 'extensions'
-					? JSON.stringify(v.toolSpecificData.extensions)
-					: JSON.stringify(v.toolSpecificData.rawInput);
+					toolInvocationHint += localize('toolCompletedHint', "Tool {0} completed.", typeof invocation.confirmationMessages?.title === 'string' ? invocation.confirmationMessages?.title : invocation.confirmationMessages?.title.value);
 
-File: src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts
+File: src/vs/workbench/contrib/chat/browser/chatContentParts/chatConfirmationWidget.ts
+Before:
+		title: string,
+		title: string,
+		title: string,
 After:
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+		title: string | IMarkdownString,
+		title: string | IMarkdownString,
+		title: string | IMarkdownString,
 
-import * as dom from '../../../../../../base/browser/dom.js';
-import { localize } from '../../../../../../nls.js';
-import { IContextKeyService } from '../../../../../../platform/contextkey/common/contextkey.js';
-import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
-import { IKeybindingService } from '../../../../../../platform/keybinding/common/keybinding.js';
-import { ChatContextKeys } from '../../../common/chatContextKeys.js';
-import { IChatToolInvocation } from '../../../common/chatService.js';
-import { CancelChatActionId } from '../../actions/chatExecuteActions.js';
-import { AcceptToolConfirmationActionId } from '../../actions/chatToolActions.js';
-import { IChatCodeBlockInfo, IChatWidgetService } from '../../chat.js';
-import { ChatConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
-import { IChatContentPartRenderContext } from '../chatContentParts.js';
-import { ChatExtensionsContentPart } from '../chatExtensionsContentPart.js';
-import { BaseChatToolInvocationSubPart } ...[truncated]
+File: src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts
+Before:
+				ariaLabel: title
+After:
+				ariaLabel: typeof title === 'string' ? title : title.value
+
+File: src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
+Before:
+					ariaLabel: title
+						ariaLabel: toolInvocation.confirmationMessages.title
+After:
+					ariaLabel: typeof title === 'string' ? title : title.value
+						ariaLabel: typeof toolInvocation.confirmationMessages.title === 'string' ? toolInvocation.confirmationMessages.title : toolInvocation.confirmationMessages.title.value
+
+File: src/vs/workbench/contrib/chat/browser/languageModelToolsService.ts
+Before:
+					const result = await this._dialogService.conf...[truncated]
+--- Similar PR #249469 ---
+File: src/vs/workbench/contrib/chat/browser/chatWidget.ts
+Before:
+import { pick } from '../../../../base/common/arrays.js';
+import { isLocation, Location } from '../../../../editor/common/languages.js';
+		if (!attachedContext.some(variable => isPromptFileChatVariable(variable) && isEqual(toUri(variable), promptPath.uri))) {
+			.filter(pick('isRoot'));
+		const promptUris = promptFileVariables.map(toUri);
+		assert(
+			this.inputPart.currentMode === ChatMode.Agent,
+			`Chat mode must be 'agent' when there are 'tools' defined, got ${this.inputPart.currentMode}.`,
+		);
+			.map(pick('id'));
+			.filter(hasAddressableValue)
+			.map(toUri);
+/**
+ * Type for any "addressable" object - i.e., an object that has
+ * the `value` property that is either a {@link URI} or a {@link Location}.
+ */
+export type TAddressable<T extends object> = T & { value: URI | Location };
+
+/**
+ * Check if provided object is "addressable" - i.e., has the `value`
+ * property that is either a {@link URI} or a {@link Location}.
+ */
+const hasAddressableValue = <T extends object>(
+	thing: T,
+): thing is TAddressable<T> => {
+	if ((!thing) || (('value' in thing) === false)) {
+		return false;
+	}
+
+	if (URI.isUri(thing.value) || isLocation(thing.value)) {
+		return true;
+	}
+
+	return false;
+};
+
+/**
+ * Returns URI of a provided "addressable" object.
+ */
+const toUri = <T extends object>(
+	thing: TAddressable<T>,
+): URI => {
+	const { value } = thing;
+
+	return URI.isUri(value)
+		? value
+		: value.uri;
+};
+After:
+		if (!attachedContext.some(variable => isPromptFileChatVariable(variable) && isEqual(IChatRequestVariableEntry.toUri(variable), promptPath.uri))) {
+			.filter(e => e.isRoot);
+		const promptUris = promptFileVariables.map(IChatRequestVariableEntry.toUri).filter(isDefined);
+			// NOTE this is a prompt and therefore not localized
+		assert(this.inputPart.currentMode === ChatMode.Agent, `Chat mode must be 'agent' when there are 'tools' defined, got ${this.inputPart.currentMode}.`);
+
+			.map(tool => tool.id);
+
+			.map(...[truncated]
