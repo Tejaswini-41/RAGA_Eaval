@@ -15,6 +15,9 @@ from Confidence_Scorer import enhance_review_with_confidence_scores
 from chunking_advice import ChunkingAdvisor  # Assuming this is the correct import path
 import uuid
 import time
+from hybrid_chunker import HybridSemanticChunker
+from chunked_review_generator import ChunkedReviewGenerator
+import asyncio
 
 # Global constants for repository settings
 REPO_OWNER = 'microsoft'
@@ -27,7 +30,9 @@ PR_NUMBER = 246149
 
 def generate_session_id():
     """Generate a unique session ID"""
-    return f"session_{int(time.time())}_{str(uuid.uuid4())[:8]}"
+    timestamp = int(time.time())
+    random_id = uuid.uuid4().hex[:8]  # Use hex representation which is alphanumeric
+    return f"session_{timestamp}_{random_id}"
 
 def setup_environment():
     """Setup environment and check required variables"""
@@ -148,6 +153,139 @@ async def run_rag_review(repo_owner, repo_name, pr_number):
     print("\n✅ RAG-based review process completed successfully!")
     return review
 
+async def run_chunked_rag_review(repo_owner, repo_name, pr_number):
+    """Run the RAG-based PR review process with hybrid semantic chunking"""
+    print(f"🚀 Starting chunked RAG-based review for PR #{pr_number} in {repo_owner}/{repo_name}")
+    
+    # Try to get existing data from previous session
+    print("\n📦 Step 1: Getting PR data...")
+    current_pr_changes = None
+    similar_prs_changes = None
+    
+    # Check if we have existing PR data from a previous session
+    stored_results = load_stored_prompts(session_id)
+    
+    if stored_results:
+        try:
+            print(f"\n📂 Using existing PR data from session {session_id}")
+            
+            # Get PR data from existing session
+            current_pr_changes = stored_results.get("current_pr_changes")
+            similar_prs_changes = stored_results.get("similar_prs_changes", [])
+            
+            if current_pr_changes and similar_prs_changes:
+                print(f"✅ Loaded existing PR data ({len(current_pr_changes)} chars)")
+                print(f"✅ Loaded {len(similar_prs_changes)} similar PRs")
+            else:
+                print("⚠️ Incomplete data in stored session")
+        except Exception as e:
+            print(f"⚠️ Error reading session data: {e}")
+    
+    # If no existing data, fetch it fresh
+    if not current_pr_changes or not similar_prs_changes:
+        print("\n⚙️ Fetching fresh PR data...")
+        
+        # Use the fetch_pr_data helper function to get data
+        current_pr_changes, similar_prs_changes = await fetch_pr_data(repo_owner, repo_name, pr_number)
+        
+        if not current_pr_changes or not similar_prs_changes:
+            print("❌ Failed to get PR data")
+            return
+    
+    # Step 2: Apply hybrid semantic chunking for review generation
+    print("\n🧩 Step 2: Applying hybrid semantic chunking and generating review...")
+    
+    # Create a valid ChromaDB collection name (alphanumeric only)
+    collection_name = f"chunks{pr_number}_{uuid.uuid4().hex[:8]}"
+    
+    # Create generator and process PR with chunking
+    generator = ChunkedReviewGenerator(chunk_collection_name=collection_name)
+    
+    result = await generator.process_pr_with_chunking(
+        current_pr_changes, 
+        similar_prs_changes,
+        pr_number
+    )
+    
+    if not result.get("success"):
+        print(f"❌ Failed to generate chunked review: {result.get('error')}")
+        return
+    
+    chunked_review = result.get("chunked_review")
+    best_model = result.get("best_model")
+    model_metrics = result.get("model_metrics")
+    
+    # No need to display model metrics again - they were already shown during evaluation
+    print("\n✅ Chunked RAG-based review process completed successfully!")
+    
+    # Save results
+    print("\n💾 Saving results...")
+    
+    # Save results and get the correct filepath
+    json_path = save_results({
+        "pr_number": pr_number,
+        "chunked_review": chunked_review,
+        "best_model": best_model,
+        "model_metrics": model_metrics,
+        "chunking_stats": result.get("chunking_stats"),
+        "current_pr_changes": current_pr_changes,
+        "similar_prs_changes": similar_prs_changes
+    }, "chunked_rag_review", session_id)
+
+    # Display the review
+    print("\n📝 Summary of chunked review:")
+    print("-" * 50)
+    # Show a larger preview of the review
+    preview_length = min(1000, len(chunked_review))
+    print(chunked_review[:preview_length] + ("..." if len(chunked_review) > preview_length else ""))
+    print("-" * 50)
+    print(f"\nFull review saved to {json_path}")
+
+    return chunked_review
+
+# Helper function to fetch PR data
+async def fetch_pr_data(repo_owner, repo_name, pr_number):
+    """Fetch PR data including current changes and similar PR changes"""
+    # Step 1: Fetch repository PRs and store changed files
+    print("\n📦 Step 1: Fetching pull requests data...")
+    changed_files, pull_requests = fetch_pull_requests(repo_owner, repo_name)
+    
+    if not changed_files or not pull_requests:
+        print("❌ Failed to fetch pull requests")
+        return None, None
+    
+    # Step 2: Create regular embeddings
+    print("\n📊 Step 2: Creating embeddings for PR similarity detection...")
+    _, collection = store_embeddings(changed_files, pull_requests)
+    
+    if not collection:
+        print("❌ Failed to store embeddings")
+        return None, None
+    
+    # Step 3: Query similar PRs
+    print(f"\n🔍 Step 3: Finding similar PRs to PR #{pr_number}...")
+    query_results, pr_files = query_similar_prs(pr_number, repo_owner, repo_name, collection)
+    
+    if not query_results or not pr_files:
+        print("❌ Failed to find similar PRs")
+        return None, None
+    
+    # Get similar PR numbers from results
+    similar_pr_numbers = []
+    for i in range(min(3, len(query_results["metadatas"][0]))):
+        similar_pr = query_results["metadatas"][0][i]["pr_number"]
+        
+        # Don't include the same PR
+        if similar_pr != pr_number:
+            similar_pr_numbers.append(similar_pr)
+    
+    # Step 4: Compare PR changes
+    print(f"\n📈 Step 4: Comparing changes between PR #{pr_number} and {len(similar_pr_numbers)} similar PRs...")
+    current_pr_changes, similar_prs_changes = compare_pr_changes(pr_files, similar_pr_numbers, repo_owner, repo_name)
+    
+    return current_pr_changes, similar_prs_changes
+    
+
 def display_menu():
     """Display the options menu"""
     print("\n" + "="*50)
@@ -160,11 +298,11 @@ def display_menu():
     print("3. 📊 DB chunking Advice")
     print("4. 🧪 Test Chunking Strategy")
     print("5. 💡 Add interactive feedback system for RAGAS improvement")
-  # New option
-    print("6. ❌ Exit")
+    print("6. 🧩 Run review with hybrid semantic chunking")  # New option
+    print("7. ❌ Exit")
 
     print("-"*50)
-    choice = input("\nSelect an option (0-6): ")
+    choice = input("\nSelect an option (0-7): ")
     return choice
 
 # Update the save_results function to handle markdown files
@@ -177,8 +315,12 @@ def save_results(data, prefix, session_id, evaluation_type=None):
         prefix: Prefix for filename
         session_id: Current session ID
         evaluation_type: Type of evaluation (baseline/enhanced)
+    
+    Returns:
+        Absolute path to the saved file
     """
     results_dir = "RAG_based_Analysis_2"
+    # Ensure directory exists
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
     
@@ -203,7 +345,16 @@ def save_results(data, prefix, session_id, evaluation_type=None):
         with open(filepath, "w", encoding='utf-8') as f:
             json.dump(data, f, indent=2)
     
-    return filepath
+    # Return the absolute path that actually exists
+    abs_path = os.path.abspath(filepath)
+    
+    # Verify file exists before returning path
+    if os.path.exists(abs_path):
+        return abs_path
+    else:
+        # If path doesn't exist (shouldn't happen), return the expected path with warning
+        print(f"⚠️ Warning: File may not have been saved correctly at {abs_path}")
+        return abs_path
 
 def get_latest_session_file(session_id=None, evaluation_type=None):
     """Get the most recent file for the current session and evaluation type"""
@@ -740,15 +891,15 @@ if __name__ == "__main__":
                         if model in baseline_metrics:
                             print(f"\n📊 {model.upper()}")
                             print("-" * 90)
-                
+                    
                             for metric in enhanced_metrics[model]:
                                 if metric != "Overall":
                                     baseline = baseline_metrics[model][metric]
                                     enhanced = enhanced_metrics[model][metric]
                                     change = enhanced - baseline
                                     pct_change = (change / baseline * 100) if baseline else 0
-                        
-                                    print(f"{'':<10} | {metric:<15} | {baseline:>8.3f} | {enhanced:>8.3f} | {change:>+8.3f} | {pct_change:>7.1f}% |")
+                            
+                                    print(f"{'':<10} | {metric:<15} | {baseline:>8.3f} | {enhanced:>8.3f} | {change:>+8.3f} | {pct_change:>7.1f}%")
 
                     # Save comprehensive results
                     enhanced_results = {
@@ -760,8 +911,8 @@ if __name__ == "__main__":
                         },
                         "reviews": enhanced_reviews,
                         "metrics_comparison": {
-                            "baseline": baseline_metrics,
-                             "enhanced": enhanced_metrics
+                            "baseline": stored_results["baseline_metrics"],
+                            "enhanced": enhanced_metrics
                         },
                         "best_model": {
                             "baseline": stored_results["best_model"],
@@ -770,19 +921,33 @@ if __name__ == "__main__":
                     }
 
                     enhanced_file = save_results(
-                        enhanced_results, 
-                        "prompt_enhancement", 
+                        enhanced_results,
+                        "prompt_enhancement",
                         stored_results["session_id"],
                         "enhanced"
                     )
-        
                     print(f"\n💾 Enhanced results saved to: {enhanced_file}")
-        
+
+                    # Display comparison of baseline and enhanced metrics
+                    print("\n📈 RAGAS Metrics Comparison:")
+                    print("=" * 90)
+                    print(f"{'Model':<10} | {'Metric':<15} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} | {'% Change':>8} |")
+                    print("=" * 90)
+
+                    baseline_metrics = stored_results["baseline_metrics"]
+
+                    for model in enhanced_metrics:
+                        if model in baseline_metrics:
+                            for metric in enhanced_metrics[model]:
+                                baseline = baseline_metrics[model].get(metric, 0)
+                                enhanced = enhanced_metrics[model].get(metric, 0)
+                                change = enhanced - baseline
+                                pct_change = (change / baseline * 100) if baseline else 0
+
+                                print(f"{model:<10} | {metric:<15} | {baseline:>8.3f} | {enhanced:>8.3f} | {change:>+8.3f} | {pct_change:>7.1f}% |")
+
                 except Exception as e:
                     print(f"❌ Error during enhanced prompt evaluation: {e}")
-                    
-                # except Exception as e:
-                #     print(f"❌ Error during prompt testing: {e}")
             
             # Run the prompt testing
             asyncio.run(test_stored_prompt())
@@ -966,7 +1131,7 @@ if __name__ == "__main__":
                     if overall_pct >= 0:
                         print(f"\n✅ Chunking strategy IMPROVED RAGAS scores by {overall_pct:.1f}%")
                     else:
-                        print(f"\n⚠ The chunking strategy did NOT improve RAGAS scores ({overall_pct:.1f}%).")
+                        print(f"\n⚠️ The chunking strategy did NOT improve RAGAS scores ({overall_pct:.1f}%).")
                     
                     if improvements:
                         print("\nImprovements in:")
@@ -1024,6 +1189,29 @@ if __name__ == "__main__":
             input("\nPress Enter to continue...")
 
         elif choice == "6": 
+            print("\n🧩 Running PR review with hybrid semantic chunking...")
+            
+            # Check if we have an existing session with data
+            if session_id:
+                print(f"\n🔄 Using existing session: {session_id}")
+            else:
+                # Create a new session ID if needed
+                session_id = generate_session_id()
+                print(f"\n🔑 Starting new session with chunking: {session_id}")
+            
+            # Run chunked review (will use existing data if available)
+            review = asyncio.run(run_chunked_rag_review(REPO_OWNER, REPO_NAME, PR_NUMBER))
+            
+            if review:
+                print("\n📝 Summary of chunked review:")
+                print("-" * 50)
+                print(review[:500] + "...")  # Show first 500 chars
+                print("-" * 50)
+                print("\nFull review saved to results directory")
+            
+            input("\nPress Enter to continue...")
+        
+        elif choice == "7": 
             print("\n👋 Exiting the program. Goodbye!")
             exit(0)
         

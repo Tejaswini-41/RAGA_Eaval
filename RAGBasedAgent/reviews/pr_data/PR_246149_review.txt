@@ -1,15 +1,33 @@
+## Summary
 
-<think>
-Okay, let me start analyzing this PR. First, the user provided changes across six files. Let me go through each file change step by step.
+The current PR involves refactoring the code to replace the `attachPrompts` function with `attachPrompt` and introducing a new `detachPrompt` function. The purpose of these changes is to modify the attachment and detachment of prompts to a chat input.
 
-Starting with chatAttachPromptAction.ts. The import changed from attachPrompts to attachPrompt. The function call moved from passing an array to a single file, and the return is now destructuring widget from the result. The attachPrompts function probably handled multiple files before, but now they're using attachPrompt which might handle a single one. That makes sense if they refactored from multiple to single.
+Key changes:
 
-Next, chatRunPromptAction.ts has more changes. They replaced runAttachPromptAction with using attachPrompt and introduced a call to detachPrompt. Also, instead of returning void, it now returns an IChatWidget, which affects function signatures. The widget's acceptInput is called, which might mean the prompt is being processed immediately. The if (wasAlreadyAttached) check is important here to avoid redundant detachment.
+* Replaced `attachPrompts` with `attachPrompt` to attach a single prompt to a chat input.
+* Introduced `detachPrompt` to detach a prompt from a chat input.
+* Modified the return type of `attachPrompt` to include a boolean indicating whether the prompt was already attached.
 
-Looking at askToSelectPrompt.ts: changed from attachPrompts to attachPrompt, and now they're assigning the widget from an object. The result's widget is used as lastActiveWidget, so the return structure changed. Looks like moving from a collection to individual handling.
+## File Changes
 
-The new attachPrompt in chatPromptAttachmentsCollection.ts's add method now returns a boolean indicating if the URI was already present. Before it returned the collection itself, now a boolean. This is critical because the callers like attachPrompt are checking wasAlreadyAttached, which relies on that return value. The code now returns true when already exists, false otherwise. Need to check that all uses of add in other parts handle this correctly.
+The following files need updates:
 
-Wait, in the add method's new code, when a URI is already in the collection, it returns true. The code in the method shows that when the index is not -1 (meaning exists), returns true. So the attachedPrompt's add method returns a boolean indicating existence. The attachPrompt in the attachment's add uses this return value to set wasAlreadyAttached. So that's correct.
+1. `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts`:
+	* Replaced `attachPrompts` with `attachPrompt` (lines 10-12).
+2. `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts`:
+	* Replaced `runAttachPromptAction` with `attachPrompt` and introduced `detachPrompt` (lines 15-30).
+3. `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts`:
+	* Replaced `attachPrompts` with `attachPrompt` (lines 10-12).
+4. `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts`:
+	* Modified the `attachPrompt` function to return an object with `widget` and `wasAlreadyAttached` properties (lines 20-25).
+5. `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts`:
+	* Introduced the `detachPrompt` function (lines 10-20).
+6. `src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts`:
+	* Modified the `add` method to return a boolean indicating whether the attachment already exists (lines 10-15).
 
-But in the chatRunPromptAction.ts, when the attachPrompt is called, it uses wasAlreadyAttached === false to decide to detach. That check seems to use the returned wasAlreadyAttached to determine whether to detach, so that should be okay. But what if removing the widget's prompt later? The code in attachPrompt's UI: if the item was already attached, maybe the UI doesn't need to clean it up
+## Conflicts
+
+Files with high change frequency:
+
+1. `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts`:
+	* This file has been modified in the current PR and may conflict with future changes to the `attachPrompt` function

@@ -1,59 +1,70 @@
 
---- Similar PR #248579 ---
-File: src/vs/workbench/contrib/chat/browser/chatWidget.ts
+--- Similar PR #249512 ---
+File: src/vs/workbench/contrib/chat/electron-sandbox/actions/voiceChatActions.ts
 Before:
-import { IChatFollowup, IChatLocationData, IChatSendRequestOptions, IChatService } from '../common/chatService.js';
-			if (this.lastItem && isResponseVM(this.lastItem) && this.lastItem.isComplete) {
-				this.renderFollowups(this.lastItem.replyFollowups, this.lastItem);
-			} else {
-				this.renderFollowups(undefined);
-			}
-	private async renderFollowups(items: IChatFollowup[] | undefined, response?: IChatResponseViewModel): Promise<void> {
-		this.inputPart.renderFollowups(items, response);
+				detail: error && !isCancellationError(error) ? toErrorMessage(error) : undefined,
 After:
-import { IChatLocationData, IChatSendRequestOptions, IChatService } from '../common/chatService.js';
-			this.renderFollowups();
-	private async renderFollowups(): Promise<void> {
-		if (this.lastItem && isResponseVM(this.lastItem) && this.lastItem.isComplete && this.inputPart.currentMode === ChatMode.Ask) {
-			this.inputPart.renderFollowups(this.lastItem.replyFollowups, this.lastItem);
-		} else {
-			this.inputPart.renderFollowups(undefined, undefined);
-		}
-			this.renderFollowups();
+			if (isCancellationError(error)) {
+				return;
+			}
+
+				detail: toErrorMessage(error),
 
 
---- Similar PR #248568 ---
-File: src/vs/workbench/contrib/chat/browser/chatWidget.ts
+--- Similar PR #249473 ---
+File: src/vs/workbench/contrib/chat/browser/attachments/implicitContextAttachment.ts
 Before:
-import { ICommandService } from '../../../../platform/commands/common/commands.js';
-import { IToggleChatModeArgs, ToggleAgentModeActionId } from './actions/chatExecuteActions.js';
-		@ICommandService private readonly commandService: ICommandService,
-				input = await this.setupChatModeAndTools(input, attachedContext);
-	): Promise<string> {
-			await this.commandService.executeCommand(
-				ToggleAgentModeActionId,
-				{ mode } satisfies IToggleChatModeArgs,
-			);
+import { Button } from '../../../../../base/browser/ui/button/button.js';
+import { getDefaultHoverDelegate } from '../../../../../base/browser/ui/hover/hoverDelegateFactory.js';
+import { IHoverService } from '../../../../../platform/hover/browser/hover.js';
+		@IHoverService private readonly hoverService: IHoverService,
+		this.domNode.classList.toggle('disabled', !this.attachment.enabled);
+		const range = URI.isUri(this.attachment.value) || !this.attachment.isSelection ? undefined : this.attachment.value!.range;
+		const ariaLabel = range ? localize('chat.fileAttachmentWithRange', "Attached {0}, {1}, line {2} to line {3}", attachmentTypeName, friendlyName, range.startLineNumber, range.endLineNumber) : localize('chat.fileAttachment', "Attached {0}, {1}", attachmentTypeName, friendlyName);
+		const hintLabel = localize('hint.label.current', "Current {0}", attachmentTypeName);
+		const hintElement = dom.append(this.domNode, dom.$('span.chat-implicit-hint', undefined, hintLabel));
+		this._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), hintElement, title));
+
+		const buttonMsg = this.attachment.enabled ? localize('disable', "Disable current {0} context", attachmentTypeName) : localize('enable', "Enable current {0} context", attachmentTypeName);
+		const toggleButton = this.renderDisposables.add(new Button(this.domNode, { supportIcons: true, title: buttonMsg }));
+		toggleButton.icon = this.attachment.enabled ? Codicon.eye : Codicon.eyeClosed;
+		this.renderDisposables.add(toggleButton.onDidClick((e) => {
+			e.stopPropagation(); // prevent it from triggering the click handler on the parent immediately after rerendering
+			this.attachment.enabled = !this.attachment.enabled;
 After:
-import { handleModeSwitch } from './actions/chatActions.js';
-				const newInput = await this.setupChatModeAndTools(input, attachedContext);
-				if (newInput === undefined) {
-					return;
-				}
-				input = newInput;
-	): Promise<string | undefined> {
-			const chatModeCheck = await this.instantiationService.invokeFunction(handleModeSwitch, this.inputPart.currentMode, mode, this.viewModel?.model.getRequests().length ?? 0, this.viewModel?.model.editingSession);
-			if (!chatModeCheck) {
-				return undefined;
-			} else if (chatModeCheck.needToClearSession) {
-				this.clear();
-				await this.waitForReady();
-			}
-			this.inputPart.setChatMode(mode);
-
-
---- Similar PR #248580 ---
-File: src/vs/workbench/contrib/chat/browser/chat.contribution.ts
+import { ChatAttachmentModel } from '../chatAttachmentModel.js';
+		private readonly attachmentModel: ChatAttachmentModel,
+		this.domNode.classList.add('disabled');
+		const range ...[truncated]
+--- Similar PR #249450 ---
+File: src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts
+Before:
+			input = v.toolSpecificData?.kind === 'terminal' ? v.toolSpecificData.command : JSON.stringify(v.toolSpecificData.rawInput);
 After:
-			tags: ['preview'],
+			input = v.toolSpecificData?.kind === 'terminal'
+				? v.toolSpecificData.command
+				: v.toolSpecificData?.kind === 'extensions'
+					? JSON.stringify(v.toolSpecificData.extensions)
+					: JSON.stringify(v.toolSpecificData.rawInput);
 
+File: src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts
+After:
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import * as dom from '../../../../../../base/browser/dom.js';
+import { localize } from '../../../../../../nls.js';
+import { IContextKeyService } from '../../../../../../platform/contextkey/common/contextkey.js';
+import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
+import { IKeybindingService } from '../../../../../../platform/keybinding/common/keybinding.js';
+import { ChatContextKeys } from '../../../common/chatContextKeys.js';
+import { IChatToolInvocation } from '../../../common/chatService.js';
+import { CancelChatActionId } from '../../actions/chatExecuteActions.js';
+import { AcceptToolConfirmationActionId } from '../../actions/chatToolActions.js';
+import { IChatCodeBlockInfo, IChatWidgetService } from '../../chat.js';
+import { ChatConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';
+import { IChatContentPartRenderContext } from '../chatContentParts.js';
+import { ChatExtensionsContentPart } from '../chatExtensionsContentPart.js';
+import { BaseChatToolInvocationSubPart } ...[truncated]

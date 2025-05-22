@@ -1,0 +1,64 @@
+{
+  "pr_number": 246149,
+  "chunked_review": "# PR Review with Hybrid Semantic Chunking\n\n",
+  "best_model": "llama",
+  "model_metrics": {
+    "deepseek": {
+      "Relevance": 0.6836931705474854,
+      "Accuracy": 0.9,
+      "Groundedness": 0.8,
+      "Completeness": 0.4,
+      "Faithfulness": 0.5,
+      "ContextualPrecision": 0.5,
+      "AnswerRelevance": 0.59,
+      "BLEU": 0.0638758632930031,
+      "ROUGE": 0.18040737148399608,
+      "Overall": 0.643
+    },
+    "llama": {
+      "Relevance": 0.8040362596511841,
+      "Accuracy": 0.9,
+      "Groundedness": 0.8,
+      "Completeness": 0.6,
+      "Faithfulness": 0.6,
+      "ContextualPrecision": 1.0,
+      "AnswerRelevance": 0.48,
+      "BLEU": 0.1425876976452075,
+      "ROUGE": 0.24564994882292734,
+      "Overall": 0.807
+    },
+    "alibaba": {
+      "Relevance": 0.8104939460754395,
+      "Accuracy": 0.8,
+      "Groundedness": 0.6,
+      "Completeness": 0.6,
+      "Faithfulness": 0.5,
+      "ContextualPrecision": 0.8,
+      "AnswerRelevance": 0.54,
+      "BLEU": 0.06274655310994741,
+      "ROUGE": 0.19019607843137254,
+      "Overall": 0.708
+    }
+  },
+  "chunking_stats": {
+    "success": true,
+    "current_pr_chunks": 5,
+    "similar_pr_chunks": 11,
+    "total_chunks": 16
+  },
+  "current_pr_changes": "File: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts\nBefore:\nimport { attachPrompts, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompts.js';\n\t\t\tconst widget = await attachPrompts(\n\t\t\t\t[{ value: resource }],\nAfter:\nimport { attachPrompt, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompt.js';\n\t\t\tconst { widget } = await attachPrompt(\n\t\t\t\tresource,\n\nFile: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts\nBefore:\nimport { runAttachPromptAction } from './chatAttachPromptAction.js';\n\t): Promise<void> {\n\t\treturn await runAttachPromptAction({\n\t\t\tinNewChat,\n\t\t\tskipSelectionDialog: true,\n\t\t}, commandService);\n\t): Promise<void> {\n\t): Promise<void> {\nAfter:\nimport { IChatWidget } from '../../chat.js';\nimport { attachPrompt } from './dialogs/askToSelectPrompt/utils/attachPrompt.js';\nimport { detachPrompt } from './dialogs/askToSelectPrompt/utils/detachPrompt.js';\nimport { IViewsService } from '../../../../../services/views/common/viewsService.js';\n\t): Promise<IChatWidget> {\n\t\tconst viewsService = accessor.get(IViewsService);\n\t\tconst { widget, wasAlreadyAttached } = await attachPrompt(\n\t\t\t{\n\t\t\t\tinNewChat,\n\t\t\t\tcommandService,\n\t\t\t\tviewsService,\n\t\t\t},\n\t\t);\n\n\t\t// submit the prompt immediately\n\t\tawait widget.acceptInput();\n\n\t\t// detach the prompt immediately, unless was attached\n\t\t// before the action was executed\n\t\tif (wasAlreadyAttached === false) {\n\t\t\tawait detachPrompt(resource, { widget });\n\t\t}\n\n\t\treturn widget;\n\t): Promise<IChatWidget> {\n\t): Promise<IChatWidget> {\n\nFile: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts\nBefore:\nimport { attachPrompts } from './utils/attachPrompts.js';\n\t\t\tlastActiveWidget = await attachPrompts(\n\t\t\t\tselectedItems,\nAfter:\nimport { attachPrompt } from './utils/attachPrompt.js';\n\t\t\tconst attachResult = await attachPrompt(\n\t\t\t\tselectedOption.value,\n\t\t\tlastActiveWidget = attachResult.widget;\n\nFile: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts\nBefore:\nimport { assertDefined, WithUriValue } from '../../../../../../../../../base/common/types.js';\n * Options for the {@link attachPrompts} function.\nexport const attachPrompts = async (\n\tfiles: readonly WithUriValue<Object>[],\n): Promise<IChatWidget> => {\n\tfor (const file of files) {\n\t\twidget\n\t\t\t.attachmentModel\n\t\t\t.promptInstructions\n\t\t\t.add(file.value);\n\t}\n\treturn widget;\nAfter:\nimport { URI } from '../../../../../../../../../base/common/uri.js';\nimport { assertDefined } from '../../../../../../../../../base/common/types.js';\n * Options for the {@link attachPrompt} function.\n/**\n * Return value of the {@link attachPrompt} function.\n */\ninterface IAttachResult {\n\treadonly widget: IChatWidget;\n\treadonly wasAlreadyAttached: boolean;\n}\n\nexport const attachPrompt = async (\n\tfile: URI,\n): Promise<IAttachResult> => {\n\tconst wasAlreadyAttached = widget\n\t\t.attachmentModel\n\t\t.promptInstructions\n\t\t.add(file);\n\treturn { widget, wasAlreadyAttached };\n\nFile: src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts\nAfter:\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\n\nimport { IChatWidget } from '../../../../../chat.js';\nimport { URI } from '../../../../../../../../../base/common/uri.js';\n\n/**\n * Options for the {@link detachPrompt} function.\n */\nexport interface IDetachPromptOptions {\n\t/**\n\t * Chat widget instance to attach the prompt to.\n\t */\n\treadonly widget: IChatWidget;\n}\n\n/**\n * Detaches provided prompts to a chat input.\n */\nexport const detachPrompt = async (\n\tfile: URI,\n\toptions: IDetachPromptOptions,\n): Promise<IChatWidget> => {\n\tconst { widget } = options;\n\n\twidget\n\t\t.attachmentModel\n\t\t.promptInstructions\n\t\t.remove(file);\n\n\treturn widget;\n};\n\nFile: src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts\nBefore:\n\tpublic add(uri: URI): this {\n\t\t\treturn this;\n\t\treturn this;\nAfter:\n\t *\n\t * @returns `true` if the attachment already exists, `false` otherwise.\n\tpublic add(uri: URI): boolean {\n\t\t\treturn true;\n\t\treturn false;\n\n",
+  "similar_prs_changes": [
+    {
+      "pr_number": 249512,
+      "changes": "File: src/vs/workbench/contrib/chat/electron-sandbox/actions/voiceChatActions.ts\nBefore:\n\t\t\t\tdetail: error && !isCancellationError(error) ? toErrorMessage(error) : undefined,\nAfter:\n\t\t\tif (isCancellationError(error)) {\n\t\t\t\treturn;\n\t\t\t}\n\n\t\t\t\tdetail: toErrorMessage(error),\n\n"
+    },
+    {
+      "pr_number": 249473,
+      "changes": "File: src/vs/workbench/contrib/chat/browser/attachments/implicitContextAttachment.ts\nBefore:\nimport { Button } from '../../../../../base/browser/ui/button/button.js';\nimport { getDefaultHoverDelegate } from '../../../../../base/browser/ui/hover/hoverDelegateFactory.js';\nimport { IHoverService } from '../../../../../platform/hover/browser/hover.js';\n\t\t@IHoverService private readonly hoverService: IHoverService,\n\t\tthis.domNode.classList.toggle('disabled', !this.attachment.enabled);\n\t\tconst range = URI.isUri(this.attachment.value) || !this.attachment.isSelection ? undefined : this.attachment.value!.range;\n\t\tconst ariaLabel = range ? localize('chat.fileAttachmentWithRange', \"Attached {0}, {1}, line {2} to line {3}\", attachmentTypeName, friendlyName, range.startLineNumber, range.endLineNumber) : localize('chat.fileAttachment', \"Attached {0}, {1}\", attachmentTypeName, friendlyName);\n\t\tconst hintLabel = localize('hint.label.current', \"Current {0}\", attachmentTypeName);\n\t\tconst hintElement = dom.append(this.domNode, dom.$('span.chat-implicit-hint', undefined, hintLabel));\n\t\tthis._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), hintElement, title));\n\n\t\tconst buttonMsg = this.attachment.enabled ? localize('disable', \"Disable current {0} context\", attachmentTypeName) : localize('enable', \"Enable current {0} context\", attachmentTypeName);\n\t\tconst toggleButton = this.renderDisposables.add(new Button(this.domNode, { supportIcons: true, title: buttonMsg }));\n\t\ttoggleButton.icon = this.attachment.enabled ? Codicon.eye : Codicon.eyeClosed;\n\t\tthis.renderDisposables.add(toggleButton.onDidClick((e) => {\n\t\t\te.stopPropagation(); // prevent it from triggering the click handler on the parent immediately after rerendering\n\t\t\tthis.attachment.enabled = !this.attachment.enabled;\nAfter:\nimport { ChatAttachmentModel } from '../chatAttachmentModel.js';\n\t\tprivate readonly attachmentModel: ChatAttachmentModel,\n\t\tthis.domNode.classList.add('disabled');\n\t\tconst range ...[truncated]"
+    },
+    {
+      "pr_number": 249450,
+      "changes": "File: src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts\nBefore:\n\t\t\tinput = v.toolSpecificData?.kind === 'terminal' ? v.toolSpecificData.command : JSON.stringify(v.toolSpecificData.rawInput);\nAfter:\n\t\t\tinput = v.toolSpecificData?.kind === 'terminal'\n\t\t\t\t? v.toolSpecificData.command\n\t\t\t\t: v.toolSpecificData?.kind === 'extensions'\n\t\t\t\t\t? JSON.stringify(v.toolSpecificData.extensions)\n\t\t\t\t\t: JSON.stringify(v.toolSpecificData.rawInput);\n\nFile: src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatExtensionsInstallToolSubPart.ts\nAfter:\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\n\nimport * as dom from '../../../../../../base/browser/dom.js';\nimport { localize } from '../../../../../../nls.js';\nimport { IContextKeyService } from '../../../../../../platform/contextkey/common/contextkey.js';\nimport { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';\nimport { IKeybindingService } from '../../../../../../platform/keybinding/common/keybinding.js';\nimport { ChatContextKeys } from '../../../common/chatContextKeys.js';\nimport { IChatToolInvocation } from '../../../common/chatService.js';\nimport { CancelChatActionId } from '../../actions/chatExecuteActions.js';\nimport { AcceptToolConfirmationActionId } from '../../actions/chatToolActions.js';\nimport { IChatCodeBlockInfo, IChatWidgetService } from '../../chat.js';\nimport { ChatConfirmationWidget, IChatConfirmationButton } from '../chatConfirmationWidget.js';\nimport { IChatContentPartRenderContext } from '../chatContentParts.js';\nimport { ChatExtensionsContentPart } from '../chatExtensionsContentPart.js';\nimport { BaseChatToolInvocationSubPart } ...[truncated]"
+    }
+  ]
+}
