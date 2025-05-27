@@ -1,26 +1,28 @@
-# Analysis of the Provided PR
+## Code Review: PR Analyzing Prompt Attachment and Detachment
 
-## Summary - Key Changes and Their Purpose
-The current PR involves refactoring and updating the chat functionality in the VS Workbench, specifically focusing on attaching and detaching prompts. The key changes include:
+### 1. Summary - Key Changes and Their Purpose
 
-1. **Refactoring `attachPrompts` to `attachPrompt`**: The function `attachPrompts` which handled attaching multiple prompts has been updated to `attachPrompt` to handle attaching a single prompt. This change aims to simplify the prompt attachment process.
+The primary purpose of this PR is to refactor the handling of prompt attachments and detachments in the chat widget. The changes move from a `attachPrompts` function that handles multiple files to an `attachPrompt` function handling single files. A new `detachPrompt` function is introduced for removing attachments. The `attachPrompt` function now returns an object indicating whether the prompt was already attached. The changes also impact how the `chatRunPromptAction` interacts with prompt attachment and detachment. Finally, the `chatPromptAttachmentsCollection.add` method now returns a boolean indicating whether the attachment was successfully added.
 
-2. **Introduction of `detachPrompt` Function**: A new function `detachPrompt` has been introduced to handle detaching prompts from a chat input. This addition provides a clear and separate functionality for detaching prompts.
+### 2. File Changes - Specific Files Needing Updates
 
-3. **Updates to `chatPromptAttachmentsCollection`**: The `add` method in `chatPromptAttachmentsCollection` now returns a boolean indicating whether the attachment already exists. This change helps in determining if an attachment was newly added or already present.
+The following files have been modified:
 
-## File Changes - Specific Files Needing Updates
-The following files have been updated:
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts`
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts`
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts`
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts`
+* `src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts`
+* `src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts`
 
-1. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts**: Updated to use `attachPrompt` instead of `attachPrompts`.
-2. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts**: Significant updates to use `attachPrompt` and introduce detaching functionality.
-3. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts**: Updated to use `attachPrompt`.
-4. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts**: Refactored from `attachPrompts` to `attachPrompt`.
-5. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts**: New file for detaching prompts.
-6. **src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts**: Updated `add` method to return a boolean.
+### 3. Conflicts - Files with High Change Frequency
 
-## Conflicts - Files with High Change Frequency
-Based on the provided similar PRs, files that might have high change frequency or are related to chat functionality include:
+Based on the provided information, there are no directly identified conflicts within this specific PR. However, the significant changes in prompt handling might indirectly conflict with other PRs modifying the `chat` widget or its associated models. The similar PRs provided show frequent changes to related components, raising the potential for integration issues.
 
-- **src/vs/workbench/contrib/chat/browser/chatWidget.ts**: Frequently updated due to ongoing chat functionality enhancements.
-- **src/vs/workbench/cont
+### 4. Risks - Potential Breaking Changes with Evidence
+
+* **`chatAttachPromptAction.ts` (Lines 5-6):** 
+  The change from `attachPrompts` to `attachPrompt` is a significant change. The original code likely handled multiple resources simultaneously. The new code only handles a single resource (`resource`). This is a potential breaking change if the calling code expected multiple attachments to be handled in one action.
+
+* **`chatRunPromptAction.ts` (Lines 6-20):** 
+  This

@@ -375,57 +375,6 @@ Be specific with file names, function names, and line numbers when possible.
         
         print("─" * 80)
 
-    async def improve_review(self, current_pr_changes, similar_pr_changes, best_model, model_metrics):
-        """Handle menu-driven improvements for review generation"""
-        
-        while True:
-            print("\n Review Improvement Options:")
-            print("0. 🔄Run standard review (default)")
-            print("1. 🔍 Add confidence scores to review suggestions")
-            print("2. 📝 Use enhanced prompts for better specificity")
-            print("3. 📊 Implement improved DB chunking")
-            print("4. 💡 Add interactive feedback system for RAGAS improvement (Coming Soon)")
-            print("5. ❌ Exit")
-            
-            try:
-                choice = input("\nSelect improvement option (0-5): ")
-                
-                if choice == "0":
-                    return await self.generate_detailed_pr_review(
-                        {"changes": current_pr_changes},
-                        {"changes": similar_pr_changes},
-                        best_model
-                    )
-                    
-                elif choice == "1":
-                    return await self._generate_review_with_confidence(
-                        current_pr_changes, similar_pr_changes, best_model, model_metrics
-                    )
-                    
-                elif choice == "2":
-                    return await self._generate_review_with_enhanced_prompt(
-                        current_pr_changes, similar_pr_changes, best_model
-                    )
-                    
-                elif choice == "3":
-                    return await self._generate_review_with_chunking(
-                        current_pr_changes, similar_pr_changes, best_model
-                    )
-                    
-                elif choice == "4":
-                    print("\n⚠️ Interactive feedback system coming soon!")
-                    continue
-                    
-                elif choice == "5":
-                    print("\n👋 Exiting improvement menu...")
-                    return None
-                    
-                else:
-                    print("\n❌ Invalid choice! Please select 0-5")
-                    
-            except Exception as e:
-                print(f"\n❌ Error: {str(e)}")
-                continue
 
     async def _generate_review_with_confidence(self, current_pr_changes, similar_pr_changes, model_name, metrics):
         """Generate review with confidence scores for each suggestion"""
