@@ -7,12 +7,9 @@ from datetime import datetime
 # Import existing components
 from review_generator import generate_review
 from prompts.review_prompts import ReviewPrompts
-from review_evaluator import ReviewEvaluator  # Reuse the existing evaluator
-from hybrid_chunker import HybridSemanticChunker
-from semantic_chunker import SemanticChunker
-from hierarchical_chunker import HierarchicalChunker
-from fixed_size_chunker import FixedSizeChunker
-from models.model_factory import ModelFactory  # Import the factory
+from review_evaluator import ReviewEvaluator  
+from models.model_factory import ModelFactory 
+from chunking import FixedSizeChunker, SemanticChunker, HybridSemanticChunker, HierarchicalChunker
 
 class ChunkedReviewGenerator:
     """

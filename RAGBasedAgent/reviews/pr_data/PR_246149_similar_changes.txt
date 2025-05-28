@@ -1,129 +1,124 @@
 
---- Similar PR #249473 ---
-File: src/vs/workbench/contrib/chat/browser/attachments/implicitContextAttachment.ts
+--- Similar PR #249878 ---
+File: src/vs/workbench/contrib/chat/browser/actions/chatToolActions.ts
 Before:
-import { Button } from '../../../../../base/browser/ui/button/button.js';
-import { getDefaultHoverDelegate } from '../../../../../base/browser/ui/hover/hoverDelegateFactory.js';
-import { IHoverService } from '../../../../../platform/hover/browser/hover.js';
-		@IHoverService private readonly hoverService: IHoverService,
-		this.domNode.classList.toggle('disabled', !this.attachment.enabled);
-		const range = URI.isUri(this.attachment.value) || !this.attachment.isSelection ? undefined : this.attachment.value!.range;
-		const ariaLabel = range ? localize('chat.fileAttachmentWithRange', "Attached {0}, {1}, line {2} to line {3}", attachmentTypeName, friendlyName, range.startLineNumber, range.endLineNumber) : localize('chat.fileAttachment', "Attached {0}, {1}", attachmentTypeName, friendlyName);
-		const hintLabel = localize('hint.label.current', "Current {0}", attachmentTypeName);
-		const hintElement = dom.append(this.domNode, dom.$('span.chat-implicit-hint', undefined, hintLabel));
-		this._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), hintElement, title));
+			widget.input.selectedToolsModel.update(disableToolSets, disableTools);
 
-		const buttonMsg = this.attachment.enabled ? localize('disable', "Disable current {0} context", attachmentTypeName) : localize('enable', "Enable current {0} context", attachmentTypeName);
-		const toggleButton = this.renderDisposables.add(new Button(this.domNode, { supportIcons: true, title: buttonMsg }));
-		toggleButton.icon = this.attachment.enabled ? Codicon.eye : Codicon.eyeClosed;
-		this.renderDisposables.add(toggleButton.onDidClick((e) => {
-			e.stopPropagation(); // prevent it from triggering the click handler on the parent immediately after rerendering
-			this.attachment.enabled = !this.attachment.enabled;
+
 After:
-import { ChatAttachmentModel } from '../chatAttachmentModel.js';
-		private readonly attachmentModel: ChatAttachmentModel,
-		this.domNode.classList.add('disabled');
-		const range ...[truncated]
---- Similar PR #249497 ---
-File: src/vs/workbench/api/common/extHostLanguageModelTools.ts
+			widget.input.selectedToolsModel.disable(disableToolSets, disableTools, false);
+
+File: src/vs/workbench/contrib/chat/browser/actions/chatToolPicker.ts
 Before:
-					title: result.confirmationMessages.title,
-					title: result.confirmationMessages.title,
+			onUpdate?.(result);
 After:
-					title: typeof result.confirmationMessages.title === 'string' ? result.confirmationMessages.title : typeConvert.MarkdownString.from(result.confirmationMessages.title),
-					title: typeof result.confirmationMessages.title === 'string' ? result.confirmationMessages.title : typeConvert.MarkdownString.from(result.confirmationMessages.title),
+			if (onUpdate) {
+				let didChange = toolsEntries.size !== result.size;
+				for (const [key, value] of toolsEntries) {
+					if (didChange) {
+						break;
+					}
+					didChange = result.get(key) !== value;
+				}
 
-File: src/vs/workbench/contrib/chat/browser/chatAccessibilityProvider.ts
-Before:
-					toolInvocationHint += localize('toolCompletedHint', "Tool {0} completed.", invocation.confirmationMessages?.title);
+				if (didChange) {
+					onUpdate(result);
+				}
+			}
+
+File: src/vs/workbench/contrib/chat/browser/chatInputPart.ts
 After:
-					toolInvocationHint += localize('toolCompletedHint', "Tool {0} completed.", typeof invocation.confirmationMessages?.title === 'string' ? invocation.confirmationMessages?.title : invocation.confirmationMessages?.title.value);
+		this.selectedToolsModel.resetSessionEnablementState();
 
-File: src/vs/workbench/contrib/chat/browser/chatContentParts/chatConfirmationWidget.ts
+
+File: src/vs/workbench/contrib/chat/browser/chatSelectedTools.ts
 Before:
-		title: string,
-		title: string,
-		title: string,
+import { autorun, IObservable, observableFromEvent, ObservableMap, transaction } from '../../../../base/common/observable.js';
+	disabledToolSets?: readonly string[];
+	disabledTools?: readonly string[];
+		@ILanguageModelToolsService toolsService: ILanguageModelToolsService,
+		this._allTools = observableFromEvent(toolsService.onDidChangeTools, () => Array.from(toolsService.getTools()));
+		const disabledDataObs = this._selectedTools.map(data => {
+			return (data.disabledToolSets?.length || data.disabledTools?.length)
+				? {
+					toolSetIds: new Set(data.disabledToolSets),
+					toolIds: new Set(data.disabledTools),
+				: undefined;
+			const toolSets = toolsService.toolSets.read(r);
+					// only homogenous tool sets can shallow tools
+	selectOnly(toolIds: readonly string[]): void {
+		const uniqueTools = new Set(toolIds);
+		const disabledTools = this._allTools.get().filter(tool => !uniqueTools.has(tool.id));
+		this.update([], disabledTools);
+	update(disabledToolSets: readonly ToolSet[], disableTools: readonly IToolData[]): void {
+		this._selectedTools.set({
 After:
-		title: string | IMarkdownString,
-		title: string | IMarkdownString,
-		title: string | IMarkdownString,
-
-File: src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatTerminalToolSubPart.ts
+import { autorun, derived, IObservable, observableFromEvent, ObservableMap, observableValue, transacti...[truncated]
+--- Similar PR #249895 ---
+File: src/vs/workbench/contrib/chat/browser/actions/chatContext.ts
 Before:
-				ariaLabel: title
+
 After:
-				ariaLabel: typeof title === 'string' ? title : title.value
+			if (res === 0) {
+				res = a.toolInfo.label.localeCompare(b.toolInfo.label);
+			}
 
-File: src/vs/workbench/contrib/chat/browser/chatContentParts/toolInvocationParts/chatToolConfirmationSubPart.ts
+File: src/vs/workbench/contrib/chat/browser/actions/chatToolPicker.ts
 Before:
-					ariaLabel: title
-						ariaLabel: toolInvocation.confirmationMessages.title
+				label: toolSetOrTool.source.label,
 After:
-					ariaLabel: typeof title === 'string' ? title : title.value
-						ariaLabel: typeof toolInvocation.confirmationMessages.title === 'string' ? toolInvocation.confirmationMessages.title : toolInvocation.confirmationMessages.title.value
+				label: localize('ext', 'Extension: {0}', toolSetOrTool.source.label),
 
-File: src/vs/workbench/contrib/chat/browser/languageModelToolsService.ts
+File: src/vs/workbench/contrib/chat/common/languageModelToolsService.ts
 Before:
-					const result = await this._dialogService.conf...[truncated]
---- Similar PR #249469 ---
-File: src/vs/workbench/contrib/chat/browser/chatWidget.ts
-Before:
-import { pick } from '../../../../base/common/arrays.js';
-import { isLocation, Location } from '../../../../editor/common/languages.js';
-		if (!attachedContext.some(variable => isPromptFileChatVariable(variable) && isEqual(toUri(variable), promptPath.uri))) {
-			.filter(pick('isRoot'));
-		const promptUris = promptFileVariables.map(toUri);
-		assert(
-			this.inputPart.currentMode === ChatMode.Agent,
-			`Chat mode must be 'agent' when there are 'tools' defined, got ${this.inputPart.currentMode}.`,
-		);
-			.map(pick('id'));
-			.filter(hasAddressableValue)
-			.map(toUri);
-/**
- * Type for any "addressable" object - i.e., an object that has
- * the `value` property that is either a {@link URI} or a {@link Location}.
- */
-export type TAddressable<T extends object> = T & { value: URI | Location };
-
-/**
- * Check if provided object is "addressable" - i.e., has the `value`
- * property that is either a {@link URI} or a {@link Location}.
- */
-const hasAddressableValue = <T extends object>(
-	thing: T,
-): thing is TAddressable<T> => {
-	if ((!thing) || (('value' in thing) === false)) {
-		return false;
-	}
-
-	if (URI.isUri(thing.value) || isLocation(thing.value)) {
-		return true;
-	}
-
-	return false;
-};
-
-/**
- * Returns URI of a provided "addressable" object.
- */
-const toUri = <T extends object>(
-	thing: TAddressable<T>,
-): URI => {
-	const { value } = thing;
-
-	return URI.isUri(value)
-		? value
-		: value.uri;
-};
+			return { ordinal: 3, label: 'Built-In' };
+			return { ordinal: 1, label: 'MCP Servers' };
+			return { ordinal: 0, label: 'User Defined' };
+			return { ordinal: 2, label: 'Extensions' };
 After:
-		if (!attachedContext.some(variable => isPromptFileChatVariable(variable) && isEqual(IChatRequestVariableEntry.toUri(variable), promptPath.uri))) {
-			.filter(e => e.isRoot);
-		const promptUris = promptFileVariables.map(IChatRequestVariableEntry.toUri).filter(isDefined);
-			// NOTE this is a prompt and therefore not localized
-		assert(this.inputPart.currentMode === ChatMode.Agent, `Chat mode must be 'agent' when there are 'tools' defined, got ${this.inputPart.currentMode}.`);
+import { localize } from '../../../../nls.js';
+			return { ordinal: 1, label: localize('builtin', 'Built-In') };
+			return { ordinal: 2, label: localize('mcp', 'MCP Server: {0}', source.label) };
+			return { ordinal: 0, label: localize('user', 'User Defined') };
+			return { ordinal: 3, label: localize('ext', 'Extension: {0}', source.label) };
 
-			.map(tool => tool.id);
 
-			.map(...[truncated]
+--- Similar PR #249894 ---
+File: src/vs/workbench/contrib/chat/browser/chatAttachmentWidgets.ts
+Before:
+import { IChatRequestPasteVariableEntry, IChatRequestVariableEntry, IElementVariableEntry, INotebookOutputVariableEntry, ISCMHistoryItemVariableEntry, OmittedState } from '../common/chatModel.js';
+After:
+import { IChatRequestPasteVariableEntry, IChatRequestToolEntry, IChatRequestToolSetEntry, IChatRequestVariableEntry, IElementVariableEntry, INotebookOutputVariableEntry, ISCMHistoryItemVariableEntry, OmittedState } from '../common/chatModel.js';
+import { ILanguageModelToolsService, ToolSet } from '../common/languageModelToolsService.js';
+import { Iterable } from '../../../../base/common/iterator.js';
+export class ToolSetOrToolItemAttachmentWidget extends AbstractChatAttachmentWidget {
+	constructor(
+		attachment: IChatRequestToolSetEntry | IChatRequestToolEntry,
+		currentLanguageModel: ILanguageModelChatMetadataAndIdentifier | undefined,
+		options: { shouldFocusClearButton: boolean; supportsDeletion: boolean },
+		container: HTMLElement,
+		contextResourceLabels: ResourceLabels,
+		hoverDelegate: IHoverDelegate,
+		@ILanguageModelToolsService toolsService: ILanguageModelToolsService,
+		@ICommandService commandService: ICommandService,
+		@IOpenerService openerService: IOpenerService,
+		@IHoverService hoverService: IHoverService
+	) {
+		super(attachment, options, container, contextResourceLabels, hoverDelegate, currentLanguageModel, commandService, openerService);
+
+
+		const toolOrToolSet = Iterable.find(toolsService.getTools(), tool => tool.id === attachment.id) ?? Iterable.find(toolsService.toolSets.get(), toolSet => toolSet.id === attachment.id);
+
+		let name = attachment.name;
+		const icon = attachment.icon ?? Codicon.tools;
+
+		if (toolOrToolSet) {
+			name = toolOrToolSet.toolReferenceName ?? name;
+		}
+
+		this.label.setLabel(`$(${icon.id})\u00A0${name}`, undefined);
+
+		this.element.style.cursor = 'pointer';
+		this.element.ariaLabel = localize('chat.attachment', "Attached context, {0}", name);
+
+		...[truncated]

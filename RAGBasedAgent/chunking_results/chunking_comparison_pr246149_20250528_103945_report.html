@@ -1,0 +1,102 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Chunking Strategy Comparison - PR #246149</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .container { max-width: 1200px; margin: 0 auto; }
+                table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+                .chart { margin-bottom: 40px; }
+                .best { background-color: #d4edda; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Chunking Strategy Comparison</h1>
+                <h2>PR #246149 - 2025-05-28 10:39:47</h2>
+                
+                <h3>Comparison Table</h3>
+                <table>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>Overall Score</th>
+                        <th>Faithfulness</th>
+                        <th>Answer Relevancy</th>
+                        <th>Context Precision</th>
+                        <th>Context Recall</th>
+                        <th>Chunks</th>
+                        <th>Time (s)</th>
+                    </tr>
+        
+                    <tr class="best">
+                        <td>Pure Semantic Chunking</td>
+                        <td><b>0.460</b></td>
+                        <td>0.395</td>
+                        <td>0.451</td>
+                        <td>0.600</td>
+                        <td>0.600</td>
+                        <td>18</td>
+                        <td>33.68</td>
+                    </tr>
+            
+                    <tr class="">
+                        <td>Fixed Size Chunking</td>
+                        <td><b>0.339</b></td>
+                        <td>0.300</td>
+                        <td>0.400</td>
+                        <td>0.600</td>
+                        <td>0.600</td>
+                        <td>15</td>
+                        <td>32.93</td>
+                    </tr>
+            
+                    <tr class="">
+                        <td>Hybrid Semantic Chunking</td>
+                        <td><b>0.234</b></td>
+                        <td>0.300</td>
+                        <td>0.400</td>
+                        <td>0.600</td>
+                        <td>0.600</td>
+                        <td>12</td>
+                        <td>31.28</td>
+                    </tr>
+            
+                </table>
+                
+                <div class="chart">
+                    <h3>Overall Scores</h3>
+                    <img src="chunking_comparison_pr246149_20250528_103945_overall_scores.png" alt="Overall Scores Chart" style="max-width:100%;">
+                </div>
+                
+                <div class="chart">
+                    <h3>RAGAS Metrics Comparison</h3>
+                    <img src="chunking_comparison_pr246149_20250528_103945_metrics_radar.png" alt="Metrics Radar Chart" style="max-width:100%;">
+                </div>
+                
+                <div class="chart">
+                    <h3>Processing Time vs. Chunk Count</h3>
+                    <img src="chunking_comparison_pr246149_20250528_103945_time_vs_chunks.png" alt="Processing Time vs Chunk Count" style="max-width:100%;">
+                </div>
+                
+                <h2>Recommendations</h2>
+                <div>
+                    <p>Based on RAGAS metrics evaluation, <b>Pure Semantic Chunking</b> 
+                    is the best chunking strategy for PR #246149 with an overall score of 
+                    <b>0.460</b>.</p>
+                    
+                    <h3>Strategy-specific observations:</h3>
+                    <ul>
+                        <li><b>Semantic Chunking</b>: Preserves natural boundaries in code, good for well-structured PRs.</li>
+                        <li><b>Hybrid Chunking</b>: Balances structure with size, versatile for mixed content PRs.</li>
+                        <li><b>Fixed Size Chunking</b>: Provides consistent sizing, simple and predictable.</li>
+                        <li><b>Hierarchical Chunking</b>: Maintains context hierarchies, good for complex nested structures.</li>
+                    </ul>
+                </div>
+            </div>
+        </body>
+        </html>
+        

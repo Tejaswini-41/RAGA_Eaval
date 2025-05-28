@@ -12,10 +12,10 @@ from prompts.review_prompts import ReviewPrompts
 from improvement_analyzer import analyze_improvements
 from datetime import datetime  # Update the import statement
 from Confidence_Scorer import enhance_review_with_confidence_scores
-from chunking_advice import ChunkingAdvisor  # Assuming this is the correct import path
+from chunking_advice import ChunkingAdvisor  
 import uuid
 import time
-from hybrid_chunker import HybridSemanticChunker
+from chunking import HybridSemanticChunker
 from chunked_review_generator import ChunkedReviewGenerator
 import asyncio
 

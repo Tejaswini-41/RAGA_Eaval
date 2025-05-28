@@ -1,26 +1,35 @@
-# Analysis of the Provided PR
+## Summary
 
-## Summary - Key Changes and Their Purpose
-The current PR involves refactoring and updating the chat functionality in the VS Workbench, specifically focusing on attaching and detaching prompts. The key changes include:
+The current PR involves refactoring the code to replace `attachPrompts` with `attachPrompt` and related changes. The key changes include:
 
-1. **Refactoring `attachPrompts` to `attachPrompt`**: The function `attachPrompts` which handled attaching multiple prompts has been updated to `attachPrompt` to handle attaching a single prompt. This change aims to simplify the prompt attachment process.
+*   Replacing `attachPrompts` with `attachPrompt` to handle attaching a single prompt to a chat input.
+*   Introducing `detachPrompt` to detach a prompt from a chat input.
+*   Updating the return type of `attachPrompt` to include a boolean indicating whether the prompt was already attached.
 
-2. **Introduction of `detachPrompt` Function**: A new function `detachPrompt` has been introduced to handle detaching prompts from a chat input. This addition provides a clear and separate functionality for detaching prompts.
+The purpose of these changes is to improve the handling of chat prompts and attachments.
 
-3. **Updates to `chatPromptAttachmentsCollection`**: The `add` method in `chatPromptAttachmentsCollection` now returns a boolean indicating whether the attachment already exists. This change helps in determining if an attachment was newly added or already present.
+## File Changes
 
-## File Changes - Specific Files Needing Updates
-The following files have been updated:
+The following files need updates:
 
-1. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts**: Updated to use `attachPrompt` instead of `attachPrompts`.
-2. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts**: Significant updates to use `attachPrompt` and introduce detaching functionality.
-3. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts**: Updated to use `attachPrompt`.
-4. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts**: Refactored from `attachPrompts` to `attachPrompt`.
-5. **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/detachPrompt.ts**: New file for detaching prompts.
-6. **src/vs/workbench/contrib/chat/browser/chatAttachmentModel/chatPromptAttachmentsCollection.ts**: Updated `add` method to return a boolean.
+1.  **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatAttachPromptAction.ts**
 
-## Conflicts - Files with High Change Frequency
-Based on the provided similar PRs, files that might have high change frequency or are related to chat functionality include:
+    *   Before: `import { attachPrompts, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompts.js';`
+    *   After: `import { attachPrompt, IAttachPromptOptions } from './dialogs/askToSelectPrompt/utils/attachPrompt.js';`
+    *   Impact: Replacing `attachPrompts` with `attachPrompt` to handle attaching a single prompt.
 
-- **src/vs/workbench/contrib/chat/browser/chatWidget.ts**: Frequently updated due to ongoing chat functionality enhancements.
-- **src/vs/workbench/cont
+2.  **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/chatRunPromptAction.ts**
+
+    *   Before: `import { runAttachPromptAction } from './chatAttachPromptAction.js';`
+    *   After: `import { attachPrompt } from './dialogs/askToSelectPrompt/utils/attachPrompt.js'; import { detachPrompt } from './dialogs/askToSelectPrompt/utils/detachPrompt.js';`
+    *   Impact: Replacing `runAttachPromptAction` with `attachPrompt` and introducing `detachPrompt`.
+
+3.  **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/askToSelectPrompt.ts**
+
+    *   Before: `import { attachPrompts } from './utils/attachPrompts.js';`
+    *   After: `import { attachPrompt } from './utils/attachPrompt.js';`
+    *   Impact: Replacing `attachPrompts` with `attachPrompt`.
+
+4.  **src/vs/workbench/contrib/chat/browser/actions/reusablePromptActions/dialogs/askToSelectPrompt/utils/attachPrompt.ts**
+
+    *   Before: `export const attachPrompts = async (files: readonly WithUriValue<Object>[]): Promise<I

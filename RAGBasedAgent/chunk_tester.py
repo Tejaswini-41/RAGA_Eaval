@@ -9,10 +9,7 @@ from typing import Dict, List, Optional
 from datetime import datetime
 
 # Import all chunking strategies
-from hybrid_chunker import HybridSemanticChunker
-from semantic_chunker import SemanticChunker
-from fixed_size_chunker import FixedSizeChunker
-from hierarchical_chunker import HierarchicalChunker
+from chunking import FixedSizeChunker, SemanticChunker, HybridSemanticChunker, HierarchicalChunker
 from chunked_review_generator import ChunkedReviewGenerator
 from review_evaluator import ReviewEvaluator
 from evaluation.metrics import MetricsCalculator
