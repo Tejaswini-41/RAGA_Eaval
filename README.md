@@ -1,108 +1,106 @@
 
-```markdown
 # RAG-Based Agent for Pull Request Review
 
 This project implements a **RAG-Based Agent** (Retrieval-Augmented Generation) to automate and enhance the process of reviewing pull requests (PRs) in software repositories. The system leverages advanced AI models to generate detailed, actionable feedback for PRs by analyzing code changes, comparing them with similar PRs, and evaluating the quality of the changes using custom metrics.
 
----
+## 🚀 Features
 
-## Features
+### 📊 Pull Request Analysis
+- Extracts and compares changes in the current PR with similar PRs
+- Identifies potential risks, conflicts, and areas for improvement
 
-- **Pull Request Analysis**:
-  - Extracts and compares changes in the current PR with similar PRs.
-  - Identifies potential risks, conflicts, and areas for improvement.
+### 🤖 RAG-Based Review Generation
+- Uses retrieval-augmented generation to provide context-aware reviews
+- Supports multiple AI models:
+  - `gemini`
+  - `llama`
+  - `alibaba`
+  - `deepseek`
 
-- **RAG-Based Review Generation**:
-  - Uses retrieval-augmented generation to provide context-aware reviews.
-  - Supports multiple AI models (e.g., `gemini`, `llama`, `alibaba`, `deepseek`).
+### ✨ Enhanced Prompting
+- Dynamically generates enhanced prompts for better review quality
+- Stores and compares baseline and enhanced reviews
 
-- **Enhanced Prompting**:
-  - Dynamically generates enhanced prompts for better review quality.
-  - Stores and compares baseline and enhanced reviews.
+### 📈 Confidence Scoring
+- Adds confidence scores to reviews based on similarity and complexity metrics
 
-- **Confidence Scoring**:
-  - Adds confidence scores to reviews based on similarity and complexity metrics.
+### 📑 Chunking Advice
+- Provides intelligent chunking strategies for large PRs to optimize processing
 
-- **Chunking Advice**:
-  - Provides intelligent chunking strategies for large PRs to optimize processing.
+## 🛠️ Installation
 
----
-
-## Installation
-
-### 🔽 Clone Repository
+### 1. Clone Repository
 ```bash
 git clone https://github.com/Tejaswini-41/RAGA_Eaval.git
 cd RAGA_Eval
 ```
 
-### 🧪 Set Up Virtual Environment
+### 2. Set Up Virtual Environment
 ```bash
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate        # macOS/Linux
-venv\Scripts\activate           # Windows
+
+# Activate virtual environment
+# For Windows:
+venv\Scripts\activate
+# For macOS/Linux:
+source venv/bin/activate
 ```
 
-2. Install required packages:
+### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set up environment variables:
-Create a `.env` file:
+### 4. Configure Environment
+Create a `.env` file in the root directory:
 ```env
 GITHUB_ACCESS_TOKEN=your_github_token
 GEMINI_API_KEY=your_gemini_api_key
 GROQ_API_KEY=your_groq_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
-``` 
+```
 
----
-
-## Usage
+## 📚 Usage
 
 ### Running the RAG-Based Review Process
 
 1. Start the review process:
-   ```bash
-   cd RAGBasedAgent 
-   python main.py
-   ```
+```bash
+cd RAGBasedAgent 
+python main.py
+```
 
-2. Follow the interactive menu to:
-   - Perform an initial review.
-   - Test stored prompts.
-   - Add confidence scores.
-   - Generate chunking advice.
+2. Interactive Menu Options:
+   - ⚡ Perform initial review
+   - 🧪 Test stored prompts
+   - 📊 Add confidence scores
+   - 📑 Generate chunking advice
 
 ### Key Commands
 
-- **Initial Review**:
-  - Fetches PR data, generates embeddings, and performs a baseline review.
-- **Enhanced Review**:
-  - Uses enhanced prompts to generate improved reviews.
-- **Confidence Scoring**:
-  - Adds confidence metrics to the review output.
+| Command | Description |
+|---------|------------|
+| Initial Review | Fetches PR data, generates embeddings, performs baseline review |
+| Enhanced Review | Uses enhanced prompts for improved reviews |
+| Confidence Scoring | Adds confidence metrics to review output |
 
----
-
-## Project Structure
+## 📁 Project Structure
 
 ```plaintext
 RAGBasedAgent/
-├── main.py                     # Entry point for the application
-├── review_generator.py         # Generates PR reviews
-├── review_evaluator.py         # Evaluates review quality using metrics
-├── embedding_store.py          # Handles embedding storage in ChromaDB
-├── change_analyzer.py          # Compares changes in PRs
-├── Confidence_Scorer.py        # Adds confidence scores to reviews
-├── prompts/                    # Contains prompt templates and history
-├── reviews/                    # Stores generated reviews and PR data
-├── recommendations/            # Stores chunking advice and recommendations
-└── requirements.txt            # Python dependencies
+├── main.py                     # Entry point
+├── review_generator.py         # Review generation
+├── review_evaluator.py         # Metrics evaluation
+├── embedding_store.py          # ChromaDB storage
+├── change_analyzer.py          # PR comparison
+├── Confidence_Scorer.py        # Confidence metrics
+├── prompts/                    # Templates & history
+├── reviews/                    # Generated reviews
+├── recommendations/           # Chunking advice
+└── requirements.txt           # Dependencies
 ```
 
----
 
 ## Key Components
 

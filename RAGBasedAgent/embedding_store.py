@@ -26,7 +26,7 @@ class TFIDFEmbeddingFunction:
 def store_embeddings(changed_files, pull_requests):
     """Store PR file embeddings in ChromaDB using TF-IDF"""
     # Create directory if it doesn't exist
-    CHROMA_DATA_PATH = "chroma_data/"
+    CHROMA_DATA_PATH = "chroma_chunks/"
     os.makedirs(CHROMA_DATA_PATH, exist_ok=True)
     
     # Initialize ChromaDB

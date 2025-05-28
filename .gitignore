@@ -6,6 +6,7 @@ __pycache__/
 chroma_data/
 chroma_chunk/
 chroma_fixed_chunks/
+chroma_fixed_chunks
 chroma_hierarchical_chunks/
 chroma_semantic_chunks/
 nice_venv
