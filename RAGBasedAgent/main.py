@@ -1,6 +1,7 @@
 import os
 import datetime
 import json
+from datetime import datetime 
 from dotenv import load_dotenv
 from GithubAuth import fetch_pull_requests
 from embedding_store import store_embeddings
@@ -10,7 +11,6 @@ from review_generator import generate_review
 from review_evaluator import ReviewEvaluator
 from prompts.review_prompts import ReviewPrompts
 from improvement_analyzer import analyze_improvements
-from datetime import datetime  # Update the import statement
 from Confidence_Scorer import enhance_review_with_confidence_scores
 from chunking_advice import ChunkingAdvisor  
 import uuid
@@ -1001,15 +1001,9 @@ if __name__ == "__main__":
                     
             #         # Visualizations are now automatically generated in the ChunkingStrategyTester
             #         print("\n📊 Visualizations have been automatically generated")
-                    
-            #         # Open the HTML report in the default browser
+            #         print("\n📈 Opening HTML report in browser...")
             #         import webbrowser
-            #         import os
-            #         if result.get("report_path"):
-            #             html_report = result.get("report_path").replace(".md", "_report.html")
-            #             if os.path.exists(html_report):
-            #                 print(f"\n🌐 Opening HTML report in browser...")
-            #                 webbrowser.open(f"file://{os.path.abspath(html_report)}")
+            #         webbrowser.open(result.get("report_path"))
                     
             #         return True
                         
@@ -1074,15 +1068,9 @@ if __name__ == "__main__":
                     
             #         # Visualizations are now automatically generated in the ChunkingStrategyTester
             #         print("\n📊 Visualizations have been automatically generated")
-                    
-            #         # Open the HTML report in the default browser
+            #         print("\n📈 Opening HTML report in browser...")
             #         import webbrowser
-            #         import os
-            #         if result.get("report_path"):
-            #             html_report = result.get("report_path").replace(".md", "_report.html")
-            #             if os.path.exists(html_report):
-            #                 print(f"\n🌐 Opening HTML report in browser...")
-            #                 webbrowser.open(f"file://{os.path.abspath(html_report)}")
+            #         webbrowser.open(result.get("report_path"))
                     
             #         return True
                         
@@ -1109,12 +1097,19 @@ if __name__ == "__main__":
                     similar_prs_data = stored_results.get("similar_prs_changes", [])
                     similar_prs_changes = []
                     
-                    # Extract changes from the similar PRs data structure
+                    # Format data correctly - Each item must be a dict with 'changes' key
                     if isinstance(similar_prs_data, list):
                         for pr_data in similar_prs_data:
                             if isinstance(pr_data, dict) and 'changes' in pr_data:
-                                similar_prs_changes.append(pr_data['changes'])
-                    
+                                # Already in correct format
+                                similar_prs_changes.append(pr_data)
+                            else:
+                                # Need to convert string to proper format
+                                similar_prs_changes.append({
+                                    'pr_number': similar_prs_data.index(pr_data) + 1,  # Use index as fallback PR number
+                                    'changes': pr_data
+                                })
+        
                     pr_number = (
                         stored_results.get("pr_number") or 
                         PR_NUMBER
@@ -1132,14 +1127,23 @@ if __name__ == "__main__":
                     else:
                         print(f"✅ Found {len(similar_prs_changes)} similar PRs")
                     
-                    # Initialize chunking tester
-                    chunking_tester = ChunkingStrategyTester()
-                    
+                    # Use baseline review from stored results if available
+                    baseline_review = stored_results.get("baseline_review")
+                    if baseline_review:
+                        print("✅ Using existing baseline review from session")
+                        
+                        # Initialize chunking tester with existing baseline review
+                        chunking_tester = ChunkingStrategyTester()
+                        chunking_tester.existing_baseline_review = baseline_review
+                    else:
+                        # Initialize regular chunking tester
+                        chunking_tester = ChunkingStrategyTester()
+        
                     # Run chunking comparison with rate limiting
                     print("\n🔄 Running chunking strategy comparison (this may take several minutes)...")
                     result = await chunking_tester.run_chunking_test(
                         current_pr_changes,
-                        similar_prs_changes,  # Now properly formatted
+                        similar_prs_changes,  # Now properly formatted as dicts
                         pr_number
                     )
                     
@@ -1157,10 +1161,12 @@ if __name__ == "__main__":
                         if os.path.exists(html_report):
                             print(f"\n🌐 Opening HTML report in browser...")
                             webbrowser.open(f"file://{os.path.abspath(html_report)}")
-                    
+        
                     return True
                         
                 except Exception as e:
+                    import traceback
+                    traceback.print_exc()
                     print(f"❌ Error during chunking test: {str(e)}")
                     return False
     

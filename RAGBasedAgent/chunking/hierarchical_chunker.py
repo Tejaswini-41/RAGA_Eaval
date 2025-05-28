@@ -117,7 +117,7 @@ class HierarchicalChunker(BaseChunker):
                 "chunker_type": "hierarchical"
             }
             
-            # Add parent-child relationship
+            # parent-child relationship
             if level == "child" and "parent_id" in chunk_data:
                 chunk_metadata["parent_id"] = chunk_data["parent_id"]
             elif level == "parent" and "children_ids" in chunk_data:
@@ -160,7 +160,8 @@ class HierarchicalChunker(BaseChunker):
                 if level == "child" and "parent_id" in chunk_data:
                     chunk_metadata["parent_id"] = chunk_data["parent_id"]
                 elif level == "parent" and "children_ids" in chunk_data:
-                    chunk_metadata["children_ids"] = chunk_data["children_ids"]
+                    # Store as string, not list
+                    chunk_metadata["children_ids_str"] = ",".join(chunk_data["children_ids"])
                 
                 all_chunks.append(content)
                 all_ids.append(chunk_id)

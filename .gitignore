@@ -1,12 +1,58 @@
+# Environment files
 .env
-env
 env/
 venv/
+nice_venv/
 __pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+# ChromaDB data directories
 chroma_data/
-chroma_chunk/
+chroma_chunks/
 chroma_fixed_chunks/
-chroma_fixed_chunks
 chroma_hierarchical_chunks/
 chroma_semantic_chunks/
-nice_venv
+chroma_hybrid_chunks/
+
+# Generated files
+RAG_based_Analysis/
+RAG_based_Analysis_2/
+reviews/
+recommendations/
+chunking_results/
+*.csv
+*.json
+!config.json
+!requirements.json
+
+# Logs
+*.log
+logs/
+
+# Cache files
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temp files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints

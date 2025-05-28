@@ -23,6 +23,7 @@ class ChunkingStrategyTester:
         """Initialize the chunking strategy tester"""
         self.evaluator = ReviewEvaluator()
         self.metrics_calculator = MetricsCalculator()
+        self.existing_baseline_review = None  # Add this line to store existing baseline review
         self.strategies = {
             "hybrid": {
                 "name": "Hybrid Semantic Chunking",
@@ -194,6 +195,12 @@ class ChunkingStrategyTester:
                                       similar_prs_changes: List[Dict],
                                       pr_number: int) -> str:
         """Generate a baseline review without chunking to use as reference"""
+        # Use existing baseline review if available
+        if self.existing_baseline_review:
+            print("🔄 Using existing baseline review from session")
+            return self.existing_baseline_review
+            
+        # Otherwise generate a new baseline review
         from review_generator import generate_review
         
         print("🔄 Generating baseline review (without chunking)...")
