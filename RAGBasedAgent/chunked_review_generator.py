@@ -233,13 +233,51 @@ class ChunkedReviewGenerator:
         # Handle the case of hierarchical chunking differently
         is_hierarchical = self.chunking_strategy == "hierarchical"
         
-        # Get template for chunk review
-        review_template, system_prompt = ReviewPrompts.get_current_prompt()
-        
         # Process chunks and generate mini-reviews
-        print(f"\n🧩 Processing {len(current_chunks.get('chunks', []))} chunks...")
-        chunk_reviews = []
+        total_chunks = len(current_chunks.get("chunks", []))
+        print(f"\n🧩 Processing {total_chunks} chunks with {model_name} model...")
         
+        # Show a single progress message instead of per-chunk messages
+        print("⏳ Generating chunk reviews (this may take a few minutes)...")
+        
+        chunk_reviews = []
+        chunk_count = 0
+        processed_chunks = 0
+        error_chunks = 0
+        
+        # Create a custom template with the 6 required sections
+        custom_template = f"""As an expert code reviewer, analyze this PR chunk and provide specific suggestions:
+
+CURRENT PR DETAILS:
+PR #{pr_number or 'Unknown'}
+Changed Files: [Chunk Analysis]
+
+CODE CHANGES:
+{{current_pr}}
+
+SIMILAR PRS HISTORY:
+{{similar_prs}}
+
+PROVIDE THE FOLLOWING SECTIONS:
+1. Summary of Changes - Brief overview of what this PR does
+2. File Change Suggestions - Identify additional files that might need changes based on modified files
+3. Conflict Prediction - Flag files with high change frequency that could cause conflicts
+4. Breakage Risk Warning - Note which changes might break existing functionality
+5. Test Coverage Advice - Recommend test files that should be updated
+6. Code Quality Suggestions - Point out potential code smells or duplication
+
+Be specific with file names, function names, and line numbers when possible.
+"""
+
+        # Create custom system prompt
+        custom_system_prompt = """You are an expert code reviewer with deep expertise in software engineering best practices.
+Your task is to thoroughly analyze pull requests and provide actionable, specific feedback."""
+        
+        # Import model factory just once
+        from models.model_factory import ModelFactory
+        model_factory = ModelFactory()
+        
+        # Process each chunk silently
         for i, chunk in enumerate(current_chunks.get("chunks", [])):
             # For hierarchical chunking, only process parent chunks or chunks without level metadata
             if is_hierarchical:
@@ -248,8 +286,8 @@ class ChunkedReviewGenerator:
                 # Skip child chunks for hierarchical processing (we'll get their context from parents)
                 if chunk_metadata.get("chunk_level") == "child":
                     continue
-            
-            print(f"\n📄 Processing chunk {i+1}/{len(current_chunks.get('chunks', []))}...")
+        
+            chunk_count += 1
             
             # Find related similar PR chunks
             similar_chunks = self.active_chunker.query_relevant_chunks(
@@ -258,24 +296,65 @@ class ChunkedReviewGenerator:
                 n_results=3
             )
             
-            # Format prompt for this chunk
-            prompt = review_template.format(
-                similar_prs="\n".join(similar_chunks.get("chunks", [])),
-                current_pr=chunk
-            )
-            
-            # Generate mini-review for this chunk using existing model_factory
+            # Format similar PR chunks as dictionaries
+            similar_prs_formatted = []
+            for j, similar_chunk in enumerate(similar_chunks.get("chunks", [])):
+                if j < len(similar_chunks.get("metadatas", [])):
+                    pr_num = similar_chunks.get("metadatas")[j].get("pr_number", 0)
+                    similar_prs_formatted.append({
+                        "pr_number": pr_num,
+                        "changes": similar_chunk
+                    })
+                else:
+                    # If metadata is missing, still include the chunk with a default PR number
+                    similar_prs_formatted.append({
+                        "pr_number": 0,
+                        "changes": similar_chunk
+                    })
+        
             try:
-                chunk_review = self.model_factory.generate_response_with_prompt(
-                    model_name,
-                    prompt,
-                    system_prompt
+                # Format PR data for the prompt
+                combined_similar_changes = ""
+                for pr_data in similar_prs_formatted:
+                    combined_similar_changes += f"\n--- Similar PR #{pr_data['pr_number']} ---\n"
+                    combined_similar_changes += pr_data['changes']
+                    
+                if not combined_similar_changes:
+                    combined_similar_changes = "No similar PR changes available."
+                    
+                # Format prompt with PR data (silently)
+                prompt = custom_template.format(
+                    similar_prs=combined_similar_changes,
+                    current_pr=chunk
                 )
-                chunk_reviews.append(chunk_review)
-                print(f"✅ Generated review for chunk {i+1}")
+                
+                # Generate review using the specified model, with NO output
+                from review_generator import ensure_required_sections
+                response = model_factory.generate_response_with_prompt(
+                    model_name, 
+                    prompt,
+                    custom_system_prompt
+                )
+                
+                # Make sure review has all required sections
+                response = ensure_required_sections(response, pr_number, f"Chunk {chunk_count}")
+                
+                chunk_reviews.append(response)
+                processed_chunks += 1
+                
+                # Just update the progress count every few chunks
+                if chunk_count % 2 == 0 or chunk_count == total_chunks:
+                    print(f"   ⏳ Progress: {chunk_count}/{total_chunks} chunks processed", end="\r")
+                
             except Exception as e:
-                print(f"⚠️ Error generating review for chunk {i+1}: {e}")
-                continue
+                # Minimal error reporting
+                error_chunks += 1
+                # Add a simple placeholder for this chunk
+                chunk_reviews.append(f"## Review for Chunk {chunk_count}\n- [Automatic review generation failed for this code segment]")
+        
+        # Final progress update
+        print(f"\n✅ Completed processing {processed_chunks} chunks successfully ({error_chunks} errors)")
+        print("\n🔄 Generating final combined review...")
         
         # Combine chunk reviews into final review
         combined_review = self._combine_chunk_reviews(chunk_reviews)

@@ -963,159 +963,86 @@ if __name__ == "__main__":
                 continue
             
             print("\n🧮 Evaluating Chunking Strategies with RAGAS Metrics...")
-            stored_results = load_stored_prompts(session_id)
             
-            # Import needed modules
             from chunk_tester import ChunkingStrategyTester
+            from chunked_review_generator import ChunkedReviewGenerator
+            import webbrowser
+            import os
             
-            # async def test_chunking_with_ragas():
-            #     try:
-            #         # Prepare PR data for chunking tests - reuse stored data
-            #         print("\n📊 Getting PR data for chunking comparison...")
-            #         current_pr_changes = stored_results.get("current_pr_changes", "")
-            #         similar_prs_changes = stored_results.get("similar_prs_changes", [])
-            #         pr_number = stored_results.get("pr_number", PR_NUMBER)
-                    
-            #         if not current_pr_changes or not similar_prs_changes:
-            #             print("❌ Missing required PR data. Please run option 0 again.")
-            #             return False
-                        
-            #         print(f"✅ Loaded PR data ({len(current_pr_changes)} chars) and {len(similar_prs_changes)} similar PRs")
-                    
-            #         # Initialize chunking tester
-            #         chunking_tester = ChunkingStrategyTester()
-                    
-            #         # Run chunking comparison with rate limiting
-            #         print("\n🔄 Running chunking strategy comparison (this may take several minutes)...")
-            #         result = await chunking_tester.run_chunking_test(
-            #             current_pr_changes,
-            #             similar_prs_changes,
-            #             pr_number
-            #         )
-                    
-            #         if not result:
-            #             print("❌ Chunking comparison failed")
-            #             return False
-                        
-            #         print("\n✅ Chunking comparison completed successfully!")
-                    
-            #         # Visualizations are now automatically generated in the ChunkingStrategyTester
-            #         print("\n📊 Visualizations have been automatically generated")
-            #         print("\n📈 Opening HTML report in browser...")
-            #         import webbrowser
-            #         webbrowser.open(result.get("report_path"))
-                    
-            #         return True
-                        
-            #     except Exception as e:
-            #         print(f"❌ Error during chunking test: {str(e)}")
-            #         return False
-            
-            # Run the test asynchronously
-
-            # async def test_chunking_with_ragas():
-            #     try:
-            #         # Prepare PR data for chunking tests - reuse stored data
-            #         print("\n📊 Getting PR data for chunking comparison...")
-                    
-            #         # Try different field names that might contain the PR data
-            #         current_pr_changes = (
-            #             stored_results.get("current_pr_changes") or 
-            #             stored_results.get("baseline_review") or
-            #             stored_results.get("reviews", {}).get("gemini")
-            #         )
-                    
-            #         # Try to get similar PRs data from different possible locations
-            #         similar_prs_changes = (
-            #             stored_results.get("similar_prs_changes") or
-            #             stored_results.get("similar_prs", []) or
-            #             []
-            #         )
-                    
-            #         pr_number = (
-            #             stored_results.get("pr_number") or 
-            #             PR_NUMBER  # Fallback to global constant
-            #         )
-                    
-            #         # Validate data presence
-            #         if not current_pr_changes:
-            #             print("❌ Could not find PR content in stored results")
-            #             return False
-                        
-            #         print(f"✅ Loaded PR data ({len(current_pr_changes)} chars)")
-                    
-            #         if not similar_prs_changes:
-            #             print("⚠️ No similar PRs found, continuing with current PR only")
-            #         else:
-            #             print(f"✅ Found {len(similar_prs_changes)} similar PRs")
-                    
-            #         # Initialize chunking tester
-            #         chunking_tester = ChunkingStrategyTester()
-                    
-            #         # Run chunking comparison with rate limiting
-            #         print("\n🔄 Running chunking strategy comparison (this may take several minutes)...")
-            #         result = await chunking_tester.run_chunking_test(
-            #             current_pr_changes,
-            #             similar_prs_changes,
-            #             pr_number
-            #         )
-                    
-            #         if not result:
-            #             print("❌ Chunking comparison failed")
-            #             return False
-                        
-            #         print("\n✅ Chunking comparison completed successfully!")
-                    
-            #         # Visualizations are now automatically generated in the ChunkingStrategyTester
-            #         print("\n📊 Visualizations have been automatically generated")
-            #         print("\n📈 Opening HTML report in browser...")
-            #         import webbrowser
-            #         webbrowser.open(result.get("report_path"))
-                    
-            #         return True
-                        
-            #     except Exception as e:
-            #         print(f"❌ Error during chunking test: {str(e)}")
-            #         return False
-                
-
-
-            # ---------------------------
             async def test_chunking_with_ragas():
                 try:
-                    # Prepare PR data for chunking tests - reuse stored data
+                    # Prepare PR data for chunking tests
                     print("\n📊 Getting PR data for chunking comparison...")
                     
-                    # Get PR content - try multiple possible locations
+                    # Get PR content from stored results
                     current_pr_changes = (
                         stored_results.get("current_pr_changes") or 
                         stored_results.get("baseline_review") or
                         stored_results.get("reviews", {}).get("gemini")
                     )
                     
-                    # Get similar PRs data - properly extract from the array structure
+                    # Get similar PRs data
                     similar_prs_data = stored_results.get("similar_prs_changes", [])
                     similar_prs_changes = []
                     
-                    # Format data correctly - Each item must be a dict with 'changes' key
+                    # Format similar PRs for the chunking tester
                     if isinstance(similar_prs_data, list):
                         for pr_data in similar_prs_data:
                             if isinstance(pr_data, dict) and 'changes' in pr_data:
-                                # Already in correct format
-                                similar_prs_changes.append(pr_data)
-                            else:
-                                # Need to convert string to proper format
                                 similar_prs_changes.append({
-                                    'pr_number': similar_prs_data.index(pr_data) + 1,  # Use index as fallback PR number
-                                    'changes': pr_data
+                                    'pr_number': pr_data.get('pr_number', 0),
+                                    'changes': pr_data.get('changes', '')
                                 })
-        
-                    pr_number = (
-                        stored_results.get("pr_number") or 
-                        PR_NUMBER
-                    )
                     
-                    # Validate data presence
+                    # If no similar PRs were found, manually add them to the session data
+                    if not similar_prs_changes and current_pr_changes:
+                        print("\n⚠️ No similar PRs found. Would you like to manually add similar PR data? (y/n)")
+                        add_manual = input().lower()
+                        
+                        if add_manual == 'y':
+                            # Get the current PR number
+                            pr_number = stored_results.get("pr_number", PR_NUMBER)
+                            
+                            # Manual entry for similar PRs
+                            print("\n📝 Let's add some similar PRs manually")
+                            
+                            num_prs = int(input("How many similar PRs do you want to add? "))
+                            
+                            for i in range(num_prs):
+                                print(f"\n--- Similar PR #{i+1} ---")
+                                pr_num = int(input(f"Enter PR number for similar PR #{i+1}: "))
+                                
+                                print(f"Enter changes for PR #{pr_num} (type 'END' on a new line when finished):")
+                                lines = []
+                                while True:
+                                    line = input()
+                                    if line == 'END':
+                                        break
+                                    lines.append(line)
+                                
+                                changes = '\n'.join(lines)
+                                
+                                # Add the PR in the correct format
+                                similar_prs_changes.append({
+                                    'pr_number': pr_num,
+                                    'changes': changes
+                                })
+                            
+                            print(f"\n✅ Added {len(similar_prs_changes)} similar PRs manually")
+                            
+                            # Update the stored results with these similar PRs
+                            stored_results["similar_prs_changes"] = similar_prs_changes
+                            
+                            # Save the updated results back to the file
+                            updated_file = save_results(
+                                stored_results,
+                                "updated_session",
+                                session_id
+                            )
+                            print(f"💾 Updated session data saved to: {updated_file}")
+                    
+                    pr_number = stored_results.get("pr_number", PR_NUMBER)
+                    
                     if not current_pr_changes:
                         print("❌ Could not find PR content in stored results")
                         return False
@@ -1127,23 +1054,14 @@ if __name__ == "__main__":
                     else:
                         print(f"✅ Found {len(similar_prs_changes)} similar PRs")
                     
-                    # Use baseline review from stored results if available
-                    baseline_review = stored_results.get("baseline_review")
-                    if baseline_review:
-                        print("✅ Using existing baseline review from session")
-                        
-                        # Initialize chunking tester with existing baseline review
-                        chunking_tester = ChunkingStrategyTester()
-                        chunking_tester.existing_baseline_review = baseline_review
-                    else:
-                        # Initialize regular chunking tester
-                        chunking_tester = ChunkingStrategyTester()
-        
-                    # Run chunking comparison with rate limiting
+                    # Initialize chunking tester
+                    chunking_tester = ChunkingStrategyTester()
+                    
+                    # Run chunking comparison
                     print("\n🔄 Running chunking strategy comparison (this may take several minutes)...")
                     result = await chunking_tester.run_chunking_test(
                         current_pr_changes,
-                        similar_prs_changes,  # Now properly formatted as dicts
+                        similar_prs_changes,
                         pr_number
                     )
                     
@@ -1153,29 +1071,96 @@ if __name__ == "__main__":
                         
                     print("\n✅ Chunking comparison completed successfully!")
                     
+                    # Extract best strategy and score
+                    comparison_results = result.get("results", {})
+                    best_strategy = comparison_results.get("best_strategy")
+                    best_score = comparison_results.get("best_score", 0)
+                    
+                    # Display concise recommendation
+                    print("\n📋 Chunking Strategy Recommendation:")
+                    print("═" * 60)
+                    
+                    if best_strategy:
+                        best_name = next((s["name"] for s in comparison_results.get("comparison_table", []) 
+                                    if s["strategy"] == best_strategy), "Unknown")
+                        print(f"✅ Best strategy: {best_name} (Score: {best_score:.3f})")
+                        print(f"🔍 Key strengths: {get_strategy_strengths(best_strategy)}")
+                    else:
+                        print("⚠️ Could not determine best chunking strategy")
+                    
+                    # Generate review using best chunking strategy
+                    if best_strategy:
+                        print(f"\n🤖 Generating PR review using {best_strategy} chunking strategy...")
+                        generator = ChunkedReviewGenerator(chunking_strategy=best_strategy)
+                        review_result = await generator.process_pr_with_chunking(
+                            current_pr_changes,
+                            similar_prs_changes,
+                            pr_number
+                        )
+                        
+                        if review_result.get("success"):
+                            chunked_review = review_result.get("chunked_review")
+                            best_model = review_result.get("best_model")
+                            
+                            # Save the results in JSON
+                            output = {
+                                "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+                                "session_id": session_id,
+                                "pr_number": pr_number,
+                                "best_chunking_strategy": best_strategy,
+                                "best_model": best_model,
+                                "chunked_review": chunked_review,
+                                "chunking_score": best_score,
+                                "chunking_stats": review_result.get("chunking_stats", {})
+                            }
+                            
+                            # Save results to JSON file
+                            json_path = save_results(
+                                output,
+                                "best_chunking_review",
+                                session_id
+                            )
+                            
+                            # Display preview of the generated review
+                            print("\n📝 PR Review (using best chunking strategy):")
+                            print("-" * 60)
+                            preview_length = min(500, len(chunked_review))
+                            print(chunked_review[:preview_length] + ("..." if len(chunked_review) > preview_length else ""))
+                            print("-" * 60)
+                            print(f"\n💾 Full review saved to {json_path}")
+                        else:
+                            print(f"❌ Failed to generate review: {review_result.get('error', 'Unknown error')}")
+                    
                     # Handle visualizations and report
-                    import webbrowser
-                    import os
                     if result.get("report_path"):
                         html_report = result.get("report_path").replace(".md", "_report.html")
                         if os.path.exists(html_report):
                             print(f"\n🌐 Opening HTML report in browser...")
                             webbrowser.open(f"file://{os.path.abspath(html_report)}")
-        
+                    
                     return True
                         
                 except Exception as e:
-                    import traceback
-                    traceback.print_exc()
                     print(f"❌ Error during chunking test: {str(e)}")
                     return False
-    
+            
+            # Define the get_strategy_strengths helper function here (outside of test_chunking_with_ragas)
+            def get_strategy_strengths(strategy):
+                strengths = {
+                    "semantic": "Preserves natural code boundaries, ideal for well-structured code",
+                    "hybrid": "Balances structure awareness with consistent sizing, versatile for mixed content",
+                    "hierarchical": "Maintains parent-child relationships, good for complex nested code",
+                    "fixed": "Consistent chunk sizing with predictable behavior"
+                }
+                return strengths.get(strategy, "Unknown strategy")
+            
+            # Run the test and generate review using best strategy
             success = asyncio.run(test_chunking_with_ragas())
             if not success:
                 print("\n⚠️ Could not complete chunking strategy comparison")
             
             input("\nPress Enter to continue...")
-        
+            
         elif choice == "5":
             print("\n📈 Analyzing system performance and generating improvement suggestions...")
             
