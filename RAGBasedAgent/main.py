@@ -1301,6 +1301,8 @@ if __name__ == "__main__":
             
             print("\n🔄 Comparing embedding methods using RAGAS metrics...")
             
+            # Update the compare_embeddings() function in option 6:
+
             async def compare_embeddings():
                 try:
                     # Initialize embedding evaluator
@@ -1316,32 +1318,49 @@ if __name__ == "__main__":
                     
                     # Use the best embedder to generate a PR review
                     if best_embedder:
-                        print(f"\n🤖 Generating PR review using {best_embedder} embeddings...")
+                        print(f"\n🤖 Testing models with {best_embedder} embeddings...")
                         
                         # Create embedder instance
                         best_embedding = EmbeddingFactory.get_embedder(best_embedder)
                         
-                        # Use existing PR generation workflow with best embedder
+                        # Initialize ReviewEvaluator for model comparison
+                        review_evaluator = ReviewEvaluator()
+                        
+                        # Evaluate all models and get the best one
+                        print("\n📊 Evaluating models for review generation...")
+                        best_model, model_metrics = await review_evaluator.evaluate_models(
+                            current_pr_changes,
+                            similar_prs_changes
+                        )
+                        
+                        print(f"\n✅ Best model determined: {best_model}")
+                        
+                        # Generate review using best model
+                        print(f"\n🤖 Generating PR review using {best_embedder} embeddings and {best_model} model...")
                         review = generate_review(
                             current_pr_changes,
                             similar_prs_changes,
                             pr_number=PR_NUMBER,
-                            model_name="gemini"  # Use default model
+                            model_name=best_model
                         )
                         
                         if review:
-                            print("\n📝 PR Review (using best embedding method):")
+                            print("\n📝 PR Review (using best embedding method and model):")
                             print("-" * 60)
                             preview_length = min(500, len(review))
                             print(review[:preview_length] + ("..." if len(review) > preview_length else ""))
                             print("-" * 60)
                             
-                            # Save results
+                            # Save comprehensive results
                             results = {
                                 "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
                                 "session_id": session_id,
                                 "embedding_evaluation": evaluation_results,
                                 "best_embedder": best_embedder,
+                                "model_evaluation": {
+                                    "best_model": best_model,
+                                    "model_metrics": model_metrics
+                                },
                                 "pr_review": review
                             }
                             
@@ -1351,6 +1370,16 @@ if __name__ == "__main__":
                                 session_id
                             )
                             print(f"\n💾 Results saved to {json_path}")
+                            
+                            # # Display metrics comparison
+                            # print("\n📈 Model Performance Metrics:")
+                            # print("=" * 80)
+                            # print(f"{'Model':<15} | {'Metric':<20} | {'Score':>10}")
+                            # print("-" * 80)
+                            
+                            # for model, metrics in model_metrics.items():
+                            #     for metric, score in metrics.items():
+                            #         print(f"{model:<15} | {metric:<20} | {score:>10.3f}")
                         else:
                             print("❌ Failed to generate PR review")
                     

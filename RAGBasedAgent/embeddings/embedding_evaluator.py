@@ -196,25 +196,61 @@ class EmbeddingEvaluator:
         
         print(f"\n✅ Best embedder: {best_embedder} with score {weighted_scores[best_embedder]:.4f}")
         return best_embedder
-    
+
     def _display_comparison_table(self):
         """Display a comparison table of embedder metrics"""
         if not self.evaluation_results:
             print("❌ No evaluation results to display")
             return
-        
-        # Create DataFrame for display
-        df = pd.DataFrame()
-        
-        for embedder_type, metrics in self.evaluation_results.items():
-            row = {'Embedder': embedder_type}
-            row.update({k: f"{v:.4f}" for k, v in metrics.items()})
-            df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-        
-        # Highlight the best embedder
-        if self.best_embedder:
-            df.loc[df['Embedder'] == self.best_embedder, 'Embedder'] = f"{self.best_embedder} (BEST)"
-        
-        # Print table
-        print("\n📊 Embedding Methods Comparison:")
-        print(tabulate(df, headers='keys', tablefmt='grid', showindex=False))
+
+        print("\n📊 Embedding Methods Performance Comparison:")
+        print("=" * 150)
+
+        # Define metrics columns in order
+        metrics = [
+            "Relevance", "Groundedness", "Completeness", "Faithfulness", 
+            "AnswerRelevance", "BLEU", "ROUGE", "EmbeddingTime", 
+            "Average", "embedding_time"
+        ]
+
+        # Print header
+        header = "| {:<20} |".format("Embedder")
+        for metric in metrics:
+            header += " {:>12} |".format(metric)
+        print(header)
+        print("-" * len(header))
+
+        # Print each embedder's metrics
+        for embedder_type, embedder_metrics in self.evaluation_results.items():
+            # Prepare embedder name with BEST label if applicable
+            embedder_name = f"{embedder_type} (BEST)" if embedder_type == self.best_embedder else embedder_type
+            row = "| {:<20} |".format(embedder_name)
+
+            # Add each metric value
+            for metric in metrics:
+                value = embedder_metrics.get(metric, 0.0)
+                row += " {:>12.3f} |".format(value)
+            print(row)
+
+        print("=" * len(header))
+
+        # Print summary
+        print("\n🏆 Summary:")
+        print("-" * 50)
+        print(f"Best Overall Embedder: {self.best_embedder}")
+
+        # Show key strengths of best embedder
+        if self.best_embedder and self.best_embedder in self.evaluation_results:
+            print("\nKey Strengths of Best Embedder:")
+            best_metrics = self.evaluation_results[self.best_embedder]
+            baseline_metrics = self.evaluation_results.get('tfidf', {})
+            
+            for metric in metrics:
+                if metric in best_metrics and metric in baseline_metrics:
+                    value = best_metrics[metric]
+                    baseline = baseline_metrics[metric]
+                    if value > baseline:
+                        improvement = ((value - baseline) / baseline * 100)
+                        print(f"• {metric}: +{improvement:.1f}% vs baseline")
+
+        print("=" * 120)
