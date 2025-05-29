@@ -15,7 +15,7 @@ class EmbeddingFactory:
             "sentence_transformer": SentenceTransformerEmbedder,
             "codebert": CodeBertEmbedder,
             "hybrid": HybridEmbedder,
-            "word2vec": Word2VecEmbedder  # Add this line
+            "word2vec": Word2VecEmbedder 
         }
         
         if embedder_type not in embedder_map:
@@ -33,5 +33,5 @@ class EmbeddingFactory:
             "sentence_transformer": "Sentence Transformer (all-MiniLM-L6-v2)",
             "codebert": "CodeBERT (microsoft/codebert-base)",
             "hybrid": "Hybrid (TF-IDF + Sentence Transformer)",
-            "word2vec": "Word2Vec (Trained on-the-fly)"  # Add this line
+            "word2vec": "Word2Vec (Trained on-the-fly)"  
         }

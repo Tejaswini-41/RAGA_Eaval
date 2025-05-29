@@ -6,6 +6,7 @@ import time
 import uuid
 from datetime import datetime 
 from dotenv import load_dotenv
+import glob
 from GithubAuth import fetch_pull_requests
 from embedding_store import store_embeddings
 from similarity_query import query_similar_prs
@@ -398,6 +399,99 @@ async def get_chunking_advice(pr_data):
         return advice
     return None
 
+def load_stored_prompts(session_id=None):
+    """Load stored results with session validation"""
+    # Find the most recent session file
+    results_dir = "RAG_based_Analysis_2"
+    if not os.path.exists(results_dir):
+        return None
+    
+    # Look for any file with this session ID
+    files = []
+    for f in os.listdir(results_dir):
+        if f.endswith(".json") and session_id in f:
+            files.append(os.path.join(results_dir, f))
+    
+    if not files:
+        return None
+    
+    # Try to find both baseline and enhanced files
+    baseline_file = None
+    enhanced_file = None
+    
+    for file in files:
+        if "baseline" in file:
+            baseline_file = file
+        elif "enhanced" in file:
+            enhanced_file = file
+    
+    # Always start with baseline data since it has the PR data
+    if not baseline_file:
+        print("❌ No baseline file found for session")
+        return None
+    
+    try:
+        with open(baseline_file, 'r') as f:
+            merged_data = json.load(f)
+            
+        # If we have an enhanced file, merge metrics, reviews and prompts from it
+        if enhanced_file:
+            with open(enhanced_file, 'r') as f:
+                enhanced_data = json.load(f)
+                
+            # Keep PR data from baseline file but use enhanced metrics and reviews
+            if "metrics_comparison" in enhanced_data:
+                merged_data["metrics_comparison"] = enhanced_data["metrics_comparison"]
+            if "reviews" in enhanced_data:
+                merged_data["reviews"] = enhanced_data["reviews"]
+            if "prompts" in enhanced_data:
+                merged_data["prompts"] = enhanced_data["prompts"]
+            if "best_model" in enhanced_data:
+                merged_data["best_model"] = enhanced_data["best_model"]
+        
+        # Print diagnostic info about loaded data
+        print(f"\n📊 Session {merged_data['session_id']} data loaded:")
+        print(f"  - Timestamp: {merged_data.get('timestamp', 'Unknown')}")
+        print(f"  - PR Files: {len(merged_data.get('pr_files', []))} files")
+        print(f"  - Similar PRs: {len(merged_data.get('similar_prs_changes', []))} PRs")
+        
+        return merged_data
+        
+    except Exception as e:
+        print(f"❌ Error loading stored prompts: {e}")
+        return None
+
+
+class SessionManager:
+    """Manages session data across options"""
+    
+    def __init__(self):
+        self.current_session_id = None
+        self.session_data = None
+    
+    def start_new_session(self):
+        """Start a new session and return session ID"""
+        self.current_session_id = generate_session_id()
+        self.session_data = None
+        print(f"\n🔑 Starting new session: {self.current_session_id}")
+        return self.current_session_id
+    
+    def load_session_data(self):
+        """Load data for current session"""
+        if not self.current_session_id:
+            print("❌ No active session found")
+            return None
+            
+        self.session_data = load_stored_prompts(self.current_session_id)
+        return self.session_data
+    
+    def get_session_id(self):
+        """Get current session ID"""
+        return self.current_session_id
+
+# Create a global instance
+session_manager = SessionManager()
+
 # def load_stored_prompts(session_id=None):
 #     """Load stored results with session validation"""
 #     latest_file = get_latest_session_file(session_id)
@@ -408,7 +502,7 @@ async def get_chunking_advice(pr_data):
 #         with open(latest_file, 'r') as f:
 #             data = json.load(f)
             
-#         # Validate session and required fields
+#         # Validate session ID
 #         if not data.get("session_id"):
 #             print("❌ No session ID found in stored results")
 #             return None
@@ -417,56 +511,25 @@ async def get_chunking_advice(pr_data):
 #             print("❌ Results from different session found. Please run option 0 first")
 #             return None
             
-#         required_fields = ["baseline_review", "baseline_metrics"]
-#         if not all(field in data for field in required_fields):
-#             print("❌ Stored results file is missing required data")
+#         # Check for either original structure or enhanced structure
+#         has_original_data = all(key in data for key in ["baseline_review", "baseline_metrics"])
+#         has_enhanced_data = all(key in data for key in ["reviews", "metrics_comparison"])
+        
+#         if not (has_original_data or has_enhanced_data):
+#             print("❌ Stored results file is missing required data structure")
 #             return None
+            
+#         # If we have enhanced data structure, reconstruct original format
+#         if has_enhanced_data and not has_original_data:
+#             # Convert enhanced structure back to original format
+#             data["baseline_review"] = data["reviews"].get("gemini", "")
+#             data["baseline_metrics"] = data["metrics_comparison"].get("baseline", {})
             
 #         return data
         
 #     except Exception as e:
 #         print(f"Error loading stored prompts: {e}")
 #         return None
-
-
-def load_stored_prompts(session_id=None):
-    """Load stored results with session validation"""
-    latest_file = get_latest_session_file(session_id)
-    if not latest_file:
-        return None
-        
-    try:
-        with open(latest_file, 'r') as f:
-            data = json.load(f)
-            
-        # Validate session ID
-        if not data.get("session_id"):
-            print("❌ No session ID found in stored results")
-            return None
-            
-        if session_id and data["session_id"] != session_id:
-            print("❌ Results from different session found. Please run option 0 first")
-            return None
-            
-        # Check for either original structure or enhanced structure
-        has_original_data = all(key in data for key in ["baseline_review", "baseline_metrics"])
-        has_enhanced_data = all(key in data for key in ["reviews", "metrics_comparison"])
-        
-        if not (has_original_data or has_enhanced_data):
-            print("❌ Stored results file is missing required data structure")
-            return None
-            
-        # If we have enhanced data structure, reconstruct original format
-        if has_enhanced_data and not has_original_data:
-            # Convert enhanced structure back to original format
-            data["baseline_review"] = data["reviews"].get("gemini", "")
-            data["baseline_metrics"] = data["metrics_comparison"].get("baseline", {})
-            
-        return data
-        
-    except Exception as e:
-        print(f"Error loading stored prompts: {e}")
-        return None
 
 async def initial_review():
     try:
@@ -657,41 +720,82 @@ async def test_stored_prompt():
     except Exception as e:
         print(f"❌ Error during enhanced prompt evaluation: {e}")
 
+def load_complete_session_data(session_id):
+    """Load all data for a session by finding and merging baseline and enhanced files"""
+    data_dir = "RAG_based_Analysis_2"
+    
+    # Look for baseline file first
+    baseline_pattern = os.path.join(data_dir, f"*{session_id}*baseline.json")
+    baseline_files = glob.glob(baseline_pattern)
+    
+    if not baseline_files:
+        print(f"❌ No baseline file found for session {session_id}")
+        return None
+    
+    try:
+        with open(baseline_files[0], 'r') as f:
+            merged_data = json.load(f)
+    except Exception as e:
+        print(f"❌ Error loading baseline file: {e}")
+        return None
+    
+    # Look for enhanced file if it exists
+    enhanced_pattern = os.path.join(data_dir, f"*{session_id}*enhanced.json")
+    enhanced_files = glob.glob(enhanced_pattern)
+    
+    if enhanced_files:
+        try:
+            with open(enhanced_files[0], 'r') as f:
+                enhanced_data = json.load(f)
+                
+            # Merge only specific fields
+            for field in ["metrics_comparison", "best_model", "prompts", "reviews"]:
+                if field in enhanced_data:
+                    merged_data[field] = enhanced_data[field]
+        except Exception as e:
+            print(f"❌ Error loading enhanced file: {e}")
+    
+    return merged_data
+
 if __name__ == "__main__":
     # Check environment setup
     if not setup_environment():
         exit(1)
     
-    session_id = None
+    # Create session manager instance
+    session_manager = SessionManager()
     
     while True:
         choice = display_menu()
         
         if choice == "0":
             # Generate new session ID when starting fresh
-            session_id = generate_session_id()
+            session_id = session_manager.start_new_session()
             print(f"\n🔑 Starting new session: {session_id}")
             
             print("\n🔍 Running initial review and prompt generation...")
             
             import asyncio
             
-            # Run initial review
+            # Run initial review and store the session ID in the manager
             results = asyncio.run(initial_review())
             input("\nPress Enter to continue...")
         
         elif choice == "1":
+            # Use manager to get session ID
+            session_id = session_manager.get_session_id()
             if not session_id:
                 print("❌ No active session found. Please run option 0 first")
                 input("\nPress Enter to continue...")
                 continue
                 
-            stored_results = load_stored_prompts(session_id)
+            # Use manager to load data
+            stored_results = session_manager.load_session_data()
             if not stored_results:
                 print("❌ Please run option 0 first to generate baseline review")
                 input("\nPress Enter to continue...")
                 continue
-                
+            
             print("\n🎯 Adding confidence scores to review...")
             
             # Load stored results from option 0
@@ -899,7 +1003,7 @@ if __name__ == "__main__":
                     print(f"{'Model':<10} | {'Metric':<15} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} | {'% Change':>8} |")
                     print("=" * 90)
 
-                    baseline_metrics = stored_results["baseline_metrics"]
+                    baseline_metrics = stored_results["baseline_metrics"];
 
                     for model in enhanced_metrics:
                         if model in baseline_metrics:
@@ -907,9 +1011,9 @@ if __name__ == "__main__":
                                 baseline = baseline_metrics[model].get(metric, 0)
                                 enhanced = enhanced_metrics[model].get(metric, 0)
                                 change = enhanced - baseline
-                                pct_change = (change / baseline * 100) if baseline else 0
+                                pct_change = (change / baseline * 100) if baseline else 0;
 
-                                print(f"{model:<10} | {metric:<15} | {baseline:>8.3f} | {enhanced:>8.3f} | {change:>+8.3f} | {pct_change:>7.1f}% |")
+                                print(f"{model:<10} | {metric:<15} | {baseline:>8.3f} | {enhanced:>8.3f} | {change:>+8.3f} | {pct_change:>7.1f}% |");
 
                 except Exception as e:
                     print(f"❌ Error during enhanced prompt evaluation: {e}")
@@ -949,7 +1053,7 @@ if __name__ == "__main__":
             if advice:
                 print("\n" + advice)
             else:
-                print("\n⚠ Could not generate chunking advice")
+                print("\n⚠️ Could not generate chunking advice")
             
             input("\nPress Enter to continue...")
         
@@ -978,72 +1082,42 @@ if __name__ == "__main__":
                     # Prepare PR data for chunking tests
                     print("\n📊 Getting PR data for chunking comparison...")
                     
-                    # Get PR content from stored results
-                    current_pr_changes = (
-                        stored_results.get("current_pr_changes") or 
-                        stored_results.get("baseline_review") or
-                        stored_results.get("reviews", {}).get("gemini")
-                    )
+                    # Get PR content from stored results - use consistent field names
+                    current_pr_changes = stored_results.get("current_pr_changes", "")
+                    if not current_pr_changes:
+                        # Try alternate fields as fallback
+                        current_pr_changes = (stored_results.get("baseline_review") or 
+                                            stored_results.get("reviews", {}).get("gemini", ""))
                     
                     # Get similar PRs data
                     similar_prs_data = stored_results.get("similar_prs_changes", [])
                     similar_prs_changes = []
                     
-                    # Format similar PRs for the chunking tester
-                    if isinstance(similar_prs_data, list):
+                    # Standard format for similar PRs across all options
+                    if similar_prs_data:
                         for pr_data in similar_prs_data:
-                            if isinstance(pr_data, dict) and 'changes' in pr_data:
+                            # Standardize the format
+                            if isinstance(pr_data, dict):
+                                pr_number = pr_data.get('pr_number', 0)
+                                changes = pr_data.get('changes', '')
+                                if not changes and 'content' in pr_data:
+                                    changes = pr_data['content']
+                                
                                 similar_prs_changes.append({
-                                    'pr_number': pr_data.get('pr_number', 0),
-                                    'changes': pr_data.get('changes', '')
-                                })
-                    
-                    # If no similar PRs were found, manually add them to the session data
-                    if not similar_prs_changes and current_pr_changes:
-                        print("\n⚠️ No similar PRs found. Would you like to manually add similar PR data? (y/n)")
-                        add_manual = input().lower()
-                        
-                        if add_manual == 'y':
-                            # Get the current PR number
-                            pr_number = stored_results.get("pr_number", PR_NUMBER)
-                            
-                            # Manual entry for similar PRs
-                            print("\n📝 Let's add some similar PRs manually")
-                            
-                            num_prs = int(input("How many similar PRs do you want to add? "))
-                            
-                            for i in range(num_prs):
-                                print(f"\n--- Similar PR #{i+1} ---")
-                                pr_num = int(input(f"Enter PR number for similar PR #{i+1}: "))
-                                
-                                print(f"Enter changes for PR #{pr_num} (type 'END' on a new line when finished):")
-                                lines = []
-                                while True:
-                                    line = input()
-                                    if line == 'END':
-                                        break
-                                    lines.append(line)
-                                
-                                changes = '\n'.join(lines)
-                                
-                                # Add the PR in the correct format
-                                similar_prs_changes.append({
-                                    'pr_number': pr_num,
+                                    'pr_number': pr_number,
                                     'changes': changes
                                 })
-                            
-                            print(f"\n✅ Added {len(similar_prs_changes)} similar PRs manually")
-                            
-                            # Update the stored results with these similar PRs
-                            stored_results["similar_prs_changes"] = similar_prs_changes
-                            
-                            # Save the updated results back to the file
-                            updated_file = save_results(
-                                stored_results,
-                                "updated_session",
-                                session_id
-                            )
-                            print(f"💾 Updated session data saved to: {updated_file}")
+                        
+                    # If no similar PRs were found, manually add them to the session data
+                    if not similar_prs_changes and current_pr_changes:
+                        print("⚠️ No similar PRs found, but current PR data is available")
+                        
+                        # Manually add current PR changes as the only "similar" PR for testing
+                        similar_prs_changes = [{
+                            'pr_number': PR_NUMBER,
+                            'changes': current_pr_changes
+                        }]
+                        print("✅ Added current PR changes as a similar PR for testing")
                     
                     pr_number = stored_results.get("pr_number", PR_NUMBER)
                     
@@ -1321,7 +1395,6 @@ if __name__ == "__main__":
                         print(f"\n🤖 Testing models with {best_embedder} embeddings...")
                         
                         # Create embedder instance - this doesn't actually affect the PR review generation
-                        # since we're not changing how the similarity query works in this function
                         best_embedding = EmbeddingFactory.get_embedder(best_embedder)
                         
                         # Initialize ReviewEvaluator for model comparison
@@ -1338,6 +1411,8 @@ if __name__ == "__main__":
                         
                         # Generate review using best model
                         print(f"\n🤖 Generating PR review using {best_embedder} embeddings and {best_model} model...")
+            
+                        # FIX: Add print_full_review=False parameter to avoid duplicate display
                         review = generate_review(
                             current_pr_changes,
                             similar_prs_changes,

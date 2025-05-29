@@ -142,7 +142,7 @@ class EmbeddingEvaluator:
                 if inspect.iscoroutinefunction(self.metrics_calculator.compute_rouge_ragas):
                     rouge = await self.metrics_calculator.compute_rouge_ragas(current_pr_text, similar_pr_text)
                 else:
-                    rouge = self.metrics_calculator.compute_rouge_ragas(current_pr_text, similar_pr_text)
+                    rouge = self.metrics.calculator.compute_rouge_ragas(current_pr_text, similar_pr_text)
             except Exception as e:
                 print(f"Error computing ROUGE: {e}")
                 rouge = 0.5  # Default value
@@ -203,20 +203,31 @@ class EmbeddingEvaluator:
             print("❌ No evaluation results to display")
             return
 
-        print("\n📊 Embedding Methods Performance Comparison:")
-        print("=" * 150)
+        print("\n📊 Embedding Methods Comparison:")
+        print("=" * 100)
 
-        # Define metrics columns in order
+        # Define metrics columns with shortened names
         metrics = [
-            "Relevance", "Groundedness", "Completeness", "Faithfulness", 
-            "AnswerRelevance", "BLEU", "ROUGE", "EmbeddingTime", 
-            "Average", "embedding_time"
+            "Overall", "Relev", "Ground", "Compl", "Faith", 
+            "AnsRel", "BLEU", "ROUGE", "Time"
         ]
+        
+        metrics_mapping = {
+            "Overall": "Average",
+            "Relev": "Relevance", 
+            "Ground": "Groundedness", 
+            "Compl": "Completeness", 
+            "Faith": "Faithfulness",
+            "AnsRel": "AnswerRelevance", 
+            "BLEU": "BLEU", 
+            "ROUGE": "ROUGE", 
+            "Time": "EmbeddingTime"
+        }
 
         # Print header
-        header = "| {:<20} |".format("Embedder")
+        header = "| {:<15} |".format("Embedder")
         for metric in metrics:
-            header += " {:>12} |".format(metric)
+            header += " {:>6} |".format(metric)
         print(header)
         print("-" * len(header))
 
@@ -224,33 +235,37 @@ class EmbeddingEvaluator:
         for embedder_type, embedder_metrics in self.evaluation_results.items():
             # Prepare embedder name with BEST label if applicable
             embedder_name = f"{embedder_type} (BEST)" if embedder_type == self.best_embedder else embedder_type
-            row = "| {:<20} |".format(embedder_name)
+            row = "| {:<15} |".format(embedder_name[:15])
 
             # Add each metric value
-            for metric in metrics:
-                value = embedder_metrics.get(metric, 0.0)
-                row += " {:>12.3f} |".format(value)
+            for metric_short in metrics:
+                metric_full = metrics_mapping.get(metric_short)
+                value = embedder_metrics.get(metric_full, 0.0)
+                row += " {:>6.3f} |".format(value)
             print(row)
 
         print("=" * len(header))
 
         # Print summary
-        print("\n🏆 Summary:")
-        print("-" * 50)
-        print(f"Best Overall Embedder: {self.best_embedder}")
+        print(f"\n🏆 Best Overall Embedder: {self.best_embedder}")
 
         # Show key strengths of best embedder
         if self.best_embedder and self.best_embedder in self.evaluation_results:
-            print("\nKey Strengths of Best Embedder:")
+            print("\nKey Strengths:")
             best_metrics = self.evaluation_results[self.best_embedder]
             baseline_metrics = self.evaluation_results.get('tfidf', {})
             
-            for metric in metrics:
-                if metric in best_metrics and metric in baseline_metrics:
-                    value = best_metrics[metric]
-                    baseline = baseline_metrics[metric]
-                    if value > baseline:
+            found_strengths = False
+            for short_name, full_name in metrics_mapping.items():
+                if full_name in best_metrics and full_name in baseline_metrics:
+                    value = best_metrics[full_name]
+                    baseline = baseline_metrics[full_name]
+                    if value > baseline and baseline > 0:
+                        found_strengths = True
                         improvement = ((value - baseline) / baseline * 100)
-                        print(f"• {metric}: +{improvement:.1f}% vs baseline")
+                        print(f"• {short_name}: +{improvement:.1f}% vs baseline")
+            
+            if not found_strengths:
+                print("• No significant improvements over baseline")
 
         print("=" * 120)
