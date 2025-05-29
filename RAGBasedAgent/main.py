@@ -1137,6 +1137,72 @@ if __name__ == "__main__":
                         if os.path.exists(html_report):
                             print(f"\n🌐 Opening HTML report in browser...")
                             webbrowser.open(f"file://{os.path.abspath(html_report)}")
+
+                    
+                    # ---------------------
+
+                    # Get baseline metrics from stored results
+                    # Update the metrics comparison section in test_chunking_with_ragas():
+                    # ---------------------
+
+                    # Get baseline metrics from stored results
+                    baseline_metrics = stored_results.get("baseline_metrics", {}).get(stored_results.get("best_model", "gemini"), {})
+
+                    if baseline_metrics and comparison_results.get("strategies"):
+                        print("\n📊 Baseline vs Chunking Strategies RAGAS Metrics Comparison")
+                        print("=" * 100)
+                        
+                        # Define metrics and strategies for the table
+                        strategies = ["Baseline", "Hybrid Semantic", "Pure Semantic", "Fixed Size", "Hierarchical"]
+                        
+                        # Get metrics directly from strategies
+                        strategies_data = {
+                            "Hybrid Semantic": comparison_results["strategies"]["hybrid"].get("metrics", {}),
+                            "Pure Semantic": comparison_results["strategies"]["semantic"].get("metrics", {}),
+                            "Fixed Size": comparison_results["strategies"]["fixed"].get("metrics", {}),
+                            "Hierarchical": comparison_results["strategies"]["hierarchical"].get("metrics", {})
+                        }
+                        
+                        # Print header
+                        header = f"{'Metric':<20} |"
+                        for strategy in strategies:
+                            header += f" {strategy:^15} |"
+                        print(header)
+                        print("-" * len(header))
+
+                        # Define metrics mapping
+                        metrics_mapping = {
+                            "Relevance": ["Relevance", "Relevance"],
+                            "Accuracy": ["Accuracy", "Accuracy"], 
+                            "Groundedness": ["Groundedness", "Groundedness"],
+                            "Completeness": ["Completeness", "Completeness"],
+                            "Faithfulness": ["Faithfulness", "Faithfulness"],
+                            "ContextualPrecision": ["ContextualPrecision", "ContextualPrecision"],
+                            "ContextRecall": ["ContextRecall", "ContextRecall"], 
+                            "AnswerRelevance": ["AnswerRelevance", "AnswerRelevance"],
+                            "BLEU": ["BLEU", "BLEU"],
+                            "ROUGE": ["ROUGE", "ROUGE"],
+                            "Overall": ["Overall", "Overall"]
+                        }
+
+                        # Print each metric row
+                        for metric_display, metric_keys in metrics_mapping.items():
+                            row = f"{metric_display:<20} |"
+                            
+                            # Baseline value
+                            baseline_value = baseline_metrics.get(metric_keys[0], 0)
+                            row += f" {baseline_value:^15.3f} |"
+                            
+                            # Values for each chunking strategy
+                            for strategy_name in list(strategies_data.keys()):
+                                strategy_metrics = strategies_data[strategy_name]
+                                value = strategy_metrics.get(metric_keys[1], 0)
+                                row += f" {value:^15.3f} |"
+                            
+                            print(row)
+                        
+                        print("=" * len(header))
+
                     
                     return True
                         
