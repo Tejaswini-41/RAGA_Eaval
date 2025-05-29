@@ -24,13 +24,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 # Global constants for repository settings
-REPO_OWNER = 'microsoft'
-REPO_NAME = 'vscode'
-PR_NUMBER = 246149
+# REPO_OWNER = 'microsoft'
+# REPO_NAME = 'vscode'
+# PR_NUMBER = 246149
 
-# REPO_OWNER = 'explodinggradients'
-# REPO_NAME = 'ragas'
-# PR_NUMBER = 2030
+REPO_OWNER = 'explodinggradients'
+REPO_NAME = 'ragas'
+PR_NUMBER = 2030
 
 def generate_session_id():
     """Generate a unique session ID"""
@@ -1318,7 +1318,8 @@ if __name__ == "__main__":
                     if best_embedder:
                         print(f"\n🤖 Generating PR review using {best_embedder} embeddings...")
                         
-                        # Create embedder instance
+                        # Create embedder instance - this doesn't actually affect the PR review generation
+                        # since we're not changing how the similarity query works in this function
                         best_embedding = EmbeddingFactory.get_embedder(best_embedder)
                         
                         # Use existing PR generation workflow with best embedder
@@ -1326,16 +1327,11 @@ if __name__ == "__main__":
                             current_pr_changes,
                             similar_prs_changes,
                             pr_number=PR_NUMBER,
-                            model_name="gemini"  # Use default model
+                            model_name="gemini"  
                         )
                         
                         if review:
-                            print("\n📝 PR Review (using best embedding method):")
-                            print("-" * 60)
-                            preview_length = min(500, len(review))
-                            print(review[:preview_length] + ("..." if len(review) > preview_length else ""))
-                            print("-" * 60)
-                            
+                            # Don't print the full review here, just save it and show the preview
                             # Save results
                             results = {
                                 "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
@@ -1350,6 +1346,13 @@ if __name__ == "__main__":
                                 "embedding_evaluation",
                                 session_id
                             )
+                            
+                            # Display preview of the generated review
+                            print("\n📝 PR Review (using best embedding method):")
+                            print("-" * 60)
+                            preview_length = min(500, len(review))
+                            print(review[:preview_length] + ("..." if len(review) > preview_length else ""))
+                            print("-" * 60)
                             print(f"\n💾 Results saved to {json_path}")
                         else:
                             print("❌ Failed to generate PR review")

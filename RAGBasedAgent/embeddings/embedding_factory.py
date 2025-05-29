@@ -2,6 +2,7 @@ from .tfidf_embedder import TFIDFEmbedder
 from .sentence_transformer_embedder import SentenceTransformerEmbedder
 from .code_bert_embedder import CodeBertEmbedder
 from .hybrid_embedder import HybridEmbedder
+from .word2vec_embedder import Word2VecEmbedder  # Add this import
 
 class EmbeddingFactory:
     """Factory for creating different embedding methods"""
@@ -13,7 +14,8 @@ class EmbeddingFactory:
             "tfidf": TFIDFEmbedder,
             "sentence_transformer": SentenceTransformerEmbedder,
             "codebert": CodeBertEmbedder,
-            "hybrid": HybridEmbedder
+            "hybrid": HybridEmbedder,
+            "word2vec": Word2VecEmbedder  # Add this line
         }
         
         if embedder_type not in embedder_map:
@@ -30,5 +32,6 @@ class EmbeddingFactory:
             "tfidf": "TF-IDF (Term Frequency-Inverse Document Frequency)",
             "sentence_transformer": "Sentence Transformer (all-MiniLM-L6-v2)",
             "codebert": "CodeBERT (microsoft/codebert-base)",
-            "hybrid": "Hybrid (TF-IDF + Sentence Transformer)"
+            "hybrid": "Hybrid (TF-IDF + Sentence Transformer)",
+            "word2vec": "Word2Vec (Trained on-the-fly)"  # Add this line
         }
