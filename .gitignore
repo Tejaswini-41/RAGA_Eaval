@@ -6,6 +6,7 @@ nice_venv/
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 .Python
 tfidf_vectorizer.pkl/
 
@@ -57,3 +58,62 @@ desktop.ini
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# Model files and embeddings
+*.model
+*.bin
+*.vec
+*.pkl
+word2vec.model
+tfidf_vectorizer.pkl
+chroma_chunks/
+
+# NLTK data
+nltk_data/
+
+# Generated files
+*.json
+*.csv
+reviews/
+RAG_based_Analysis*/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter notebooks
+.ipynb_checkpoints
+*.ipynb
+
+# OS specific
+.DS_Store
+Thumbs.db
