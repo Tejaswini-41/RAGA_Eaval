@@ -1,6 +1,9 @@
-import os
-import datetime
+import asyncio
 import json
+import os
+import sys
+import time
+import uuid
 from datetime import datetime 
 from dotenv import load_dotenv
 from GithubAuth import fetch_pull_requests
@@ -13,11 +16,12 @@ from prompts.review_prompts import ReviewPrompts
 from improvement_analyzer import analyze_improvements
 from Confidence_Scorer import enhance_review_with_confidence_scores
 from chunking_advice import ChunkingAdvisor  
-import uuid
-import time
 from chunking import HybridSemanticChunker
 from chunked_review_generator import ChunkedReviewGenerator
-import asyncio
+
+# Make sure to add these paths for imports
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 # Global constants for repository settings
 REPO_OWNER = 'microsoft'
@@ -298,7 +302,7 @@ def display_menu():
     print("3. 📊 DB chunking Advice")
     print("4. 🧪 Test Chunking Strategy")
     print("5. 💡 Add interactive feedback system for RAGAS improvement")
-    print("6. 🧩 Run review with hybrid semantic chunking")  # New option
+    print("6. 🧩 Compare different embedding methods")  
     print("7. ❌ Exit")
 
     print("-"*50)
@@ -1184,26 +1188,115 @@ if __name__ == "__main__":
             
             input("\nPress Enter to continue...")
 
-        elif choice == "6": 
-            print("\n🧩 Running PR review with hybrid semantic chunking...")
+        elif choice == "6":
+            print("\n🔍 Running embedding method comparison with RAGAS metrics...")
             
-            # Check if we have an existing session with data
-            if session_id:
-                print(f"\n🔄 Using existing session: {session_id}")
-            else:
-                # Create a new session ID if needed
-                session_id = generate_session_id()
-                print(f"\n🔑 Starting new session with chunking: {session_id}")
+            if not session_id:
+                print("❌ No active session found. Please run option 0 first")
+                input("\nPress Enter to continue...")
+                continue
+                
+            # Load stored results from previous run
+            stored_results = load_stored_prompts(session_id)
+            if not stored_results:
+                print("❌ Please run option 0 first to generate baseline review")
+                input("\nPress Enter to continue...")
+                continue
             
-            # Run chunked review (will use existing data if available)
-            review = asyncio.run(run_chunked_rag_review(REPO_OWNER, REPO_NAME, PR_NUMBER))
+            # Get PR content from stored results
+            current_pr_changes = stored_results.get("current_pr_changes", "")
+            similar_prs_changes = stored_results.get("similar_prs_changes", [])
             
-            if review:
-                print("\n📝 Summary of chunked review:")
-                print("-" * 50)
-                print(review[:500] + "...")  # Show first 500 chars
-                print("-" * 50)
-                print("\nFull review saved to results directory")
+            if not current_pr_changes or not similar_prs_changes:
+                print("❌ No PR data found in session. Please run option 0 first.")
+                input("\nPress Enter to continue...")
+                continue
+            
+            # Import embedding evaluator and factory
+            try:
+                from embeddings.embedding_factory import EmbeddingFactory
+                from embeddings.embedding_evaluator import EmbeddingEvaluator
+                from embeddings.tfidf_embedder import TFIDFEmbedder
+            except ImportError as e:
+                print(f"❌ Error importing embedding modules: {e}")
+                print("Make sure the embeddings package is correctly installed")
+                input("\nPress Enter to continue...")
+                continue
+            
+            # Get available embedding methods
+            available_embedders = EmbeddingFactory.get_available_embedders()
+            print(f"\n📊 Available embedding methods: {', '.join(available_embedders.keys())}")
+            
+            # Create current PR data structure
+            current_pr_data = {"changes": current_pr_changes}
+            
+            # Get first similar PR for comparison
+            similar_pr_data = {"changes": similar_prs_changes[0]['changes']} if similar_prs_changes else {"changes": ""}
+            
+            print("\n🔄 Comparing embedding methods using RAGAS metrics...")
+            
+            async def compare_embeddings():
+                try:
+                    # Initialize embedding evaluator
+                    evaluator = EmbeddingEvaluator()
+                    
+                    # Evaluate all embedding methods
+                    best_embedder, evaluation_results = await evaluator.evaluate_embedders(
+                        current_pr_data,
+                        similar_pr_data
+                    )
+                    
+                    print(f"\n✅ Evaluation complete! Best embedding method: {best_embedder}")
+                    
+                    # Use the best embedder to generate a PR review
+                    if best_embedder:
+                        print(f"\n🤖 Generating PR review using {best_embedder} embeddings...")
+                        
+                        # Create embedder instance
+                        best_embedding = EmbeddingFactory.get_embedder(best_embedder)
+                        
+                        # Use existing PR generation workflow with best embedder
+                        review = generate_review(
+                            current_pr_changes,
+                            similar_prs_changes,
+                            pr_number=PR_NUMBER,
+                            model_name="gemini"  # Use default model
+                        )
+                        
+                        if review:
+                            print("\n📝 PR Review (using best embedding method):")
+                            print("-" * 60)
+                            preview_length = min(500, len(review))
+                            print(review[:preview_length] + ("..." if len(review) > preview_length else ""))
+                            print("-" * 60)
+                            
+                            # Save results
+                            results = {
+                                "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+                                "session_id": session_id,
+                                "embedding_evaluation": evaluation_results,
+                                "best_embedder": best_embedder,
+                                "pr_review": review
+                            }
+                            
+                            json_path = save_results(
+                                results,
+                                "embedding_evaluation",
+                                session_id
+                            )
+                            print(f"\n💾 Results saved to {json_path}")
+                        else:
+                            print("❌ Failed to generate PR review")
+                    
+                    return best_embedder, evaluation_results
+                except Exception as e:
+                    print(f"❌ Error during embedding comparison: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    return "tfidf", {}  # Default fallback
+            
+            # Run embedding comparison
+            best_embedder, evaluation_results = asyncio.run(compare_embeddings())
             
             input("\nPress Enter to continue...")
         
