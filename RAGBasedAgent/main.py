@@ -975,7 +975,7 @@ if __name__ == "__main__":
                         "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
                         "session_id": stored_results["session_id"],
                         "prompts": {
-                            "original": stored_results["original_system_prompt"],
+                            "original": stored_results.get("original_system_prompt"),
                             "enhanced": enhanced_prompt
                         },
                         "reviews": enhanced_reviews,
@@ -986,7 +986,11 @@ if __name__ == "__main__":
                         "best_model": {
                             "baseline": stored_results["best_model"],
                             "enhanced": best_model
-                        }
+                        },
+                        # Add these fields to match baseline format
+                        "current_pr_changes": stored_results.get("current_pr_changes"),
+                        "similar_prs_changes": stored_results.get("similar_prs_changes"),
+                        "pr_files": stored_results.get("pr_files", [])
                     }
 
                     enhanced_file = save_results(
@@ -1191,6 +1195,26 @@ if __name__ == "__main__":
                                 "chunking_score": best_score,
                                 "chunking_stats": review_result.get("chunking_stats", {})
                             }
+
+
+                            if output:
+                                # Add additional data to the result before saving
+                                output["baseline_data"] = {
+                                    "baseline_metrics": stored_results.get("baseline_metrics", {}),
+                                    "enhanced_metrics": stored_results.get("metrics_comparison", {}).get("enhanced", {}),
+                                    "current_pr_changes": current_pr_changes,
+                                    "similar_prs_changes": similar_prs_changes,
+                                    "pr_files": stored_results.get("pr_files", [])
+                                }
+
+                                # # Save the enriched results
+                                # json_path = save_results(
+                                #     output,
+                                #     "chunking_comparison",
+                                #     session_id
+                                # )
+                                # print(f"\n💾 Chunking comparison results saved to {json_path}")
+
                             
                             # Save results to JSON file
                             json_path = save_results(
@@ -1205,7 +1229,7 @@ if __name__ == "__main__":
                             preview_length = min(500, len(chunked_review))
                             print(chunked_review[:preview_length] + ("..." if len(chunked_review) > preview_length else ""))
                             print("-" * 60)
-                            print(f"\n💾 Full review saved to {json_path}")
+                            print(f"\n💾 Chunking comparison results saved to {json_path}")
                         else:
                             print(f"❌ Failed to generate review: {review_result.get('error', 'Unknown error')}")
                     
@@ -1223,58 +1247,55 @@ if __name__ == "__main__":
                     # Update the metrics comparison section in test_chunking_with_ragas():
                     # ---------------------
 
+                    # Update the metrics comparison section in test_chunking_with_ragas() function:
+
                     # Get baseline metrics from stored results
                     baseline_metrics = stored_results.get("baseline_metrics", {}).get(stored_results.get("best_model", "gemini"), {})
 
                     if baseline_metrics and comparison_results.get("strategies"):
                         print("\n📊 Baseline vs Chunking Strategies RAGAS Metrics Comparison")
-                        print("=" * 100)
+                        print("=" * 120)
                         
-                        # Define metrics and strategies for the table
-                        strategies = ["Baseline", "Hybrid Semantic", "Pure Semantic", "Fixed Size", "Hierarchical"]
+                        # Define metrics to display
+                        metrics_list = [
+                            "Relevance", "Accuracy", "Groundedness", "Completeness", 
+                            "Faithfulness", "ContextualPrecision", "ContextRecall", 
+                            "AnswerRelevance", "BLEU", "ROUGE", "Overall"
+                        ]
+
+                        # # Get strategy names and metrics
+                        # strategies_metrics = {
+                        #     "Baseline": baseline_metrics,
+                        #     "Hybrid Semantic": comparison_results["strategies"]["hybrid"].get("metrics", {}),
+                        #     "Pure Semantic": comparison_results["strategies"]["semantic"].get("metrics", {}),
+                        #     "Fixed Size": comparison_results["strategies"]["fixed"].get("metrics", {}),
+                        #     "Hierarchical": comparison_results["strategies"]["hierarchical"].get("metrics", {})
+                        # }
+
                         
-                        # Get metrics directly from strategies
-                        strategies_data = {
-                            "Hybrid Semantic": comparison_results["strategies"]["hybrid"].get("metrics", {}),
-                            "Pure Semantic": comparison_results["strategies"]["semantic"].get("metrics", {}),
-                            "Fixed Size": comparison_results["strategies"]["fixed"].get("metrics", {}),
-                            "Hierarchical": comparison_results["strategies"]["hierarchical"].get("metrics", {})
+                        
+                        strategies_metrics = {
+                            "Baseline": baseline_metrics,
+                            "Hybrid Semantic": comparison_results["strategies"]["hybrid"]["metrics"],
+                            "Pure Semantic": comparison_results["strategies"]["semantic"]["metrics"],
+                            "Fixed Size": comparison_results["strategies"]["fixed"]["metrics"],
+                            "Hierarchical": comparison_results["strategies"]["hierarchical"]["metrics"]
                         }
                         
                         # Print header
                         header = f"{'Metric':<20} |"
-                        for strategy in strategies:
+                        for strategy in strategies_metrics.keys():
                             header += f" {strategy:^15} |"
                         print(header)
                         print("-" * len(header))
-
-                        # Define metrics mapping
-                        metrics_mapping = {
-                            "Relevance": ["Relevance", "Relevance"],
-                            "Accuracy": ["Accuracy", "Accuracy"], 
-                            "Groundedness": ["Groundedness", "Groundedness"],
-                            "Completeness": ["Completeness", "Completeness"],
-                            "Faithfulness": ["Faithfulness", "Faithfulness"],
-                            "ContextualPrecision": ["ContextualPrecision", "ContextualPrecision"],
-                            "ContextRecall": ["ContextRecall", "ContextRecall"], 
-                            "AnswerRelevance": ["AnswerRelevance", "AnswerRelevance"],
-                            "BLEU": ["BLEU", "BLEU"],
-                            "ROUGE": ["ROUGE", "ROUGE"],
-                            "Overall": ["Overall", "Overall"]
-                        }
-
+                        
                         # Print each metric row
-                        for metric_display, metric_keys in metrics_mapping.items():
-                            row = f"{metric_display:<20} |"
+                        for metric in metrics_list:
+                            row = f"{metric:<20} |"
                             
-                            # Baseline value
-                            baseline_value = baseline_metrics.get(metric_keys[0], 0)
-                            row += f" {baseline_value:^15.3f} |"
-                            
-                            # Values for each chunking strategy
-                            for strategy_name in list(strategies_data.keys()):
-                                strategy_metrics = strategies_data[strategy_name]
-                                value = strategy_metrics.get(metric_keys[1], 0)
+                            # Add value for each strategy
+                            for strategy, metrics in strategies_metrics.items():
+                                value = metrics.get(metric, 0.0)
                                 row += f" {value:^15.3f} |"
                             
                             print(row)
