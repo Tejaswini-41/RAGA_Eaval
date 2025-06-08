@@ -16,6 +16,7 @@ from review_evaluator import ReviewEvaluator
 from prompts.review_prompts import ReviewPrompts
 from improvement_analyzer import analyze_improvements
 from Confidence_Scorer import enhance_review_with_confidence_scores
+from models.model_factory import ModelFactory
 from chunking_advice import ChunkingAdvisor  
 from chunking import HybridSemanticChunker
 from chunked_review_generator import ChunkedReviewGenerator
@@ -49,6 +50,415 @@ def setup_environment():
         return False
     
     return True
+
+async def custom_pr_review_generator():
+    """
+    Generate custom PR review with user-selectable components:
+    - Chunking strategy
+    - Embedding method
+    - Prompt type
+    - Model
+    """
+    # Import necessary modules
+    import asyncio
+    import uuid
+    import os
+    import json
+    import nltk
+    from datetime import datetime
+    from models.model_factory import ModelFactory
+    from chunked_review_generator import ChunkedReviewGenerator
+    from review_generator import generate_review
+    from prompts.review_prompts import ReviewPrompts
+    from review_evaluator import ReviewEvaluator
+    from evaluation.metrics import MetricsCalculator
+
+    # Check for session data
+    stored_results = load_stored_prompts(session_id)
+    if not stored_results:
+        print("❌ Please run option 0 first to generate baseline review")
+        input("\nPress Enter to continue...")
+        return False
+    
+    print(f"\n🛠️ Custom PR Review Generator")
+    
+    # Print session information
+    print(f"\n📊 Session {stored_results.get('session_id', 'Unknown')} data loaded:")
+    print(f"  - Timestamp: {stored_results.get('timestamp', 'Unknown')}")
+    print(f"  - PR Files: {len(stored_results.get('pr_files', []))} files")
+    print(f"  - Similar PRs: {len(stored_results.get('similar_prs_changes', []))} PRs")
+    
+    # Get PR data from stored results
+    current_pr_changes = stored_results.get("current_pr_changes")
+    similar_prs_changes = stored_results.get("similar_prs_changes", [])
+    pr_files = stored_results.get("pr_files", [])
+    pr_number = PR_NUMBER  # Using global constant
+
+    if not current_pr_changes or not similar_prs_changes:
+        print("❌ Missing PR data in session. Please run option 0 first.")
+        input("\nPress Enter to continue...")
+        return False
+    
+    # Step 1: Choose Chunking Strategy
+    print("\n🧩 Step 1: Choose Chunking Strategy")
+    print("-" * 50)
+    print("1. Hybrid Semantic (balances structure with size)")
+    print("2. Pure Semantic (preserves natural code boundaries)")
+    print("3. Fixed Size (consistent chunk sizes)")
+    print("4. Hierarchical (maintains parent-child relationships)")
+    print("5. No chunking (process entire PR at once)")
+    
+    chunking_choice = input("\nSelect chunking strategy (1-5): ")
+    chunking_strategy = None
+    use_chunking = True
+    
+    if chunking_choice == "1":
+        chunking_strategy = "hybrid"
+    elif chunking_choice == "2":
+        chunking_strategy = "semantic"
+    elif chunking_choice == "3":
+        chunking_strategy = "fixed"
+    elif chunking_choice == "4":
+        chunking_strategy = "hierarchical"
+    elif chunking_choice == "5":
+        use_chunking = False
+    else:
+        print("⚠️ Invalid choice, defaulting to hybrid chunking")
+        chunking_strategy = "hybrid"
+    
+    # Step 2: Choose Embedding Method
+    print("\n📊 Step 2: Choose Embedding Method")
+    print("-" * 50)
+    print("1. tfidf: TF-IDF (Term Frequency-Inverse Document Frequency)")
+    print("2. sentence_transformer: Sentence Transformer (all-MiniLM-L6-v2)")
+    print("3. codebert: CodeBERT (microsoft/codebert-base)")
+    print("4. hybrid: Hybrid (TF-IDF + Sentence Transformer)")
+    print("5. word2vec: Word2Vec (Trained on-the-fly)")
+    
+    embedding_choice = input("\nSelect embedding method (1-5): ")
+    embedding_method = None
+    
+    if embedding_choice == "1":
+        embedding_method = "tfidf"
+    elif embedding_choice == "2":
+        embedding_method = "sentence_transformer"
+    elif embedding_choice == "3":
+        embedding_method = "codebert"
+    elif embedding_choice == "4":
+        embedding_method = "hybrid"
+    elif embedding_choice == "5":
+        embedding_method = "word2vec"
+    else:
+        print("⚠️ Invalid choice, defaulting to tfidf embedding")
+        embedding_method = "tfidf"
+    
+    # Step 3: Choose Prompt Type
+    print("\n📝 Step 3: Choose Prompt Type")
+    print("-" * 50)
+    print("1. Default system prompt")
+    print("2. Enhanced system prompt (from option 4)")
+    print("3. Custom system prompt (enter your own)")
+    
+    prompt_choice = input("\nSelect prompt type (1-3): ")
+    system_prompt = None
+    
+    if prompt_choice == "1":
+        current_prompt, system_prompt = ReviewPrompts.get_current_prompt()
+        print("✅ Using default system prompt")
+    elif prompt_choice == "2":
+        enhanced_prompt = stored_results.get("enhanced_system_prompt")
+        if enhanced_prompt:
+            system_prompt = enhanced_prompt
+            print("✅ Using enhanced system prompt")
+        else:
+            current_prompt, system_prompt = ReviewPrompts.get_current_prompt()
+            print("⚠️ No enhanced prompt found, using default")
+    elif prompt_choice == "3":
+        print("\nEnter your custom system prompt (finish with Enter + Ctrl+Z on Windows):")
+        custom_lines = []
+        try:
+            while True:
+                line = input()
+                if not line.strip():  # Empty line to terminate input
+                    break
+                custom_lines.append(line)
+        except EOFError:
+            pass
+        
+        system_prompt = "\n".join(custom_lines)
+        if system_prompt:
+            print("✅ Custom prompt received")
+        else:
+            current_prompt, system_prompt = ReviewPrompts.get_current_prompt()
+            print("⚠️ No prompt entered, using default")
+    else:
+        current_prompt, system_prompt = ReviewPrompts.get_current_prompt()
+        print("⚠️ Invalid choice, using default system prompt")
+    
+    # Step 4: Choose Model
+    print("\n🤖 Step 4: Choose Model")
+    print("-" * 50)
+    
+    # Get available models from model factory
+    model_factory = ModelFactory()
+    available_models = model_factory.get_model_names()
+    
+    # Display available models
+    for i, model_name in enumerate(available_models, 1):
+        print(f"{i}. {model_name}")
+    
+    model_choice = input(f"\nSelect model (1-{len(available_models)}): ")
+    
+    try:
+        model_index = int(model_choice) - 1
+        if 0 <= model_index < len(available_models):
+            model_name = available_models[model_index]
+        else:
+            model_name = "gemini"  # Default to gemini if invalid choice
+            print("⚠️ Invalid choice, defaulting to gemini")
+    except ValueError:
+        model_name = "gemini"  # Default to gemini if invalid choice
+        print("⚠️ Invalid choice, defaulting to gemini")
+    
+    # Display configuration summary
+    print(f"\n🚀 Generating custom PR review with:")
+    print(f"- Chunking: {chunking_strategy if use_chunking else 'none'}")
+    print(f"- Embedding: {embedding_method}")
+    print(f"- Model: {model_name}")
+    print(f"- Prompt: {'Enhanced' if prompt_choice == '2' else 'Custom' if prompt_choice == '3' else 'Default'}")
+    print("-" * 50)
+    
+    # Import embedding factory and configure embedding method
+    try:
+        # Try to import EmbeddingFactory
+        try:
+            from embeddings.embedding_factory import EmbeddingFactory
+            
+            # Setup the embedding factory with selected method
+            print(f"⚙️ Checking NLTK punkt tokenizer...")
+            try:
+                nltk.data.find('tokenizers/punkt')
+                print(f"✅ NLTK punkt tokenizer found")
+            except LookupError:
+                print(f"⚠️ Downloading NLTK punkt tokenizer...")
+                nltk.download('punkt')
+            
+            print(f"✅ Using {embedding_method} embedding method")
+            embedding_factory = EmbeddingFactory()
+            embedder = embedding_factory.get_embedder(embedding_method)
+        except ImportError:
+            # If EmbeddingFactory not available, continue with default embedding
+            print("⚠️ EmbeddingFactory not available, using default embedding")
+    except Exception as e:
+        print(f"❌ Error configuring embedding: {e}")
+    
+    # Apply selected configuration to generate review
+    if use_chunking:
+        # Use chunking strategy with selected configuration
+        try:
+            # Create chunking collection name with unique ID
+            collection_name = f"{chunking_strategy}_chunks_{uuid.uuid4().hex[:8]}"
+            print(f"\n🧩 Applying {chunking_strategy} chunking strategy...")
+            
+            # Create ChunkedReviewGenerator with selected chunking strategy
+            generator = ChunkedReviewGenerator(
+                chunk_collection_name=collection_name,
+                chunking_strategy=chunking_strategy
+            )
+            
+            # Process PR with chunking and selected model
+            print(f"\n🔄 Processing PR with {chunking_strategy} chunking...")
+            result = await generator.process_pr_with_chunking(
+                current_pr_changes,
+                similar_prs_changes,
+                pr_number,
+                model_name=model_name,
+                chunking_strategy=chunking_strategy
+            )
+            
+            if not result or not result.get("success"):
+                print(f"❌ Failed to generate chunked review: {result.get('error', 'Unknown error')}")
+                input("\nPress Enter to continue...")
+                return False
+            
+            chunked_review = result.get("chunked_review")
+            
+            # Calculate RAGAS metrics for the generated review
+            print(f"\n📊 Calculating RAGAS metrics for review quality...")
+            evaluator = ReviewEvaluator()
+            
+            # Get a reference review (using best model from baseline)
+            reference_model = stored_results.get("best_model", "gemini")
+            reference_review = generate_review(
+                current_pr_changes,
+                similar_prs_changes,
+                pr_number=pr_number,
+                model_name=reference_model
+            )
+            
+            # Calculate metrics against reference
+            metrics = await evaluator._calculate_metrics(reference_review, chunked_review)
+            
+            # Save the results
+            custom_results = {
+                "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+                "session_id": session_id,
+                "pr_number": pr_number,
+                "configuration": {
+                    "chunking_strategy": chunking_strategy,
+                    "embedding_method": embedding_method,
+                    "model_name": model_name,
+                    "prompt_type": prompt_choice
+                },
+                "chunked_review": chunked_review,
+                "metrics": metrics,
+                "chunking_stats": result.get("chunking_stats", {})
+            }
+            
+            # Save results
+            json_path = save_results(
+                custom_results,
+                "custom_pr_review",
+                session_id
+            )
+            
+            # Also save the review as markdown for easier reading
+            review_path = json_path.replace(".json", ".md")
+            with open(review_path, "w", encoding="utf-8") as f:
+                f.write(chunked_review)
+            
+            # Display review summary
+            print("\n📝 Custom PR Review:")
+            print("-" * 50)
+            preview_length = min(1000, len(chunked_review))
+            print(chunked_review[:preview_length] + ("..." if len(chunked_review) > preview_length else ""))
+            print("-" * 50)
+            print(f"\n💾 Results saved to:")
+            print(f"  - JSON: {json_path}")
+            print(f"  - Markdown: {review_path}")
+            
+            # Display metrics summary
+            print("\n📊 RAGAS Metrics:")
+            print("-" * 50)
+            print(f"Overall Score: {metrics.get('Overall', 0):.3f}")
+            for metric, score in metrics.items():
+                if metric != "Overall":
+                    print(f"{metric}: {score:.3f}")
+            
+            input("\nPress Enter to continue...")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error during chunked review generation: {e}")
+            import traceback
+            traceback.print_exc()
+            input("\nPress Enter to continue...")
+            return False
+    else:
+        # Use direct review generation without chunking
+        try:
+            print("\n🤖 Generating review without chunking...")
+            
+            # Update system prompt if needed
+            if system_prompt:
+                ReviewPrompts.update_system_prompt(system_prompt)
+            
+            # Generate review with selected model
+            review = generate_review(
+                current_pr_changes,
+                similar_prs_changes,
+                pr_number=pr_number,
+                current_pr_file=", ".join(pr_files) if pr_files else None,
+                model_name=model_name
+            )
+            
+            if not review:
+                print("❌ Failed to generate review")
+                input("\nPress Enter to continue...")
+                return False
+            
+            # Calculate RAGAS metrics
+            print(f"\n📊 Calculating RAGAS metrics for review quality...")
+            evaluator = ReviewEvaluator()
+            reference_model = stored_results.get("best_model", "gemini")
+            
+            # Generate reference review if needed
+            if reference_model != model_name:
+                reference_review = generate_review(
+                    current_pr_changes,
+                    similar_prs_changes,
+                    pr_number=pr_number,
+                    current_pr_file=", ".join(pr_files) if pr_files else None,
+                    model_name=reference_model
+                )
+            else:
+                # If using the same model as reference, use a different model for comparison
+                reference_model = "gemini" if model_name != "gemini" else "deepseek"
+                reference_review = generate_review(
+                    current_pr_changes,
+                    similar_prs_changes,
+                    pr_number=pr_number,
+                    current_pr_file=", ".join(pr_files) if pr_files else None,
+                    model_name=reference_model
+                )
+            
+            # Calculate metrics against reference
+            metrics = await evaluator._calculate_metrics(reference_review, review)
+            
+            # Save the results
+            custom_results = {
+                "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+                "session_id": session_id,
+                "pr_number": pr_number,
+                "configuration": {
+                    "chunking_strategy": "none",
+                    "embedding_method": embedding_method,
+                    "model_name": model_name,
+                    "prompt_type": prompt_choice
+                },
+                "review": review,
+                "metrics": metrics
+            }
+            
+            # Save results
+            json_path = save_results(
+                custom_results,
+                "custom_pr_review",
+                session_id
+            )
+            
+            # Also save the review as markdown for easier reading
+            review_path = json_path.replace(".json", ".md")
+            with open(review_path, "w", encoding="utf-8") as f:
+                f.write(review)
+            
+            # Display review summary
+            print("\n📝 Custom PR Review:")
+            print("-" * 50)
+            preview_length = min(1000, len(review))
+            print(review[:preview_length] + ("..." if len(review) > preview_length else ""))
+            print("-" * 50)
+            print(f"\n💾 Results saved to:")
+            print(f"  - JSON: {json_path}")
+            print(f"  - Markdown: {review_path}")
+            
+            # Display metrics summary
+            print("\n📊 RAGAS Metrics:")
+            print("-" * 50)
+            print(f"Overall Score: {metrics.get('Overall', 0):.3f}")
+            for metric, score in metrics.items():
+                if metric != "Overall":
+                    print(f"{metric}: {score:.3f}")
+            
+            input("\nPress Enter to continue...")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error during review generation: {e}")
+            import traceback
+            traceback.print_exc()
+            input("\nPress Enter to continue...")
+            return False
 
 async def run_rag_review(repo_owner, repo_name, pr_number):
     """Run the complete RAG-based PR review process"""
@@ -318,7 +728,7 @@ def display_menu():
     print("8. ❌ Exit")
 
     print("-"*50)
-    choice = input("\nSelect an option (0-7): ")
+    choice = input("\nSelect an option (0-8): ")
     return choice
 
 # Update the save_results function to handle markdown files
@@ -545,7 +955,7 @@ session_manager = SessionManager()
 async def initial_review():
     try:
         # Remove duplicate declarations and use constants
-        print(f"\n📦 Fetching pull request data...")
+        # print(f"\n📦 Fetching pull request data...")
         changed_files, pull_requests = fetch_pull_requests(REPO_OWNER, REPO_NAME)
         
         if not changed_files or not pull_requests:
@@ -1508,9 +1918,13 @@ if __name__ == "__main__":
             else:
                 print("❌ Failed to generate improvement analysis")
             
-            input("\nPress Enter to continue...")
-    
-        elif choice == "7": 
+            input("\nPress Enter to continue...")           
+            
+        elif choice == "7":
+            # Call the custom PR review generator function
+            asyncio.run(custom_pr_review_generator())
+                
+        elif choice == "8": 
             print("\n👋 Exiting the program. Goodbye!")
             exit(0)
         
