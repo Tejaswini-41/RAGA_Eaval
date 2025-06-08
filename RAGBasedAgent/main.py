@@ -309,12 +309,13 @@ def display_menu():
     print("\nEnhancement Options:")
     print("0. 🔄 Run standard review (default)")
     print("1. 🔍 Add confidence scores to review suggestions")
-    print("2. 🧪 Test Chunking Strategy")
-    print("3. 📝 Use enhanced prompts for better specificity")
-    print("4. 📊 DB chunking Advice")
-    print("5. 🧩 Compare different embedding methods") 
-    print("6. 💡 Add interactive feedback system for RAGAS improvement")
-    print("7. ❌ Exit")
+    print("2. 📊 DB chunking Advice")
+    print("3. 🧪 Test Chunking Strategy")
+    print("4. 📝 Use enhanced prompts")
+    print("5. 🧩 Test embedding methods") 
+    print("6. 🏆 Top Scoring Techniques")
+    print("7. 🛠️  Custom PR Review Generator")
+    print("8. ❌ Exit")
 
     print("-"*50)
     choice = input("\nSelect an option (0-7): ")
@@ -870,8 +871,42 @@ if __name__ == "__main__":
             asyncio.run(add_confidence_scores())
             input("\nPress Enter to continue...")
         
-
         elif choice == "2":
+            if not session_id:
+                print("❌ No active session found. Please run option 0 first")
+                input("\nPress Enter to continue...")
+                continue
+                
+            # Load stored results from previous run
+            stored_results = load_stored_prompts(session_id)
+            if not stored_results:
+                print("❌ Please run option 0 first to generate baseline review")
+                input("\nPress Enter to continue...")
+                continue
+                
+            
+            print("\n📊 Analyzing PR for chunking advice...")
+            stored_results = load_stored_prompts(session_id)
+            
+            # Prepare PR data for chunking analysis
+            pr_data = {
+                "current_pr_changes": stored_results.get("baseline_review", ""),
+                "pr_files": stored_results.get("pr_files", []),  # These are now string file paths
+                "metrics": stored_results.get("baseline_metrics", {})
+            }
+            
+            # Get chunking advice
+            import asyncio
+            advice = asyncio.run(get_chunking_advice(pr_data))
+            
+            if advice:
+                print("\n" + advice)
+            else:
+                print("\n⚠️ Could not generate chunking advice")
+            
+            input("\nPress Enter to continue...")
+ 
+        elif choice == "3":
             if not session_id:
                 print("❌ No active session found. Please run option 0 first")
                 input("\nPress Enter to continue...")
@@ -1136,7 +1171,7 @@ if __name__ == "__main__":
             
             input("\nPress Enter to continue...")
         
-        elif choice == "3":
+        elif choice == "4":
             if not session_id:
                 print("❌ No active session found. Please run option 0 first")
                 input("\nPress Enter to continue...")
@@ -1301,42 +1336,7 @@ if __name__ == "__main__":
             # Run the prompt testing
             asyncio.run(test_stored_prompt())
             input("\nPress Enter to continue...")
-
-        elif choice == "4":
-            if not session_id:
-                print("❌ No active session found. Please run option 0 first")
-                input("\nPress Enter to continue...")
-                continue
-                
-            # Load stored results from previous run
-            stored_results = load_stored_prompts(session_id)
-            if not stored_results:
-                print("❌ Please run option 0 first to generate baseline review")
-                input("\nPress Enter to continue...")
-                continue
-                
-            
-            print("\n📊 Analyzing PR for chunking advice...")
-            stored_results = load_stored_prompts(session_id)
-            
-            # Prepare PR data for chunking analysis
-            pr_data = {
-                "current_pr_changes": stored_results.get("baseline_review", ""),
-                "pr_files": stored_results.get("pr_files", []),  # These are now string file paths
-                "metrics": stored_results.get("baseline_metrics", {})
-            }
-            
-            # Get chunking advice
-            import asyncio
-            advice = asyncio.run(get_chunking_advice(pr_data))
-            
-            if advice:
-                print("\n" + advice)
-            else:
-                print("\n⚠️ Could not generate chunking advice")
-            
-            input("\nPress Enter to continue...")
-        
+       
         elif choice == "5":
             print("\n🔍 Running embedding method comparison with RAGAS metrics...")
             
@@ -1509,8 +1509,7 @@ if __name__ == "__main__":
                 print("❌ Failed to generate improvement analysis")
             
             input("\nPress Enter to continue...")
-
-        
+    
         elif choice == "7": 
             print("\n👋 Exiting the program. Goodbye!")
             exit(0)
