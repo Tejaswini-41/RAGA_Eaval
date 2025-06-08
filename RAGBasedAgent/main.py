@@ -715,7 +715,7 @@ async def test_stored_prompt():
         print(f"{'Model':<10} | {'Metric':<15} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} | {'% Change':>8} |")
         print("=" * 90)
 
-        baseline_metrics = stored_results["baseline_metrics"]
+        baseline_metrics = stored_results["baseline_metrics"];
 
         for model in enhanced_metrics:
             if model in baseline_metrics:
@@ -723,13 +723,13 @@ async def test_stored_prompt():
                     baseline = baseline_metrics[model].get(metric, 0)
                     enhanced = enhanced_metrics[model].get(metric, 0)
                     change = enhanced - baseline
-                    pct_change = (change / baseline * 100) if baseline else 0
+                    pct_change = (change / baseline * 100) if baseline else 0;
 
-                    print(f"{model:<10} | {metric:<15} | {baseline:>8.3f} | {enhanced:>8.3f} | {change:>+8.3f} | {pct_change:>7.1f}% |")
+                    print(f"{model:<10} | {metric:<15} | {baseline:>8.3f} | {enhanced:>8.3f} | {change:>+8.3f} | {pct_change:>7.1f}% |");
 
     except Exception as e:
         print(f"❌ Error during enhanced prompt evaluation: {e}")
-
+    
 def load_complete_session_data(session_id):
     """Load all data for a session by finding and merging baseline and enhanced files"""
     data_dir = "RAG_based_Analysis_2"
@@ -1063,58 +1063,54 @@ if __name__ == "__main__":
                     baseline_metrics = stored_results.get("baseline_metrics", {}).get(stored_results.get("best_model", "gemini"), {})
 
                     if baseline_metrics and comparison_results.get("strategies"):
-                        print("\n📊 Baseline vs Chunking Strategies RAGAS Metrics Comparison")
-                        print("=" * 120)
-                        
-                        # Define metrics to display
-                        metrics_list = [
-                            "Relevance", "Accuracy", "Groundedness", "Completeness", 
-                            "Faithfulness", "ContextualPrecision", "ContextRecall", 
-                            "AnswerRelevance", "BLEU", "ROUGE", "Overall"
-                        ]
-
-                        # # Get strategy names and metrics
-                        # strategies_metrics = {
-                        #     "Baseline": baseline_metrics,
-                        #     "Hybrid Semantic": comparison_results["strategies"]["hybrid"].get("metrics", {}),
-                        #     "Pure Semantic": comparison_results["strategies"]["semantic"].get("metrics", {}),
-                        #     "Fixed Size": comparison_results["strategies"]["fixed"].get("metrics", {}),
-                        #     "Hierarchical": comparison_results["strategies"]["hierarchical"].get("metrics", {})
-                        # }
-
-                        
-                        
-                        strategies_metrics = {
-                            "Baseline": baseline_metrics,
-                            "Hybrid Semantic": comparison_results["strategies"]["hybrid"]["metrics"],
-                            "Pure Semantic": comparison_results["strategies"]["semantic"]["metrics"],
-                            "Fixed Size": comparison_results["strategies"]["fixed"]["metrics"],
-                            "Hierarchical": comparison_results["strategies"]["hierarchical"]["metrics"]
+                        # Create metrics comparison table
+                        chunking_metrics_comparison = {
+                            "metrics_table": {
+                                "strategies": {
+                                    "Baseline": baseline_metrics,
+                                    "Hybrid_Semantic": comparison_results["strategies"]["hybrid"]["metrics"],
+                                    "Pure_Semantic": comparison_results["strategies"]["semantic"]["metrics"],
+                                    "Fixed_Size": comparison_results["strategies"]["fixed"]["metrics"],
+                                    "Hierarchical": comparison_results["strategies"]["hierarchical"]["metrics"]
+                                },
+                                "metrics_list": [
+                                    "Relevance", "Accuracy", "Groundedness", "Completeness", 
+                                    "Faithfulness", "ContextualPrecision", "ContextRecall", 
+                                    "AnswerRelevance", "BLEU", "ROUGE", "Overall"
+                                ]
+                            }
                         }
-                        
-                        # Print header
-                        header = f"{'Metric':<20} |"
-                        for strategy in strategies_metrics.keys():
-                            header += f" {strategy:^15} |"
-                        print(header)
-                        print("-" * len(header))
-                        
-                        # Print each metric row
-                        for metric in metrics_list:
-                            row = f"{metric:<20} |"
-                            
-                            # Add value for each strategy
-                            for strategy, metrics in strategies_metrics.items():
-                                value = metrics.get(metric, 0.0)
-                                row += f" {value:^15.3f} |"
-                            
-                            print(row)
-                        
-                        print("=" * len(header))
 
+                        # Add metrics comparison to output
+                        output["chunking_metrics_comparison"] = chunking_metrics_comparison
+
+                        # Save the results with metrics comparison
+                        json_path = save_results(
+                            output,
+                            "best_chunking_review",
+                            session_id
+                        )
                     
-                    return True
-                        
+                    # ---------------------
+
+                    # Display comparison of baseline and enhanced metrics
+                    # print("\n📈 RAGAS Metrics Comparison:")
+                    # print("=" * 90)
+                    # print(f"{'Model':<10} | {'Metric':<15} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} | {'% Change':>8} |")
+                    # print("=" * 90)
+
+                    # baseline_metrics = stored_results["baseline_metrics"];
+
+                    # for model in enhanced_metrics:
+                    #     if model in baseline_metrics:
+                    #         for metric in enhanced_metrics[model]:
+                    #             baseline = baseline_metrics[model].get(metric, 0)
+                    #             enhanced = enhanced_metrics[model].get(metric, 0)
+                    #             change = enhanced - baseline
+                    #             pct_change = (change / baseline * 100) if baseline else 0;
+
+                    #             print(f"{model:<10} | {metric:<15} | {baseline:>8.3f} | {enhanced:>8.3f} | {change:>+8.3f} | {pct_change:>7.1f}% |");
+
                 except Exception as e:
                     print(f"❌ Error during chunking test: {str(e)}")
                     return False
@@ -1230,7 +1226,7 @@ if __name__ == "__main__":
                     print(f"{'Model':<10} | {'Metric':<15} | {'Baseline':>8} | {'Enhanced':>8} | {'Change':>8} | {'% Change':>8} |")
                     print("=" * 90)
 
-                    baseline_metrics = stored_results["baseline_metrics"]
+                    baseline_metrics = stored_results["baseline_metrics"];
                     
                     for model in enhanced_metrics:
                         if model in baseline_metrics:
