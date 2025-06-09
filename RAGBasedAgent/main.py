@@ -289,6 +289,12 @@ async def custom_pr_review_generator():
             
             # Get a reference review (using best model from baseline)
             reference_model = stored_results.get("best_model", "gemini")
+            # Add this code to handle dictionary case:
+            if isinstance(reference_model, dict):
+                # Extract the best model name from dict, preferring 'enhanced' version
+                reference_model = reference_model.get('enhanced', reference_model.get('baseline', 'gemini'))
+                print(f"Using {reference_model} from best model dictionary")
+
             reference_review = generate_review(
                 current_pr_changes,
                 similar_prs_changes,
@@ -381,6 +387,11 @@ async def custom_pr_review_generator():
             print(f"\n📊 Calculating RAGAS metrics for review quality...")
             evaluator = ReviewEvaluator()
             reference_model = stored_results.get("best_model", "gemini")
+            # Add the same dictionary handling code:
+            if isinstance(reference_model, dict):
+                # Extract the best model name from dict, preferring 'enhanced' version
+                reference_model = reference_model.get('enhanced', reference_model.get('baseline', 'gemini'))
+                print(f"Using {reference_model} from best model dictionary")
             
             # Generate reference review if needed
             if reference_model != model_name:
@@ -894,7 +905,7 @@ class SessionManager:
         """Start a new session and return session ID"""
         self.current_session_id = generate_session_id()
         self.session_data = None
-        print(f"\n🔑 Starting new session: {self.current_session_id}")
+        # print(f"\n🔑 Starting new session: {self.current_session_id}")
         return self.current_session_id
     
     def load_session_data(self):
@@ -1572,8 +1583,8 @@ if __name__ == "__main__":
             
             # Run the test and generate review using best strategy
             success = asyncio.run(test_chunking_with_ragas())
-            if not success:
-                print("\n⚠️ Could not complete chunking strategy comparison")
+            # if not success:
+            #     print("\n⚠️ Could not complete chunking strategy comparison")
             
             input("\nPress Enter to continue...")
         
@@ -1869,6 +1880,7 @@ if __name__ == "__main__":
                             print("-" * 60)
                             print(f"\n💾 Results saved to {json_path}")
                             
+
                             # # Display metrics comparison
                             # print("\n📈 Model Performance Metrics:")
                             # print("=" * 80)
