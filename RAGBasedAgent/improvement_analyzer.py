@@ -55,6 +55,9 @@ class ImprovementAnalyzer:
             
         # Load session-specific metadata
         self._load_session_metadata(session_id, results)
+
+        # Extract prompts and store as attributes
+        self.original_prompt, self.enhanced_prompt = self._extract_prompts(results)
         
         # Find the best model based on metrics
         self.best_model = self._determine_best_model(results)
@@ -280,6 +283,23 @@ class ImprovementAnalyzer:
         
         return summary
     
+    def _extract_prompts(self, results: List[Dict]) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Extract the original and enhanced system prompts from the session results.
+        Returns a tuple: (original_prompt, enhanced_prompt)
+        """
+        original_prompt = None
+        enhanced_prompt = None
+        for result in results:
+            if not original_prompt and "original_system_prompt" in result:
+                original_prompt = result["original_system_prompt"]
+            if not enhanced_prompt and "enhanced_system_prompt" in result:
+                enhanced_prompt = result["enhanced_system_prompt"]
+            if original_prompt and enhanced_prompt:
+                break
+        return original_prompt, enhanced_prompt
+
+
     def _analyze_prompt_effectiveness(self, results: List[Dict]) -> Dict:
         """Analyze the effectiveness of different prompt strategies"""
         analysis = {
@@ -433,320 +453,6 @@ class ImprovementAnalyzer:
         
         return analysis
 
-    # def _suggest_optimal_combinations(self, chunking_analysis: Dict, embedding_analysis: Dict) -> List[Dict]:
-    #     """Get optimal combinations of chunking and embedding strategies using Gemini"""
-    #     import google.generativeai as genai
-    #     from dotenv import load_dotenv
-    #     import os
-
-    #     # Add debug logging
-    #     print("\n🔄 Generating optimal strategy combinations...")
-
-    #     # Load Gemini API key
-    #     load_dotenv()
-    #     api_key = os.getenv("GEMINI_API_KEY")
-    #     if not api_key:
-    #         print("❌ No Gemini API key found in .env file")
-    #         return []
-            
-    #     genai.configure(api_key=api_key)
-
-    #     # Debug print the available strategies
-    #     print(f"📊 Found {len(chunking_analysis.get('strategies_compared', []))} chunking strategies")
-    #     print(f"📊 Found {len(embedding_analysis.get('strategies_compared', []))} embedding strategies")
-
-    #     # Only proceed if we have strategies to analyze
-    #     if not chunking_analysis.get('strategies_compared') or not embedding_analysis.get('strategies_compared'):
-    #         print("⚠ No strategies found to analyze")
-    #         return []
-
-    #     # Prepare the system prompt with the comparison data
-    #     system_prompt = """You are an AI assistant specialized in analyzing RAG system performance.
-    # Based on the following comparison tables of chunking and embedding strategies, suggest 2 optimal combinations
-    # that would likely achieve the highest RAGAS scores. Provide detailed reasoning for each combination.
-
-    # CHUNKING STRATEGIES COMPARISON:
-    # """
-    #     # Add chunking comparison table
-    #     chunking_strategies = chunking_analysis.get("strategies_compared", [])
-    #     if chunking_strategies:
-    #         for strategy in chunking_strategies:
-    #             system_prompt += f"\n{strategy['name']}:"
-    #             system_prompt += f"\n- Overall Score: {strategy.get('overall_score', 0):.3f}"
-    #             system_prompt += f"\n- Faithfulness: {strategy.get('faithfulness', 0):.3f}"
-    #             system_prompt += f"\n- Context Precision: {strategy.get('context_precision', 0):.3f}"
-    #             system_prompt += f"\n- Answer Relevance: {strategy.get('answer_relevance', 0):.3f}\n"
-
-    #     system_prompt += "\nEMBEDDING STRATEGIES COMPARISON:"
-        
-    #     # Add embedding comparison table
-    #     embedding_strategies = embedding_analysis.get("strategies_compared", [])
-    #     if embedding_strategies:
-    #         for strategy in embedding_strategies:
-    #             system_prompt += f"\n{strategy['name']}:"
-    #             system_prompt += f"\n- Overall Score: {strategy.get('overall_score', 0):.3f}"
-    #             system_prompt += f"\n- Relevance: {strategy.get('relevance', 0):.3f}"
-    #             system_prompt += f"\n- Groundedness: {strategy.get('groundedness', 0):.3f}"
-    #             system_prompt += f"\n- Answer Relevance: {strategy.get('answer_relevance', 0):.3f}\n"
-
-    #     system_prompt += """\nBased on these metrics, suggest 2 optimal combinations of chunking and embedding strategies.
-    # For each combination:
-    # 1. Identify the chunking strategy and embedding method
-    # 2. Explain why this combination would work well together
-    # 3. Predict potential RAGAS score improvements
-    # 4. Consider trade-offs and computational costs
-
-    # Format your response as:
-    # COMBINATION 1:
-    # - Chunking: [strategy]
-    # - Embedding: [method]
-    # - Reasoning: [detailed explanation]
-    # - Expected Benefits: [specific metrics improvements]
-
-    # COMBINATION 2:
-    # [same format]"""
-
-    #     # Initialize Gemini model
-    #     model = genai.GenerativeModel('gemini-1.5-flash')
-        
-    #     try:
-    #         # Get suggestions from Gemini
-    #         response = model.generate_content(system_prompt)
-    #         suggestions = response.text
-            
-    #         print(f"✅ Received response from Gemini: {len(suggestions)} characters")
-    #         print("\nRaw response:")
-    #         print(suggestions)  # Print raw response for debugging
-            
-    #         # Parse the suggestions into structured format
-    #         combinations = []
-    #         current_combo = {}
-            
-    #         for line in suggestions.split('\n'):
-    #             line = line.strip()
-    #             if not line:
-    #                 continue
-                    
-    #             print(f"Processing line: {line}")  # Debug line processing
-                    
-    #             if 'COMBINATION' in line.upper():
-    #                 if current_combo and all(k in current_combo for k in ['id', 'chunking', 'embedding', 'reasoning', 'benefits']):
-    #                     print(f"✅ Adding complete combination: {current_combo['id']}")
-    #                     combinations.append(current_combo)
-    #                 current_combo = {'id': line.strip()}
-    #                 print(f"Started new combination: {line}")
-                
-    #             # Parse each section
-    #             elif line.startswith('- Chunking:'):
-    #                 current_combo['chunking'] = line.replace('- Chunking:', '').strip()
-    #             elif line.startswith('- Embedding:'):
-    #                 current_combo['embedding'] = line.replace('- Embedding:', '').strip()
-    #             elif line.startswith('- Reasoning:'):
-    #                 current_combo['reasoning'] = line.replace('- Reasoning:', '').strip()
-    #             elif line.startswith('- Expected Benefits:'):
-    #                 current_combo['benefits'] = line.replace('- Expected Benefits:', '').strip()
-    #             elif 'reasoning' in current_combo and not line.startswith('-'):
-    #                 current_combo['reasoning'] += '\n' + line
-    #             elif 'benefits' in current_combo and not line.startswith('-'):
-    #                 current_combo['benefits'] += '\n' + line
-            
-    #         # Add the last combination
-    #         if current_combo and all(k in current_combo for k in ['id', 'chunking', 'embedding', 'reasoning', 'benefits']):
-    #             print(f"✅ Adding final combination: {current_combo['id']}")
-    #             combinations.append(current_combo)
-            
-    #         # Validate combinations
-    #         valid_combinations = []
-    #         for combo in combinations:
-    #             if all(k in combo for k in ['id', 'chunking', 'embedding', 'reasoning', 'benefits']):
-    #                 valid_combinations.append(combo)
-    #             else:
-    #                 missing = [k for k in ['id', 'chunking', 'embedding', 'reasoning', 'benefits'] if k not in combo]
-    #                 print(f"⚠ Invalid combination - missing: {missing}")
-            
-    #         print(f"✅ Generated {len(valid_combinations)} valid combinations")
-    #         return valid_combinations if valid_combinations else []
-            
-    #     except Exception as e:
-    #         print(f"❌ Error getting strategy suggestions: {str(e)}")
-    #         import traceback
-    #         print(traceback.format_exc())
-    #         return []
-
-    # def _suggest_optimal_combinations(self, chunking_analysis: Dict, embedding_analysis: Dict) -> List[Dict]:
-    #     """Get optimal combinations of chunking and embedding strategies using Groq's Llama model"""
-    #     import httpx
-    #     from dotenv import load_dotenv
-    #     import os
-    #     import json
-
-    #     # Add debug logging
-    #     print("\n🔄 Generating optimal strategy combinations...")
-
-    #     # Load Groq API key
-    #     load_dotenv()
-    #     api_key = os.getenv("GROQ_API_KEY")
-    #     if not api_key:
-    #         print("❌ No Groq API key found in .env file")
-    #         return []
-
-    #     # Debug print the available strategies
-    #     print(f"📊 Found {len(chunking_analysis.get('strategies_compared', []))} chunking strategies")
-    #     print(f"📊 Found {len(embedding_analysis.get('strategies_compared', []))} embedding strategies")
-
-    #     # Only proceed if we have strategies to analyze
-    #     if not chunking_analysis.get('strategies_compared') or not embedding_analysis.get('strategies_compared'):
-    #         print("⚠ No strategies found to analyze")
-    #         return []
-
-    #     # Prepare the system prompt with the comparison data
-    #     system_prompt = """You are an AI assistant specialized in analyzing RAG (Retrieval Augmented Generation) system performance.
-    # Based on the following comparison tables of chunking and embedding strategies, suggest 2 optimal combinations 
-    # that would achieve the highest RAGAS scores. Consider the trade-offs between performance and computational costs.
-
-    # CHUNKING STRATEGIES COMPARISON:
-    # """
-    #     # Add chunking comparison table with all metrics
-    #     chunking_strategies = chunking_analysis.get("strategies_compared", [])
-    #     if chunking_strategies:
-    #         for strategy in chunking_strategies:
-    #             system_prompt += f"\n{strategy['name']}:"
-    #             system_prompt += f"\n- Overall Score: {strategy.get('overall_score', 0):.3f}"
-    #             system_prompt += f"\n- Faithfulness: {strategy.get('faithfulness', 0):.3f}"
-    #             system_prompt += f"\n- Context Precision: {strategy.get('context_precision', 0):.3f}"
-    #             system_prompt += f"\n- Answer Relevance: {strategy.get('answer_relevance', 0):.3f}"
-    #             system_prompt += f"\n- Processing Time: {strategy.get('processing_time', 0):.2f}s\n"
-
-    #     system_prompt += "\nEMBEDDING STRATEGIES COMPARISON:"
-        
-    #     # Add embedding comparison table with performance metrics
-    #     embedding_strategies = embedding_analysis.get("strategies_compared", [])
-    #     if embedding_strategies:
-    #         for strategy in embedding_strategies:
-    #             system_prompt += f"\n{strategy['name']}:"
-    #             system_prompt += f"\n- Overall Score: {strategy.get('overall_score', 0):.3f}"
-    #             system_prompt += f"\n- Relevance: {strategy.get('relevance', 0):.3f}"
-    #             system_prompt += f"\n- Groundedness: {strategy.get('groundedness', 0):.3f}"
-    #             system_prompt += f"\n- Answer Relevance: {strategy.get('answer_relevance', 0):.3f}"
-    #             system_prompt += f"\n- Embedding Time: {strategy.get('embedding_time', 0):.2f}s\n"
-
-    #     # Add specific instruction for response format
-    #     system_prompt += """\nBased on these metrics, suggest 2 optimal combinations of chunking and embedding strategies.
-    # For each combination:
-    # 1. Identify the best chunking strategy and embedding method based on performance metrics
-    # 2. Explain why this combination would work well together
-    # 3. Predict potential RAGAS score improvements
-    # 4. Consider trade-offs between performance and computational costs
-
-    # Format your response exactly as follows:
-    # COMBINATION 1:
-    # - Chunking: [strategy name]
-    # - Embedding: [method name]
-    # - Reasoning: [detailed explanation]
-    # - Expected Benefits: [specific metrics improvements]
-
-    # COMBINATION 2:
-    # - Chunking: [strategy name]
-    # - Embedding: [method name]
-    # - Reasoning: [detailed explanation]
-    # - Expected Benefits: [specific metrics improvements]
-    # """
-
-    #     # Setup Groq API request
-    #     headers = {
-    #         "Authorization": f"Bearer {api_key}",
-    #         "Content-Type": "application/json"
-    #     }
-
-    #     # Construct the message payload for Llama
-    #     payload = {
-    #         "model": "meta-llama/llama-guard-4-12b",
-    #         "messages": [
-    #             {"role": "system", "content": "You are an expert in RAG systems analysis."},
-    #             {"role": "user", "content": system_prompt}
-    #         ],
-    #         "temperature": 0.3,  # Lower temperature for more focused suggestions
-    #         "max_tokens": 1000,
-    #         "top_p": 0.9
-    #     }
-
-    #     try:
-    #         # Make request to Groq API
-    #         response = httpx.post(
-    #             "https://api.groq.com/openai/v1/chat/completions",
-    #             headers=headers,
-    #             json=payload,
-    #             timeout=30.0
-    #         )
-            
-    #         if response.status_code != 200:
-    #             print(f"❌ API request failed: {response.status_code}")
-    #             print(f"Error: {response.text}")
-    #             return []
-
-    #         # Get the response text
-    #         result = response.json()
-    #         suggestions = result["choices"][0]["message"]["content"]
-            
-    #         print(f"✅ Received response from Llama: {len(suggestions)} characters")
-    #         print("\nRaw response:")
-    #         print(suggestions)
-
-    #         # Parse the suggestions into structured format
-    #         combinations = []
-    #         current_combo = {}
-            
-    #         for line in suggestions.split('\n'):
-    #             line = line.strip()
-    #             if not line:
-    #                 continue
-                    
-    #             print(f"Processing line: {line}")
-                    
-    #             if 'COMBINATION' in line.upper():
-    #                 if current_combo and all(k in current_combo for k in ['id', 'chunking', 'embedding', 'reasoning', 'benefits']):
-    #                     print(f"✅ Adding complete combination: {current_combo['id']}")
-    #                     combinations.append(current_combo)
-    #                 current_combo = {'id': line.strip()}
-    #                 print(f"Started new combination: {line}")
-                
-    #             # Parse each section with improved handling
-    #             elif line.startswith('- Chunking:'):
-    #                 current_combo['chunking'] = line.replace('- Chunking:', '').strip()
-    #             elif line.startswith('- Embedding:'):
-    #                 current_combo['embedding'] = line.replace('- Embedding:', '').strip()
-    #             elif line.startswith('- Reasoning:'):
-    #                 current_combo['reasoning'] = line.replace('- Reasoning:', '').strip()
-    #             elif line.startswith('- Expected Benefits:'):
-    #                 current_combo['benefits'] = line.replace('- Expected Benefits:', '').strip()
-    #             elif 'reasoning' in current_combo and not line.startswith('-'):
-    #                 current_combo['reasoning'] += '\n' + line
-    #             elif 'benefits' in current_combo and not line.startswith('-'):
-    #                 current_combo['benefits'] += '\n' + line
-            
-    #         # Add the last combination if complete
-    #         if current_combo and all(k in current_combo for k in ['id', 'chunking', 'embedding', 'reasoning', 'benefits']):
-    #             print(f"✅ Adding final combination: {current_combo['id']}")
-    #             combinations.append(current_combo)
-            
-    #         # Validate combinations
-    #         valid_combinations = []
-    #         for combo in combinations:
-    #             if all(k in combo for k in ['id', 'chunking', 'embedding', 'reasoning', 'benefits']):
-    #                 valid_combinations.append(combo)
-    #             else:
-    #                 missing = [k for k in ['id', 'chunking', 'embedding', 'reasoning', 'benefits'] if k not in combo]
-    #                 print(f"⚠ Invalid combination - missing: {missing}")
-            
-    #         print(f"✅ Generated {len(valid_combinations)} valid combinations")
-    #         return valid_combinations if valid_combinations else []
-            
-    #     except Exception as e:
-    #         print(f"❌ Error getting strategy suggestions: {str(e)}")
-    #         import traceback
-    #         print(traceback.format_exc())
-    #         return []
-
 
     def _suggest_optimal_combinations(self, chunking_analysis: Dict, embedding_analysis: Dict) -> List[Dict]:
         """Get optimal combinations of chunking and embedding strategies using Groq's Llama model"""
@@ -806,20 +512,28 @@ class ImprovementAnalyzer:
     """
 
         system_prompt += """
-    Based on these metrics, provide exactly 2 optimal combinations of chunking and embedding strategies.
+    Based on these metrics, provide exactly 2 optimal combinations of chunking method, embedding method, and prompt type (enhanced or original) that together will give the highest RAGAS score.
+    For each combination, specify:
+    - Chunking: [strategy name]
+    - Embedding: [method name]
+    - Prompt: [enhanced/original]
+    - Reasoning: [explain why this combination works well and why this prompt type is best]
+
     Use this exact format for your response:
 
     COMBINATION 1:
     - Chunking: [strategy name]
     - Embedding: [method name]
-    - Reasoning: [explain why this combination works well]
+    - Prompt: [enhanced/original]
+    - Reasoning: [detailed explanation]
 
     COMBINATION 2:
     - Chunking: [strategy name]
     - Embedding: [method name]
-    - Reasoning: [explain why this combination works well]
+    - Prompt: [enhanced/original]
+    - Reasoning: [detailed explanation]
 
-    Prioritize combinations that balance performance and computational costs.
+    Prioritize combinations that prompt effectiveness, computational costs and give good ragas score.
     """
 
         # Setup Groq API request
@@ -886,7 +600,7 @@ class ImprovementAnalyzer:
                     if len(parts) == 2:
                         key = parts[0].lower().strip()
                         value = parts[1].strip()
-                        if key in ['chunking', 'embedding', 'reasoning']:
+                        if key in ['chunking', 'embedding', 'prompt', 'reasoning']:
                             current_combo[key.replace(' ', '_')] = value
                             current_section = key.replace(' ', '_')
                 elif current_section and current_combo.get(current_section):
@@ -897,7 +611,7 @@ class ImprovementAnalyzer:
 
             # Validate combinations
             valid_combinations = []
-            required_keys = ['id', 'chunking', 'embedding', 'reasoning']
+            required_keys = ['id', 'chunking', 'embedding','prompt','reasoning']
             
             for combo in combinations:
                 if all(key in combo for key in required_keys):
@@ -954,11 +668,23 @@ class ImprovementAnalyzer:
 - Strategies Applied: {strategies_text}
 - PR Files: {len(self.session_data.get("pr_files", []))} files
 """
+            
+        # Add prompts section
+        prompts_section = ""
+        if getattr(self, "original_prompt", None) or getattr(self, "enhanced_prompt", None):
+            prompts_section = "## 📝 System Prompts Used\n"
+            if getattr(self, "original_prompt", None):
+                prompts_section += f"**Original Prompt:**\n\n```text\n{self.original_prompt}\n```\n\n"
+            if getattr(self, "enhanced_prompt", None):
+                prompts_section += f"**Enhanced Prompt:**\n\n```text\n{self.enhanced_prompt}\n```\n\n"
+
         
         report = f"""# 🚀 RAG System Improvement Analysis
 
 Generated on: {timestamp}
 {session_info}
+
+{prompts_section}
 
 ## 📊 Performance Summary
 
@@ -1019,13 +745,24 @@ Generated on: {timestamp}
         if combinations:
             report += "\n## 🔄 Optimal Strategy Combinations\n\n"
             
+            # for combo in combinations:
+            #     try:
+            #         report += f"### {combo.get('id', 'Combination')}\n\n"
+            #         report += f"*Chunking Strategy:* {combo.get('chunking', 'Not specified')}\n"
+            #         report += f"*Embedding Method:* {combo.get('embedding', 'Not specified')}\n\n"
+            #         report += f"*Reasoning:*\n{combo.get('reasoning', 'No reasoning provided')}\n\n"
+            #         # report += f"*Expected Benefits:*\n{combo.get('benefits', 'No benefits specified')}\n\n"
+            #         report += "---\n\n"
+            #     except Exception as e:
+            #         print(f"⚠ Error formatting combination: {e}")
+            #         continue
             for combo in combinations:
                 try:
                     report += f"### {combo.get('id', 'Combination')}\n\n"
                     report += f"*Chunking Strategy:* {combo.get('chunking', 'Not specified')}\n"
-                    report += f"*Embedding Method:* {combo.get('embedding', 'Not specified')}\n\n"
+                    report += f"*Embedding Method:* {combo.get('embedding', 'Not specified')}\n"
+                    report += f"*Prompt Type:* {combo.get('prompt', 'Not specified').capitalize()}\n\n"
                     report += f"*Reasoning:*\n{combo.get('reasoning', 'No reasoning provided')}\n\n"
-                    # report += f"*Expected Benefits:*\n{combo.get('benefits', 'No benefits specified')}\n\n"
                     report += "---\n\n"
                 except Exception as e:
                     print(f"⚠ Error formatting combination: {e}")

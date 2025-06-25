@@ -146,6 +146,6 @@ def fetch_pull_requests(repo_owner, repo_name, limit=20):
 
 if __name__ == "__main__":
     # If run directly, execute the function
-    repo_owner = 'Tejaswini-41'
-    repo_name = 'RAGA_Eaval'
+    repo_owner = 'explodinggradients'
+    repo_name = 'ragas'
     fetch_pull_requests(repo_owner, repo_name)
